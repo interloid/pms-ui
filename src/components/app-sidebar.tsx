@@ -8,13 +8,8 @@ import {
   SidebarRail,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import {
-  Package,
-  ShoppingCart,
-  Users,
-  Tags,
-  BarChart3,
-} from "lucide-react";
+import { Package, ShoppingCart, Users, Tags, BarChart3 } from "lucide-react";
+import SidebarTitle from "@/components/sidebar-title"
 
 const data = {
   user: {
@@ -54,8 +49,9 @@ const data = {
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="icon" {...props}>
+      <SidebarTitle/>
       <SidebarContent>
-        <SidebarTrigger className="-ml-1" />
+        <SidebarTrigger className="right-0 top-0 absolute" />
         <NavMain items={data.navMain} />
       </SidebarContent>
       <SidebarFooter>
