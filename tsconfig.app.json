@@ -16,11 +16,23 @@
     "noEmit": true,
     "jsx": "react-jsx",
 
+<<<<<<< HEAD
+=======
+    /* Paths */
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+
+>>>>>>> 5d688e1 (loginpage and passcode UI)
     /* Linting */
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
+<<<<<<< HEAD
   "include": ["src"]
+=======
+  "include": ["./src", "src/hooks/.gitkeep"]
+>>>>>>> 5d688e1 (loginpage and passcode UI)
 }
