@@ -24,3 +24,21 @@ export type NavItem = {
 export type NavMainProps = {
   items: NavItem[];
 };
+
+export type EmptyPageProps = {
+  title?: string;
+  description?: string;
+};
+
+export interface LoginCredentials {
+  email: string;
+  password: string;
+}
+
+
+export interface AuthContextType {
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  login: (credentials: LoginCredentials) => Promise<void>;
+  logout: () => void;
+}

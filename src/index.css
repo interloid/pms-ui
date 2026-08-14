@@ -5,9 +5,12 @@
 
 @custom-variant dark (&:is(.dark *));
 
-@theme inline {
-  --font-heading: var(--font-sans);
+@theme {
   --font-sans: "Inter Variable", sans-serif;
+  --font-heading: "Inter Variable", sans-serif;
+}
+
+@theme inline {
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -48,6 +51,8 @@
   --radius-4xl: calc(var(--radius) * 2.6);
   --color-bg-destructive: #FEF0F2;
   --color-text-destructive: #E41F66;
+  --color-primary-hover: #EDF1FB;
+  --color-muted-text:#71717b;
 }
 
 :root {
@@ -57,10 +62,12 @@
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: #3e50b2;
+  --primary: #3351b3;
   --primary-foreground: oklch(0.985 0 0);
+  --primar-hover: #EDF1FB;
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
+  --muted-text:#71717b;
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
   --accent: oklch(0.97 0 0);
@@ -127,6 +134,7 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: "Inter Variable", system-ui, sans-serif;
   }
   button:not(:disabled),
   [role="button"]:not(:disabled) {

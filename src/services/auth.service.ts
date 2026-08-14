@@ -1,75 +1,89 @@
 import { API_BASE_URL } from "@/lib/api";
-import type { LoginRequest, LoginResponse, OAuthProvider } from "@/types/auth";
-import { OAuthCallbackEndpoints } from "@/lib/api";
 
-export async function login(credentials: LoginRequest): Promise<LoginResponse> {
-  const response = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(credentials),
-  });
+import type {
+  LoginRequest,
+  LoginResponse,
+  OAuthProvider,
+} from "@/types/auth";
 
-  const data = await response.json();
-
+async function parseResponse<T>(
+  response: Response,
+): Promise<T> {
+  const data = await response.json().catch(() => null);
   if (!response.ok) {
-    throw new Error(data?.message ?? "Invalid username or password");
+    throw new Error(
+      data?.message ??
+        `Request failed with status ${response.status}`,
+    );
   }
 
   return data;
+}
+
+export async function login(
+  credentials: LoginRequest,
+): Promise<LoginResponse> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/v1/auth/login`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify(credentials),
+    },
+  );
+
+  return parseResponse<LoginResponse>(response);
 }
 
 export async function loginWithPasscode(
   passcode: string,
 ): Promise<LoginResponse> {
-  const response = await fetch(`${API_BASE_URL}/api/v1/auth/login/passcode`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
+  const response = await fetch(
+    `${API_BASE_URL}/api/v1/auth/login/passcode`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({ passcode }),
     },
-    body: JSON.stringify({
-      passcode,
-    }),
-  });
+  );
 
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data?.message ?? "Invalid passcode");
-  }
-
-  return data;
+  return parseResponse<LoginResponse>(response);
 }
 
-export function loginWithProvider(provider: OAuthProvider) {
-  window.location.assign(`${API_BASE_URL}/api/v1/auth/${provider}`);
-}
-
-export function isOAuthProvider(value: string | null): value is OAuthProvider {
-  return value === "google" || value === "github" || value === "microsoft";
-}
-
-export async function handleOAuthCallback(
+export function loginWithProvider(
   provider: OAuthProvider,
-  code: string,
-) {
-  const endpoint = OAuthCallbackEndpoints[provider];
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
+): void {
+  window.location.assign(
+    `${API_BASE_URL}/api/v1/auth/${provider}`,
+  );
+}
+
+export async function getCurrentSession(): Promise<LoginResponse> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/v1/auth/session`,
+    {
+      method: "POST",
+      credentials: "include",
     },
-    credentials: "include",
-    body: JSON.stringify({
-      code,
-    }),
-  });
+  );
 
-  const data = await response.json();
-  if (!response.ok) {
-    throw new Error(data?.message ?? `${provider} authentication failed`);
-  }
+  return parseResponse<LoginResponse>(response);
+}
 
-  return data;
+export async function logout(): Promise<void> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/v1/auth/logout`,
+    {
+      method: "POST",
+      credentials: "include",
+    },
+  );
+
+  await parseResponse(response);
 }
