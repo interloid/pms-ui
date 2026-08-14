@@ -1,70 +1,39 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import {
-  Empty,
+import { useNavigate } from "react-router-dom";
+import {Empty,
   EmptyDescription,
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
 import { Spinner } from "@/components/ui/spinner";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { handleOAuthCallback, isOAuthProvider } from "@/services/auth.service";
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "@/components/ui/alert";
+import { useAuth } from "@/hooks/useAuth";
 
 export function Callback() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const { checkAuth } = useAuth();
 
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const provider = searchParams.get("provider");
-    const code = searchParams.get("code");
-    const oauthError = searchParams.get("error");
+    const authenticate = async () => {
+      const isAuthenticated = await checkAuth();
 
-    if (oauthError) {
-      setError(
-        "Sign-in was cancelled or denied.",
-      );
-      return;
-    }
-
-    if (!isOAuthProvider(provider)) {
-      setError(
-        "Invalid authentication provider.",
-      );
-      return;
-    }
-
-    if (!code) {
-      setError(
-        "Authorization code is missing.",
-      );
-      return;
-    }
-
-    const authenticate = async() => {
-      try {
-        await handleOAuthCallback(
-          provider,
-          code,
-        );
-
-        navigate("/dashboard", {
+      if (isAuthenticated) {
+        navigate("/products", {
           replace: true,
         });
-      } catch (error) {
-        setError(
-          error instanceof Error
-            ? error.message
-            : "Authentication failed.",
-        );
+      } else {
+        setError("We couldn't complete your sign-in.");
       }
     };
-
     authenticate();
-  }, [searchParams, navigate]);
-
+  }, [checkAuth, navigate]);
 
   return (
     <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
@@ -77,8 +46,8 @@ export function Callback() {
 
             <EmptyTitle>
               {error
-                ? "Google sign-in failed"
-                : "Finishing sign-in with Google…"}
+                ? "Sign-in failed"
+                : "Finishing sign-in…"}
             </EmptyTitle>
 
             <EmptyDescription>
@@ -90,11 +59,13 @@ export function Callback() {
 
           {error && (
             <Alert variant="destructive">
-              <AlertTitle className="font-bold text-text-destructive">
-                Failure variant
+              <AlertTitle className="font-bold">
+                Authentication error
               </AlertTitle>
 
-              <AlertDescription className="text-xs">{error}</AlertDescription>
+              <AlertDescription className="text-xs">
+                {error}
+              </AlertDescription>
             </Alert>
           )}
         </Empty>
