@@ -6,7 +6,7 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@/components/ui/avatar";
-
+import { AddProducts } from "@/app/pages/dashboard/products/add-product";
 type User = {
   name: string;
   avatar?: string;
@@ -32,10 +32,8 @@ export function InputInline({ user }: InputInlineProps) {
           placeholder="Search name or SKU..."
           className="w-81"
         />
+      <AddProducts />
 
-        <Button className="px-4 text-xs">
-          + Add Product
-        </Button>
       </Field>
 
       <Avatar className="size-9">

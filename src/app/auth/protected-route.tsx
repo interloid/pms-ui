@@ -5,6 +5,7 @@ import {
 } from "react-router-dom";
 
 import { useAuth } from "@/hooks/useAuth";
+import { Spinner } from "@/components/ui/spinner";
 
 export function ProtectedRoute() {
   const { status } = useAuth();
@@ -12,7 +13,8 @@ export function ProtectedRoute() {
 
   if (status === "loading") {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center gap-2">
+        <Spinner/>
         Checking authentication...
       </div>
     );

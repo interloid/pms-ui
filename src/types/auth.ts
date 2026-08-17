@@ -1,13 +1,44 @@
-import type { LucideIcon } from "lucide-react";
+import type { ReactNode } from "react";
 
-export interface LoginRequest {
+export interface LoginCredentials {
   email: string;
   password: string;
 }
 
 export interface LoginResponse {
-  access_token: string;
-  token_type: string;
+  success: boolean;
+  message: string;
+  data?: {
+    session_id?: string;
+    user?: {
+      id: string;
+      email: string;
+      first_name: string;
+      last_name: string;
+      is_active: boolean;
+    };
+  };
+}
+
+export interface PasscodeRequestResponse {
+  success: boolean;
+  message: string;
+  data?: unknown;
+}
+
+export interface PasscodeVerifyResponse {
+  success: boolean;
+  message: string;
+  data?: {
+    session_id?: string;
+    user?: {
+      id: string;
+      email: string;
+      first_name: string;
+      last_name: string;
+      is_active: boolean;
+    };
+  };
 }
 
 export type OAuthProvider =
@@ -15,30 +46,25 @@ export type OAuthProvider =
   | "github"
   | "microsoft";
 
-export type NavItem = {
-  title: string;
-  url: string;
-  icon: LucideIcon;
-};
+export type AuthStatus =
+  | "loading"
+  | "authenticated"
+  | "unauthenticated";
 
-export type NavMainProps = {
-  items: NavItem[];
-};
-
-export type EmptyPageProps = {
-  title?: string;
-  description?: string;
-};
-
-export interface LoginCredentials {
-  email: string;
-  password: string;
+export interface AuthContextValue {
+  status: AuthStatus;
+  isAuthenticated: boolean;
+  login: (
+    credentials: LoginCredentials,
+  ) => Promise<void>;
+  loginWithPasscode: (
+    email: string,
+    passcode: string,
+  ) => Promise<void>;
+  checkAuth: () => Promise<boolean>;
+  logout: () => Promise<void>;
 }
 
-
-export interface AuthContextType {
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  login: (credentials: LoginCredentials) => Promise<void>;
-  logout: () => void;
+export interface AuthProviderProps {
+  children: ReactNode;
 }
