@@ -53,6 +53,7 @@
   --color-text-destructive: #E41F66;
   --color-primary-hover: #EDF1FB;
   --color-muted-text:#71717b;
+  --color-hover-text:#23366e;
 }
 
 :root {
@@ -65,6 +66,7 @@
   --primary: #3351b3;
   --primary-foreground: oklch(0.985 0 0);
   --primar-hover: #EDF1FB;
+  --hover-text:#23366e;
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
   --muted-text:#71717b;

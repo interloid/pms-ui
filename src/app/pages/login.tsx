@@ -17,13 +17,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Spinner } from "@/components/ui/spinner";
 import { loginWithProvider } from "@/services/auth.service";
 import { useAuth } from "@/hooks/useAuth";
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa";
-import MicrosoftLogo  from "@/components/icons/logos-microsoft-icon";
+import MicrosoftLogo from "@/components/icons/logos-microsoft-icon";
 
 export function LoginForm({
   className,
@@ -32,7 +32,6 @@ export function LoginForm({
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useAuth();
-
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -50,13 +49,9 @@ export function LoginForm({
         email,
         password,
       });
-
       const from =
-        (
-          location.state as
-            | { from?: { pathname?: string } }
-            | null
-        )?.from?.pathname ?? "/products";
+        (location.state as { from?: { pathname?: string } } | null)?.from
+          ?.pathname ?? "/products";
 
       navigate(from, {
         replace: true,
@@ -227,12 +222,12 @@ export function LoginForm({
 
                     <FieldDescription className="text-center text-xs">
                       Have a passcode instead?{" "}
-                      <a
-                        href="/passcode"
+                      <Link
+                        to="/passcode"
                         className="text-primary font-semibold no-underline! hover:underline!"
                       >
                         Use passcode
-                      </a>
+                      </Link>
                     </FieldDescription>
                   </Field>
                 </FieldGroup>

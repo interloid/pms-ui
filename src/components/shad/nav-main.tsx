@@ -7,7 +7,7 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
 } from "@/components/ui/sidebar";
-import type { NavMainProps } from "@/types/auth";
+import type { NavMainProps } from "@/types/data-type";
 
 export function NavMain({ items }: NavMainProps) {
   return (
@@ -19,10 +19,7 @@ export function NavMain({ items }: NavMainProps) {
 
             return (
               <SidebarMenuItem key={item.title}>
-                <SidebarMenuButton
-                  asChild
-                  tooltip={item.title}
-                >
+                <SidebarMenuButton asChild tooltip={item.title} className="hover:bg-primary-hover hover:text-hover-text">
                   <NavLink
                     to={item.url}
                     className={({ isActive }) =>
@@ -31,7 +28,7 @@ export function NavMain({ items }: NavMainProps) {
                         "transition-colors",
                         isActive
                           ? "bg-primary text-primary-foreground"
-                          : "text-muted-foreground hover:bg-muted"
+                          : "text-muted-foreground hover:bg-muted",
                       )
                     }
                   >
