@@ -33,14 +33,12 @@ export function AuthProvider({
 
   const checkAuth = useCallback(async () => {
     try {
-      await getCurrentSession();
-
+      const response = await getCurrentSession();
+      console.log('response', response);
       setStatus("authenticated");
-
       return true;
     } catch {
       setStatus("unauthenticated");
-
       return false;
     }
   }, []);
@@ -48,7 +46,6 @@ export function AuthProvider({
   const login = useCallback(
     async (credentials: LoginCredentials) => {
       await loginService(credentials);
-
       setStatus("authenticated");
     },
     [],
@@ -63,7 +60,6 @@ export function AuthProvider({
         email,
         passcode,
       );
-
       setStatus("authenticated");
     },
     [],

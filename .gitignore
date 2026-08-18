@@ -10,12 +10,9 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
-<<<<<<< HEAD
-=======
 .env
 .env.*
 !.env.example
->>>>>>> 5d688e1 (loginpage and passcode UI)
 *.local
 
 # Editor directories and files

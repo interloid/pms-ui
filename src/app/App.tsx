@@ -1,12 +1,3 @@
-<<<<<<< HEAD
-const App = () => {
-  return (
-    <div>App</div>
-  )
-}
-
-export default App;
-=======
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -43,7 +34,7 @@ export default function App() {
               <Route path="/passcode/verify" element={<PasscodeVerifyPage />} />
               <Route path="/callback" element={<Callback />} />
             </Route>
-            {/* <Route element={<ProtectedRoute />}> */}
+            <Route element={<ProtectedRoute />}>
               <Route element={<DashboardLayout />}>
                 <Route
                   path="/products"
@@ -55,7 +46,7 @@ export default function App() {
                 <Route path="/reports" element={<Reports />} />
                 <Route path="/settings" element={<Settings />} />
               </Route>
-            {/* </Route> */}
+            </Route>
             <Route path="/" element={<Navigate to="/login" replace />} />
             <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>
@@ -66,4 +57,3 @@ export default function App() {
      </>
   )
 }
->>>>>>> 5d688e1 (loginpage and passcode UI)
