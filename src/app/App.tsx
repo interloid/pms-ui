@@ -19,9 +19,11 @@ import Reports from "./pages/dashboard/reports";
 import Settings from "./pages/settings";
 import PasscodeRequestPage from "./pages/passcode/request";
 import PasscodeVerifyPage from "./pages/passcode/verify";
+import { Toaster } from "sonner";
 
 export default function App() {
   return (
+<>
     <BrowserRouter>
       <AuthProvider>
         <TooltipProvider>
@@ -51,5 +53,7 @@ export default function App() {
         </TooltipProvider>
       </AuthProvider>
     </BrowserRouter>
-  );
+     <Toaster />
+     </>
+  )
 }
