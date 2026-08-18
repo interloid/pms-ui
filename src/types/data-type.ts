@@ -60,3 +60,10 @@ export interface ProductFiltersProps {
   onStockChange: (value: boolean) => void;
   onSortChange: () => void;
 }
+
+export type ProductImage = {
+  id: string;
+  file: File;
+  previewUrl: string;
+  isPrimary: boolean;
+};
