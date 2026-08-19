@@ -33,6 +33,22 @@ export async function createProduct(
   return response.data;
 }
 
+export async function updateProduct(
+  id: string,
+  product: Omit<ApiProduct, "id">,
+): Promise<ApiProduct> {
+  const response = await apiRequest<{
+    success: boolean;
+    message: string;
+    data: ApiProduct;
+  }>(`/api/v1/products/${id}`, {
+    method: "PATCH",
+    body: product,
+  });
+
+  return response.data;
+}
+
 export async function deleteProduct(id: string): Promise<void> {
   await apiRequest(`/api/v1/products/${id}`, {
     method: "DELETE",

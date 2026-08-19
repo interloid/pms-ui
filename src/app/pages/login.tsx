@@ -33,8 +33,8 @@ export default function LoginForm({
   const location = useLocation();
   const { login } = useAuth();
   const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [email, setEmail] = useState("admin@example.com");
-  const [password, setPassword] = useState("password123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState("");
   const [providerLoading, setProviderLoading] = useState<string | null>(null);
