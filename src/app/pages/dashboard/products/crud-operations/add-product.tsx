@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/sheet";
 import type { ImageError, ProductImage } from "@/types/data-type";
 import { createProduct } from "@/services/product-service";
+import { Spinner } from "@/components/ui/spinner";
 
 const MAX_IMAGES = 6;
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
@@ -417,7 +418,9 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
                 <div className="rounded-lg border border-red-300 bg-red-50 px-3 py-2">
                   <p className="text-xs font-semibold text-red-600">
                     {imageError.fileName && (
-                      <span className="font-medium">{imageError.fileName} </span>
+                      <span className="font-medium">
+                        {imageError.fileName}{" "}
+                      </span>
                     )}
                     {imageError.message}
                   </p>
@@ -450,8 +453,8 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
                   className="flex min-h-25 w-full cursor-pointer items-center justify-center rounded-lg border border-dashed border-hover-text px-4 py-4 text-center transition-colors hover:bg-primary-hover/50"
                 >
                   <span className="text-xs text-hover-text">
-                    Drop {remainingImages === 1 ? "more image" : "more images"} or
-                    click to browse · {remainingImages}{" "}
+                    Drop {remainingImages === 1 ? "more image" : "more images"}{" "}
+                    or click to browse · {remainingImages}{" "}
                     {remainingImages === 1 ? "slot" : "slots"} left
                   </span>
                 </label>
@@ -471,11 +474,20 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
           <SheetFooter className="w-full border-t">
             <div className="flex w-full flex-row-reverse justify-start gap-2">
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Saving..." : "Save product"}
+                {isSubmitting ? (
+                  <>
+                    <Spinner />
+                    Saving...
+                  </>
+                ) : (
+                  "Save product"
+                )}
               </Button>
 
               <SheetClose asChild>
-                <Button variant="outline" type="button">Cancel</Button>
+                <Button variant="outline" type="button">
+                  Cancel
+                </Button>
               </SheetClose>
             </div>
           </SheetFooter>

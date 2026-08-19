@@ -150,9 +150,31 @@ export interface ProductFiltersProps {
   onStockChange: (value: boolean) => void;
   onSortChange: () => void;
 }
+export type ProductViewProps = {
+  product: ApiProduct | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onEdit: (product: ApiProduct) => void;
+};
 
 export type ImageError = {
   fileName?: string;
   message: string;
   details?: string;
+};
+export type ProductEditProps = {
+  product: ApiProduct | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onUpdated?: (product: ApiProduct) => void;
+};
+
+export type ProductForm = {
+  name: string;
+  sku: string;
+  category_name: ProductCategory;
+  price: string;
+  stock: string;
+  status: ProductStatus;
+  description: string;
 };

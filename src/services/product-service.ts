@@ -35,7 +35,7 @@ export async function createProduct(
 
 export async function updateProduct(
   id: string,
-  product: Omit<ApiProduct, "id">,
+  product: Partial<Omit<ApiProduct, "id">>,
 ): Promise<ApiProduct> {
   const response = await apiRequest<{
     success: boolean;

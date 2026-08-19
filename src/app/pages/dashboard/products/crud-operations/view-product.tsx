@@ -9,14 +9,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatStatus } from "@/lib/converters";
-import type { ApiProduct } from "@/types/data-type";
+import type { ProductViewProps } from "@/types/data-type";
 import { DetailLabel, DetailValue } from "@/components/shad/detail-label";
-
-type ProductViewProps = {
-  product: ApiProduct | null;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-};
 
 function getStatusClassName(status: string) {
   switch (status) {
@@ -37,7 +31,7 @@ function getStatusClassName(status: string) {
   }
 }
 
-export function ProductView({ product, open, onOpenChange }: ProductViewProps) {
+export function ProductView({ product, open, onOpenChange, onEdit }: ProductViewProps) {
   if (!product) {
     return null;
   }
@@ -46,7 +40,7 @@ export function ProductView({ product, open, onOpenChange }: ProductViewProps) {
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="gap-8">
+      <SheetContent className="gap-8 sm:max-w-xl!">
         <SheetHeader className="border-b px-5 py-4">
           <div className="flex items-center gap-3">
             <div className="min-w-0 flex-1">
@@ -148,9 +142,12 @@ export function ProductView({ product, open, onOpenChange }: ProductViewProps) {
         </div>
 
         <SheetFooter className="border-t px-5 py-3">
-          <div className="flex w-full justify-end gap-2">
-            <Button type="submit">
-              {/* { ? "Saving..." : "Save product"} */}
+          <div className="flex flex-row-reverse w-full justify-start gap-2">
+            <Button
+              variant="default"
+              onClick={() => onEdit(product)}
+            >
+              Edit
             </Button>
             <SheetClose asChild>
               <Button variant="outline">Close</Button>

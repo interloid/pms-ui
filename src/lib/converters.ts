@@ -58,3 +58,4 @@ export function priceToString(price: number): string {
 export function priceToNumber(price: string | number): number {
   return Number(price);
 }
+

@@ -24,7 +24,11 @@ import type {
 } from "@/types/data-type";
 import { ProductTable } from "./product-table";
 import { ProductView } from "./crud-operations/view-product";
-import { getProducts, deleteProduct as deleteProductApi } from "@/services/product-service";
+import { ProductEdit } from "./crud-operations/edit-product";
+import {
+  getProducts,
+  deleteProduct as deleteProductApi,
+} from "@/services/product-service";
 import { Spinner } from "@/components/ui/spinner";
 
 export default function Products() {
@@ -44,7 +48,8 @@ export default function Products() {
   const [archiveId, setArchiveId] = useState<string | null>(null);
   const [viewProduct, setViewProduct] = useState<ApiProduct | null>(null);
   const [viewOpen, setViewOpen] = useState(false);
-
+  const [editProduct, setEditProduct] = useState<ApiProduct | null>(null);
+  const [editOpen, setEditOpen] = useState(false);
   useEffect(() => {
     async function loadProducts() {
       try {
@@ -167,10 +172,22 @@ export default function Products() {
     setViewOpen(true);
   }
 
+  function handleEditProduct(product: ApiProduct) {
+    setViewOpen(false);
+    setEditProduct(product);
+    setEditOpen(true);
+  }
+
+  function handleProductUpdated(updatedProduct: ApiProduct) {
+    setProducts((current) =>
+      current.map((p) => (p.id === updatedProduct.id ? updatedProduct : p)),
+    );
+  }
+
   if (isLoading) {
     return (
       <div className="flex h-full items-center justify-center gap-2">
-        <Spinner/>
+        <Spinner />
         <p className="text-sm text-muted-foreground">Loading products...</p>
       </div>
     );
@@ -206,6 +223,13 @@ export default function Products() {
         product={viewProduct}
         open={viewOpen}
         onOpenChange={setViewOpen}
+        onEdit={handleEditProduct}
+      />
+      <ProductEdit
+        product={editProduct}
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        onUpdated={handleProductUpdated}
       />
       <div className="flex items-center justify-between px-4 pb-4 lg:px-6">
         <div className="flex items-center gap-2">
