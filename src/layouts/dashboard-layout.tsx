@@ -4,7 +4,10 @@ import {
   SidebarInset,
   SidebarProvider,
 } from "@/components/ui/sidebar";
+import { useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
+import { SearchContext } from "@/context/search-context";
+import { getProducts } from "@/services/product-service";
 
 const user = {
   name: "kavikarthik",
@@ -13,16 +16,27 @@ const user = {
 };
 
 export default function DashboardLayout() {
-  return (
-    <SidebarProvider>
-      <AppSidebar user={user} />
+  const [productCount, setProductCount] = useState(0);
+  const [searchQuery, setSearchQuery] = useState("");
 
-      <SidebarInset>
-          <Header user={user} />
-        <main className="flex flex-1 flex-col p-4">
-          <Outlet />
-        </main>
-      </SidebarInset>
-    </SidebarProvider>
+  useEffect(() => {
+    getProducts()
+      .then((products) => setProductCount(products.length))
+      .catch(() => setProductCount(0));
+  }, []);
+
+  return (
+    <SearchContext.Provider value={{ searchQuery, setSearchQuery }}>
+      <SidebarProvider>
+        <AppSidebar user={user} />
+
+        <SidebarInset>
+            <Header user={user} productCount={productCount} />
+          <main className="flex flex-1 flex-col p-4">
+            <Outlet />
+          </main>
+        </SidebarInset>
+      </SidebarProvider>
+    </SearchContext.Provider>
   );
 }

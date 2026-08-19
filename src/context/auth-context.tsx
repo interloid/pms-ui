@@ -33,8 +33,9 @@ export function AuthProvider({
 
   const checkAuth = useCallback(async () => {
     try {
-      const response = await getCurrentSession();
-      console.log('response', response);
+     await getCurrentSession();
+    //  console.log('data', data)
+    //  console.log('data.data.session_id', data.data.session_id)
       setStatus("authenticated");
       return true;
     } catch {

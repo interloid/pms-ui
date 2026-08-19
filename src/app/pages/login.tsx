@@ -32,10 +32,10 @@ export function LoginForm({
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useAuth();
-  const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [email, setEmail] = useState("admin@example.com");
+  const [password, setPassword] = useState("password123");
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState("");
   const [providerLoading, setProviderLoading] = useState<string | null>(null);
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {

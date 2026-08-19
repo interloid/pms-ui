@@ -31,7 +31,6 @@ export default function EmptyPage({
               <Icon className="size-6" />
             </EmptyMedia>
           )}
-
           <EmptyTitle>{title}</EmptyTitle>
 
           <EmptyDescription>

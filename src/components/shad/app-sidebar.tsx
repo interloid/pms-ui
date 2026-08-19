@@ -22,27 +22,27 @@ const data = {
   navMain: [
     {
       title: "Products",
-      url: "/dashboard/products",
+      url: "/products",
       icon: Package,
     },
     {
       title: "Orders",
-      url: "/dashboard/orders",
+      url: "/orders",
       icon: ShoppingCart,
     },
     {
       title: "Customers",
-      url: "/dashboard/customers",
+      url: "/customers",
       icon: Users,
     },
     {
       title: "Categories",
-      url: "/dashboard/categories",
+      url: "/categories",
       icon: Tags,
     },
     {
       title: "Reports",
-      url: "/dashboard/reports",
+      url: "/reports",
       icon: BarChart3,
     },
   ],
@@ -50,7 +50,7 @@ const data = {
   workspace: [
     {
       title: "Settings",
-      url: "/dashboard/settings",
+      url: "/settings",
       icon: Settings,
     },
   ],

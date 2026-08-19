@@ -51,12 +51,11 @@ export default function PasscodeRequestPage() {
 
       const response =
         await requestPasscode(trimmedEmail);
-
+      
       if (!response.success) {
         toast.error(response.message);
         return;
       }
-
       toast.success("Passcode sent successfully");
 
       navigate("/passcode/verify", {
@@ -106,8 +105,6 @@ export default function PasscodeRequestPage() {
               </TabsTrigger>
             </TabsList>
           </Tabs>
-
-          {/* Request Passcode Form */}
           <form
             onSubmit={handleSubmit}
             className="w-full"
@@ -164,7 +161,6 @@ export default function PasscodeRequestPage() {
                   "Send Passcode"
                 )}
               </Button>
-
               <CardDescription className="px-1 pt-2 text-center text-xs text-muted-foreground">
                 You will be redirected to the
                 verification page after requesting

@@ -1,10 +1,8 @@
 import { useState, type ChangeEvent } from "react";
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-
 import {
   Select,
   SelectContent,
@@ -12,7 +10,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
 import {
   Sheet,
   SheetClose,
@@ -22,17 +19,31 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-
-import type { ProductImage } from "@/types/data-type";
-import { toast } from "sonner";
+import type { ImageError, ProductImage } from "@/types/data-type";
 
 const MAX_IMAGES = 6;
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
-
 const ALLOWED_FILE_TYPES = ["image/jpeg", "image/png", "image/webp"];
+
+const categories = [
+  { value: "Lighting", label: "Lighting" },
+  { value: "Apparel", label: "Apparel" },
+  { value: "Home", label: "Home" },
+  { value: "Electronics", label: "Electronics" },
+  { value: "Outdoor", label: "Outdoor" },
+  { value: "Stationery", label: "Stationery" },
+];
+const statuses = [
+  { value: "active", label: "Active" },
+  { value: "draft", label: "Draft" },
+  { value: "out-of-stock", label: "Out of Stock" },
+  { value: "archived", label: "Archived" },
+];
 
 export function AddProducts() {
   const [images, setImages] = useState<ProductImage[]>([]);
+  const [imageError, setImageError] = useState<ImageError | null>(null);
+  const remainingImages = MAX_IMAGES - images.length;
 
   const handleImageChange = (event: ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(event.target.files ?? []);
@@ -41,35 +52,47 @@ export function AddProducts() {
       return;
     }
 
+    setImageError(null);
+
     const remainingSlots = MAX_IMAGES - images.length;
 
     if (remainingSlots <= 0) {
-      toast.error("Maximum images reached", {
-        description: `You can upload a maximum of ${MAX_IMAGES} images.`,
+      setImageError({
+        message: `You can upload a maximum of ${MAX_IMAGES} images.`,
       });
 
       event.target.value = "";
       return;
     }
 
-    const filesToAdd = selectedFiles.slice(0, remainingSlots);
+    let error: ImageError | null = null;
 
+    if (selectedFiles.length > remainingSlots) {
+      error = {
+        message: `You can only add ${remainingSlots} more image${
+          remainingSlots > 1 ? "s" : ""
+        }.`,
+      };
+    }
+
+    const filesToAdd = selectedFiles.slice(0, remainingSlots);
     const newImages: ProductImage[] = [];
 
     for (const file of filesToAdd) {
       if (!ALLOWED_FILE_TYPES.includes(file.type)) {
-        toast.error("Invalid image format", {
-          description: `${file.name} is not supported. Please use JPG, PNG, or WEBP.`,
-        });
-
+        error = {
+          fileName: file.name,
+          message: "is not supported. Please use JPG, PNG, or WEBP.",
+        };
         continue;
       }
 
       if (file.size > MAX_FILE_SIZE) {
-        toast.error("Image is too large", {
-          description: `${file.name} is larger than 5 MB.`,
-        });
-
+        error = {
+          fileName: file.name,
+          message: "wasn't added",
+          details: `${(file.size / 1024 / 1024).toFixed(1)} MB exceeds the 5 MB limit (413). Compress it and try again.`,
+        };
         continue;
       }
 
@@ -81,19 +104,17 @@ export function AddProducts() {
       );
 
       if (alreadyExists) {
-        toast.error("Duplicate image", {
-          description: `${file.name} has already been selected.`,
-        });
-
+        error = {
+          fileName: file.name,
+          message: "has already been selected.",
+        };
         continue;
       }
-
-      const previewUrl = URL.createObjectURL(file);
 
       newImages.push({
         id: crypto.randomUUID(),
         file,
-        previewUrl,
+        previewUrl: URL.createObjectURL(file),
         isPrimary: images.length === 0 && newImages.length === 0,
       });
     }
@@ -102,6 +123,7 @@ export function AddProducts() {
       setImages((previousImages) => [...previousImages, ...newImages]);
     }
 
+    setImageError(error);
     event.target.value = "";
   };
   const removeImage = (id: string) => {
@@ -190,12 +212,11 @@ export function AddProducts() {
                 </SelectTrigger>
 
                 <SelectContent>
-                  <SelectItem value="lighting">Lighting</SelectItem>
-                  <SelectItem value="apparel">Apparel</SelectItem>
-                  <SelectItem value="home">Home</SelectItem>
-                  <SelectItem value="electronics">Electronics</SelectItem>
-                  <SelectItem value="outdoor">Outdoor</SelectItem>
-                  <SelectItem value="stationery">Stationery</SelectItem>
+                  {categories.map((category) => (
+                    <SelectItem key={category.value} value={category.value}>
+                      {category.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -245,10 +266,11 @@ export function AddProducts() {
                 </SelectTrigger>
 
                 <SelectContent>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="draft">Draft</SelectItem>
-                  <SelectItem value="out-of-stock">Out of Stock</SelectItem>
-                  <SelectItem value="archived">Archived</SelectItem>
+                  {statuses.map((status) => (
+                    <SelectItem key={status.value} value={status.value}>
+                      {status.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -262,12 +284,12 @@ export function AddProducts() {
             <Textarea
               id="product-description"
               placeholder="Optional"
-              className="h-20 min-h-20 w-full resize-none placeholder:text-xs focus-visible:border-primary focus-visible:ring-primary/20"
+              className="h-25 min-h-25 w-full resize-none placeholder:text-xs focus-visible:border-primary focus-visible:ring-primary/20"
             />
           </div>
 
           <div className="grid w-full gap-2">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1">
               <Label htmlFor="product-images" className="text-xs">
                 Images
               </Label>
@@ -292,11 +314,11 @@ export function AddProducts() {
 
                     <button
                       type="button"
-                      aria-label={`Remove ${image.file.name}`}
                       onClick={() => removeImage(image.id)}
-                      className="absolute right-2 top-2 flex size-6 items-center justify-center rounded-full border bg-background/90 text-muted-foreground shadow-sm transition-colors hover:text-foreground"
+                      className="absolute right-2 top-2 flex size-6 items-center justify-center rounded-full border bg-background/90 text-muted-foreground shadow-sm hover:text-destructive"
+                      aria-label={`Remove ${image.file.name}`}
                     >
-                      x
+                      ×
                     </button>
 
                     {image.isPrimary ? (
@@ -307,7 +329,7 @@ export function AddProducts() {
                       <button
                         type="button"
                         onClick={() => setPrimaryImage(image.id)}
-                        className="absolute bottom-2 left-2 rounded-full border bg-background/90 px-2 py-0.5 text-[10px] text-muted-foreground transition-colors hover:bg-background"
+                        className="absolute bottom-2 left-2 rounded-full border bg-background/90 px-2 py-0.5 text-[10px] text-muted-foreground hover:bg-background"
                       >
                         Set primary
                       </button>
@@ -316,14 +338,46 @@ export function AddProducts() {
                 ))}
               </div>
             )}
+            {imageError && (
+              <div className="rounded-lg border border-red-300 bg-red-50 px-3 py-2">
+                <p className="text-xs font-semibold text-red-600">
+                  {imageError.fileName && (
+                    <span className="font-medium">{imageError.fileName} </span>
+                  )}
+                  {imageError.message}
+                </p>
 
-            {images.length < MAX_IMAGES && (
+                {imageError.details && (
+                  <p className="text-xs text-muted-foreground">
+                    {imageError.details}
+                  </p>
+                )}
+              </div>
+            )}
+            {images.length === 0 && (
               <label
                 htmlFor="product-images"
-                className="flex min-h-16 w-full cursor-pointer items-center justify-center rounded-lg border border-dashed px-4 py-4 text-center transition-colors hover:bg-muted/50"
+                className="flex min-h-25 w-full cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-hover-text bg-primary-hover px-4 py-4 text-center transition-colors hover:bg-primary-hover/50"
               >
-                <span className="text-xs text-muted-foreground">
+                <span className="text-xs font-bold text-hover-text">
                   Drop images here, or click to browse
+                </span>
+
+                <span className="text-[11px] text-muted-foreground">
+                  JPG, PNG or WEBP · maximum 5 MB each · {MAX_IMAGES} images
+                  remaining
+                </span>
+              </label>
+            )}
+            {images.length > 0 && images.length < MAX_IMAGES && (
+              <label
+                htmlFor="product-images"
+                className="flex min-h-25 w-full cursor-pointer items-center justify-center rounded-lg border border-dashed border-hover-text px-4 py-4 text-center transition-colors hover:bg-primary-hover/50"
+              >
+                <span className="text-xs text-hover-text">
+                  Drop {remainingImages === 1 ? "more image" : "more images"} or
+                  click to browse · {remainingImages}{" "}
+                  {remainingImages === 1 ? "slot" : "slots"} left
                 </span>
               </label>
             )}

@@ -17,13 +17,12 @@ import { useAuth } from "@/hooks/useAuth";
 export function Callback() {
   const navigate = useNavigate();
   const { checkAuth } = useAuth();
-
   const [error, setError] = useState("");
 
   useEffect(() => {
     const authenticate = async () => {
       const isAuthenticated = await checkAuth();
-
+      console.log('isAuthenticated', isAuthenticated)
       if (isAuthenticated) {
         navigate("/products", {
           replace: true,

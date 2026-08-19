@@ -9,28 +9,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import type {
-  ProductCategory,
-  ProductFiltersProps,
-  ProductStatusFilter,
-} from "@/types/data-type";
+import type { ProductCategory, ProductFiltersProps } from "@/types/data-type";
+import { categories, statuses } from "@/types/data-type";
 
-const categories: ProductCategory[] = [
-  "All",
-  "Lighting",
-  "Apparel",
-  "Home",
-  "Electronics",
-  "Outdoor",
-  "Stationery",
-];
-
-const statuses: ProductStatusFilter[] = [
-  "All",
-  "Active",
-  "Draft",
-  "Out of Stock",
-  "Archived",
+const priceRanges = [
+  { value: "all", label: "All" },
+  { value: "0-50", label: "$0-$50" },
+  { value: "50-100", label: "$50-$100" },
+  { value: "100-250", label: "$100-$250" },
+  { value: "250-500", label: "$250-$500" },
+  { value: "500-999999", label: "$500+" },
 ];
 
 export function ProductFilters({
@@ -80,12 +68,13 @@ export function ProductFilters({
               }
               onClick={() => onStatusChange(item)}
             >
-              {item}
+              {item === "All"
+                ? "All"
+                : item.charAt(0).toUpperCase() + item.slice(1)}
             </Button>
           );
         })}
       </div>
-
       <div className="mx-1 hidden h-6 w-px bg-border md:block" />
 
       <Select value={priceRange} onValueChange={onPriceChange}>
@@ -94,11 +83,11 @@ export function ProductFilters({
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="0-500">All</SelectItem>
-          <SelectItem value="0-50">$0-$50</SelectItem>
-          <SelectItem value="50-100">$50-$100</SelectItem>
-          <SelectItem value="100-250">$100-$250</SelectItem>
-          <SelectItem value="250-500">$250-$500</SelectItem>
+          {priceRanges.map((range) => (
+            <SelectItem key={range.value} value={range.value}>
+              {range.label}
+            </SelectItem>
+          ))}
         </SelectContent>
       </Select>
 
@@ -120,7 +109,7 @@ export function ProductFilters({
       {/* Result count */}
 
       <div className="ml-auto flex items-center gap-1 text-xs text-muted-foreground">
-        <span>{productCount} products · sorted by Updated</span>
+        <span>{productCount} products · sorted by Price</span>
 
         <Button
           variant="ghost"

@@ -49,11 +49,11 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
-  --color-bg-destructive: #FEF0F2;
-  --color-text-destructive: #E41F66;
-  --color-primary-hover: #EDF1FB;
-  --color-muted-text:#71717b;
-  --color-hover-text:#23366e;
+  --color-bg-destructive: #fef0f2;
+  --color-text-destructive: #e41f66;
+  --color-primary-hover: #edf1fb;
+  --color-muted-text: #71717b;
+  --color-hover-text: #23366e;
 }
 
 :root {
@@ -65,18 +65,18 @@
   --popover-foreground: oklch(0.145 0 0);
   --primary: #3351b3;
   --primary-foreground: oklch(0.985 0 0);
-  --primar-hover: #EDF1FB;
-  --hover-text:#23366e;
+  --primar-hover: #edf1fb;
+  --hover-text: #23366e;
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
-  --muted-text:#71717b;
+  --muted-text: #71717b;
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
   --accent: oklch(0.97 0 0);
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.704 0.191 22.216);
-  --text-destructive: #E41F66;
-  --bg-destructive: #FEF0F2;
+  --text-destructive: #e41f66;
+  --bg-destructive: #fef0f2;
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
@@ -137,12 +137,23 @@
   body {
     @apply bg-background text-foreground;
     font-family: "Inter Variable", system-ui, sans-serif;
+    width: 100%;
+    height: 100%;
   }
   button:not(:disabled),
   [role="button"]:not(:disabled) {
     cursor: pointer;
   }
+
   html {
     @apply font-sans;
+    width:100%;
+    height: 100dvh;
   }
+
+}
+div#root {
+  width: 100%;
+  height: 100%;
+  background: #ffffff;
 }

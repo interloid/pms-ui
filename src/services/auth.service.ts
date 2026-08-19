@@ -1,7 +1,7 @@
 import { API_BASE_URL, apiRequest } from "@/lib/api";
 
 import type {
-   LoginCredentials,
+  LoginCredentials,
   LoginResponse,
   OAuthProvider,
   PasscodeRequestResponse,
@@ -57,7 +57,6 @@ export async function getCurrentSession(): Promise<LoginResponse> {
       credentials: "include",
     },
   );
-
   return parseResponse<LoginResponse>(response);
 }
 

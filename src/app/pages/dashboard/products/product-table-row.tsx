@@ -5,34 +5,33 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { TableCell, TableRow } from "@/components/ui/table";
-import type { Product } from "@/types/data-type";
+import type { Product, ProductTableRowProps } from "@/types/data-type";
 import { ProductImage } from "./product-image";
-
-interface ProductTableRowProps {
-  product: Product;
-  isArchiving: boolean;
-  onView: () => void;
-  onArchive: () => void;
-  onCancelArchive: () => void;
-  onConfirmArchive: () => void;
-  onDelete: () => void;
-}
 
 function getStatusClassName(status: Product["status"]) {
   switch (status) {
     case "Active":
       return "border-emerald-200 bg-emerald-50 text-emerald-700";
+
     case "Draft":
       return "border-slate-200 bg-slate-50 text-slate-600";
+
     case "Out of Stock":
       return "border-orange-200 bg-orange-50 text-orange-700";
+
     case "Archived":
       return "border-slate-200 bg-slate-50 text-slate-500";
+
+    default:
+      return "";
   }
+}
+
+function getPrimaryImage(product: Product) {
+  return product.images?.find((image) => image.isPrimary)?.url;
 }
 
 export function ProductTableRow({
@@ -44,13 +43,15 @@ export function ProductTableRow({
   onConfirmArchive,
   onDelete,
 }: ProductTableRowProps) {
+  const primaryImage = getPrimaryImage(product);
+
   if (isArchiving) {
     return (
       <TableRow className="bg-red-50 hover:bg-red-50">
         <TableCell colSpan={8} className="border-l-2 border-l-red-500 py-4">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <ProductImage src={product.image} alt={product.name} />
+              <ProductImage src={primaryImage} alt={product.name} />
 
               <div>
                 <p className="text-sm font-medium">Archive “{product.name}”?</p>
@@ -84,13 +85,14 @@ export function ProductTableRow({
     <TableRow>
       <TableCell>
         <div className="flex items-center gap-3">
-          <ProductImage src={product.image} alt={product.name} />
+          <ProductImage src={primaryImage} alt={product.name} />
 
           <span className="font-mono text-xs text-muted-foreground">
             {product.sku}
           </span>
         </div>
       </TableCell>
+
       <TableCell>
         <button
           type="button"
@@ -100,13 +102,17 @@ export function ProductTableRow({
           {product.name}
         </button>
       </TableCell>
+
       <TableCell className="text-sm text-muted-foreground">
         {product.category}
       </TableCell>
+
       <TableCell className="text-right font-mono text-sm">
         ${product.price.toFixed(2)}
       </TableCell>
+
       <TableCell className="text-right text-sm">{product.stock}</TableCell>
+
       <TableCell>
         <Badge variant="outline" className={getStatusClassName(product.status)}>
           {product.status}
@@ -127,19 +133,15 @@ export function ProductTableRow({
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="icon" className="size-8">
                 <MoreHorizontal className="size-4" />
-
                 <span className="sr-only">Product actions</span>
               </Button>
             </DropdownMenuTrigger>
 
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={onView}>View</DropdownMenuItem>
-              <DropdownMenuItem>Edit</DropdownMenuItem>
-              <DropdownMenuItem>Duplicate</DropdownMenuItem>
-              <DropdownMenuSeparator />
               {product.status !== "Archived" && (
                 <DropdownMenuItem onClick={onArchive}>Archive</DropdownMenuItem>
               )}
+
               <DropdownMenuItem className="text-destructive" onClick={onDelete}>
                 Delete
               </DropdownMenuItem>

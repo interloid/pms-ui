@@ -6,71 +6,50 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
-import type { Product } from "@/types/data-type";
-
-import { ProductTableRow } from "./product-table-row";
-
-interface ProductTableProps {
-  products: Product[];
-  archiveId: string | null;
-
-  onView: (product: Product) => void;
-  onArchive: (id: string) => void;
-  onCancelArchive: () => void;
-  onConfirmArchive: (id: string) => void;
-  onDelete: (id: string) => void;
-}
+import { formatStatus } from "@/lib/converters";
+import type { ProductTableRowProps } from "@/types/data-type";
 
 export function ProductTable({
-  products,
-  archiveId,
+  product,
+  isArchiving,
   onView,
   onArchive,
   onCancelArchive,
   onConfirmArchive,
   onDelete,
-}: ProductTableProps) {
+}: ProductTableRowProps) {
   return (
-    <div className="overflow-hidden rounded-lg border">
-      <div className="overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow className="bg-muted/50 hover:bg-muted/50 text-muted-text text-xs">
-              <TableHead className="text-center">SKU ↕</TableHead>
-              <TableHead className="min-w-55">PRODUCT NAME ↕</TableHead>
-              <TableHead>CATEGORY ↕</TableHead>
-              <TableHead className="text-right">PRICE ↕</TableHead>
-              <TableHead className="text-right">STOCK ↕</TableHead>
-              <TableHead>STATUS ↕</TableHead>
-              <TableHead>UPDATED ↓</TableHead>
-              <TableHead>ACTIONS</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {products.length > 0 ? (
-              products.map((product) => (
-                <ProductTableRow
-                  key={product.id}
-                  product={product}
-                  isArchiving={archiveId === product.id}
-                  onView={() => onView(product)}
-                  onArchive={() => onArchive(product.id)}
-                  onCancelArchive={onCancelArchive}
-                  onConfirmArchive={() => onConfirmArchive(product.id)}
-                  onDelete={() => onDelete(product.id)}
-                />
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={8} className="h-24 text-center">
-                  No products found.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
-    </div>
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>SKU</TableHead>
+          <TableHead>Name</TableHead>
+          <TableHead>Category</TableHead>
+          <TableHead>Price</TableHead>
+          <TableHead>Stock</TableHead>
+          <TableHead>Status</TableHead>
+          <TableHead className="text-right">Updated</TableHead>
+          <TableHead className="text-right">Actions</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        <TableRow>
+          <TableCell className="font-mono text-xs">
+            {product.sku}
+          </TableCell>
+          <TableCell className="font-medium">{product.name}</TableCell>
+          <TableCell>{product.category}</TableCell>
+          <TableCell>${product.price.toFixed(2)}</TableCell>
+          <TableCell>{product.stock}</TableCell>
+          <TableCell>{formatStatus(product.status)}</TableCell>
+          <TableCell className="text-right text-muted-foreground">
+            {product.updatedAt}
+          </TableCell>
+          <TableCell className="text-right">
+            ...actions...
+          </TableCell>
+        </TableRow>
+      </TableBody>
+    </Table>
   );
 }

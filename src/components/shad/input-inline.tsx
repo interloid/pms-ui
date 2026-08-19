@@ -6,7 +6,9 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "@/components/ui/avatar";
-import { AddProducts } from "@/app/pages/dashboard/products/add-product";
+import { AddProducts } from "@/app/pages/dashboard/products/crud-operations/add-product";
+import { useSearch } from "@/context/search-context";
+
 type User = {
   name: string;
   avatar?: string;
@@ -17,6 +19,8 @@ type InputInlineProps = {
 };
 
 export function InputInline({ user }: InputInlineProps) {
+  const { searchQuery, setSearchQuery } = useSearch();
+
   const initials = user.name
     .split(" ")
     .map((word) => word[0])
@@ -30,6 +34,8 @@ export function InputInline({ user }: InputInlineProps) {
         <Input
           type="search"
           placeholder="Search name or SKU..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
           className="w-81"
         />
       <AddProducts />

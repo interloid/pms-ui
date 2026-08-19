@@ -1,9 +1,6 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { toast } from "sonner";
-
 import { useAuth } from "@/hooks/useAuth";
-
 import {
   Card,
   CardDescription,
@@ -11,24 +8,18 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
 import {
   InputOTP,
   InputOTPGroup,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
-
 import { Field } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
+import type { PasscodeLocationState } from "@/types/auth";
 
 const OTP_LENGTH = 6;
-
-interface PasscodeLocationState {
-  email?: string;
-}
 
 export default function PasscodeVerifyPage() {
   const navigate = useNavigate();
@@ -41,29 +32,27 @@ export default function PasscodeVerifyPage() {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
     if (!email) {
-      toast.error("Email is missing");
       navigate("/passcode", {
         replace: true,
       });
       return;
     }
+
     if (passcode.length !== OTP_LENGTH) {
-      toast.error("Please enter the 6-digit passcode");
       return;
     }
+    
     try {
       setIsLoading(true);
-
       await loginWithPasscode(email, passcode);
-      toast.success("Login successful");
+
       navigate("/products", {
         replace: true,
       });
     } catch (error) {
       console.error("Passcode verification failed:", error);
-
-      toast.error(error instanceof Error ? error.message : "Invalid passcode");
     } finally {
       setIsLoading(false);
     }

@@ -17,7 +17,6 @@ export async function apiRequest<T>(
   options: ApiRequestOptions = {},
 ): Promise<T> {
   const { body, headers, ...requestOptions } = options;
-
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
     ...requestOptions,
     credentials: "include",
@@ -33,7 +32,7 @@ export async function apiRequest<T>(
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
 
-  const data = await response.json();
+  const data = await response.json().catch(() => null);
 
   if (!response.ok) {
     throw new Error(data?.message || "Something went wrong");

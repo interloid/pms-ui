@@ -68,3 +68,7 @@ export interface AuthContextValue {
 export interface AuthProviderProps {
   children: ReactNode;
 }
+
+export interface PasscodeLocationState {
+  email?: string;
+}
