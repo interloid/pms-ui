@@ -1,55 +1,46 @@
 import {
   Table,
   TableBody,
-  TableCell,
-  TableHead,
   TableHeader,
-  TableRow,
 } from "@/components/ui/table";
-import { formatStatus } from "@/lib/converters";
-import type { ProductTableRowProps } from "@/types/data-type";
+import { ProductTableRow } from "./product-table-row";
+import type { ProductTableProps } from "@/types/data-type";
+import { EmptyProducts } from "@/components/shad/emptyProducts";
 
 export function ProductTable({
-  product,
-  isArchiving,
+  products,
+  archiveId,
   onView,
   onArchive,
   onCancelArchive,
   onConfirmArchive,
   onDelete,
-}: ProductTableRowProps) {
+}: ProductTableProps) {
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>SKU</TableHead>
-          <TableHead>Name</TableHead>
-          <TableHead>Category</TableHead>
-          <TableHead>Price</TableHead>
-          <TableHead>Stock</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead className="text-right">Updated</TableHead>
-          <TableHead className="text-right">Actions</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        <TableRow>
-          <TableCell className="font-mono text-xs">
-            {product.sku}
-          </TableCell>
-          <TableCell className="font-medium">{product.name}</TableCell>
-          <TableCell>{product.category}</TableCell>
-          <TableCell>${product.price.toFixed(2)}</TableCell>
-          <TableCell>{product.stock}</TableCell>
-          <TableCell>{formatStatus(product.status)}</TableCell>
-          <TableCell className="text-right text-muted-foreground">
-            {product.updatedAt}
-          </TableCell>
-          <TableCell className="text-right">
-            ...actions...
-          </TableCell>
-        </TableRow>
-      </TableBody>
-    </Table>
+    <div className="overflow-hidden rounded-lg border">
+      <div className="overflow-x-auto">
+        <Table>
+          <TableHeader></TableHeader>
+          <TableBody>
+            {products.length > 0 ? (
+              products.map((product) => (
+                <ProductTableRow
+                  key={product.id}
+                  product={product}
+                  isArchiving={archiveId === product.id}
+                  onView={() => onView(product)}
+                  onArchive={() => onArchive(product.id)}
+                  onCancelArchive={onCancelArchive}
+                  onConfirmArchive={() => onConfirmArchive(product.id)}
+                  onDelete={() => onDelete(product.id)}
+                />
+              ))
+            ) : (
+              <EmptyProducts />
+            )}
+          </TableBody>
+        </Table>
+      </div>
+    </div>
   );
 }

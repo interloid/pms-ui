@@ -7,7 +7,6 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { ProductFilters } from "@/app/pages/dashboard/products/product-filters";
-import { ProductTable } from "@/app/pages/dashboard/products/product-table";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -23,9 +22,13 @@ import type {
   ProductCategory,
   ProductStatusFilter,
 } from "@/types/data-type";
+import { ProductTable } from "./product-table";
+import { ProductView } from "./crud-operations/view-product";
+import { getProducts, deleteProduct as deleteProductApi } from "@/services/product-service";
+import { Spinner } from "@/components/ui/spinner";
 
 export default function Products() {
-  const { searchQuery } = useSearch();
+  const { searchQuery, refreshKey } = useSearch();
   const [products, setProducts] = useState<ApiProduct[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -34,20 +37,44 @@ export default function Products() {
   const [priceRange, setPriceRange] = useState("all");
   const [inStockOnly, setInStockOnly] = useState(false);
   const [sortDescending, setSortDescending] = useState(true);
-
+  const [productCount, setProductCount] = useState<number>(0);
+  const [totalPages, setTotalPages] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [page, setPage] = useState(1);
   const [archiveId, setArchiveId] = useState<string | null>(null);
+  const [viewProduct, setViewProduct] = useState<ApiProduct | null>(null);
+  const [viewOpen, setViewOpen] = useState(false);
+
+  useEffect(() => {
+    async function loadProducts() {
+      try {
+        setIsLoading(true);
+        const response = await getProducts(page, pageSize);
+        setProducts(response.products);
+        setProductCount(response.total);
+        setTotalPages(response.totalPages);
+      } catch (error) {
+        console.error("Failed to load products:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadProducts();
+  }, [page, pageSize, refreshKey]);
+
   const filteredProducts = useMemo(() => {
     let result = [...products];
+
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
+
       result = result.filter(
         (product) =>
           product.name.toLowerCase().includes(query) ||
           product.sku.toLowerCase().includes(query),
       );
     }
+
     if (category !== "All") {
       result = result.filter((product) => product.category_name === category);
     }
@@ -56,21 +83,27 @@ export default function Products() {
         (product) => formatStatus(product.status) === status,
       );
     }
+
     if (inStockOnly) {
       result = result.filter((product) => product.stock > 0);
     }
+
     if (priceRange !== "all") {
       const [minimumPrice, maximumPrice] = priceRange.split("-").map(Number);
+
       result = result.filter((product) => {
         const price = priceToNumber(product.price);
+
         return price >= minimumPrice && price <= maximumPrice;
       });
     }
+
     result.sort((a, b) =>
       sortDescending
         ? priceToNumber(b.price) - priceToNumber(a.price)
         : priceToNumber(a.price) - priceToNumber(b.price),
     );
+
     return result;
   }, [
     products,
@@ -81,18 +114,6 @@ export default function Products() {
     inStockOnly,
     sortDescending,
   ]);
-
-  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / pageSize));
-  const currentPage = Math.min(page, totalPages);
-  const paginatedProducts = filteredProducts.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize,
-  );
-
-  const start =
-    filteredProducts.length === 0 ? 0 : (currentPage - 1) * pageSize + 1;
-
-  const end = Math.min(currentPage * pageSize, filteredProducts.length);
 
   function updateCategory(value: ProductCategory) {
     setCategory(value);
@@ -120,7 +141,7 @@ export default function Products() {
         product.id === id
           ? {
               ...product,
-              status: "Archived",
+              status: "archived",
             }
           : product,
       ),
@@ -129,15 +150,27 @@ export default function Products() {
     toast.success("Product archived successfully");
   }
 
-  function deleteProduct(id: string) {
-    setProducts((current) => current.filter((product) => product.id !== id));
+  async function handleDeleteProduct(id: string) {
+    try {
+      await deleteProductApi(id);
+      setProducts((current) => current.filter((product) => product.id !== id));
+      toast.success("Product deleted successfully");
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to delete product",
+      );
+    }
+  }
 
-    toast.success("Product deleted successfully");
+  function handleViewProduct(product: ApiProduct) {
+    setViewProduct(product);
+    setViewOpen(true);
   }
 
   if (isLoading) {
     return (
-      <div className="flex h-full items-center justify-center">
+      <div className="flex h-full items-center justify-center gap-2">
+        <Spinner/>
         <p className="text-sm text-muted-foreground">Loading products...</p>
       </div>
     );
@@ -151,7 +184,7 @@ export default function Products() {
           status={status}
           priceRange={priceRange}
           inStockOnly={inStockOnly}
-          productCount={filteredProducts.length}
+          productCount={productCount}
           sortDescending={sortDescending}
           onCategoryChange={updateCategory}
           onStatusChange={updateStatus}
@@ -159,8 +192,21 @@ export default function Products() {
           onStockChange={updateStock}
           onSortChange={() => setSortDescending((current) => !current)}
         />
-        ;
       </div>
+      <ProductTable
+        products={filteredProducts}
+        archiveId={archiveId}
+        onView={handleViewProduct}
+        onArchive={setArchiveId}
+        onCancelArchive={() => setArchiveId(null)}
+        onConfirmArchive={archiveProduct}
+        onDelete={handleDeleteProduct}
+      />
+      <ProductView
+        product={viewProduct}
+        open={viewOpen}
+        onOpenChange={setViewOpen}
+      />
       <div className="flex items-center justify-between px-4 pb-4 lg:px-6">
         <div className="flex items-center gap-2">
           <span className="text-sm text-muted-foreground">Rows per page</span>
@@ -187,7 +233,8 @@ export default function Products() {
 
         <div className="flex items-center gap-4">
           <span className="text-sm text-muted-foreground">
-            {start}-{end} of {filteredProducts.length}
+            {productCount === 0 ? 0 : (page - 1) * pageSize + 1}-
+            {Math.min(page * pageSize, productCount)} of {productCount}
           </span>
 
           <div className="flex items-center gap-1">
@@ -195,16 +242,17 @@ export default function Products() {
               variant="outline"
               size="icon"
               className="size-8"
-              disabled={currentPage === 1}
+              disabled={page === 1}
               onClick={() => setPage(1)}
             >
               <ChevronsLeft className="size-4" />
             </Button>
+
             <Button
               variant="outline"
               size="icon"
               className="size-8"
-              disabled={currentPage === 1}
+              disabled={page === 1}
               onClick={() => setPage((current) => current - 1)}
             >
               <ChevronLeft className="size-4" />
@@ -214,7 +262,7 @@ export default function Products() {
               variant="outline"
               size="icon"
               className="size-8"
-              disabled={currentPage === totalPages}
+              disabled={page === totalPages}
               onClick={() => setPage((current) => current + 1)}
             >
               <ChevronRight className="size-4" />
@@ -224,7 +272,7 @@ export default function Products() {
               variant="outline"
               size="icon"
               className="size-8"
-              disabled={currentPage === totalPages}
+              disabled={page === totalPages}
               onClick={() => setPage(totalPages)}
             >
               <ChevronsRight className="size-4" />

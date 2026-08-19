@@ -1,63 +1,36 @@
 import { apiRequest } from "@/lib/api";
-import {
-  convertKeysToCamelCase,
-  convertKeysToSnakeCase,
-  priceToNumber,
-  priceToString,
-  formatStatus,
-  statusToApi,
-} from "@/lib/converters";
-
 import type {
   ApiProduct,
   GetProductsResponse,
-  Product,
-  ProductCategory,
-  ProductStatus,
+  ProductsResult,
 } from "@/types/data-type";
 
-export async function getProducts(pageSize: Number): Promise<Product[]> {
+export async function getProducts(
+  page: number,
+  pageSize: number,
+): Promise<ProductsResult> {
   const response = await apiRequest<GetProductsResponse>(
-    `/api/v1/products?sort=updated&order=desc&page=1&page_size=${pageSize}`
+    `/api/v1/products?sort=updated&order=desc&page=${page}&page_size=${pageSize}`,
   );
-  return response.data.map((item) => convertKeysToCamelCase(item) as Product);
+  return {
+    products: response.data,
+    total: response.pagination.total,
+    totalPages: response.pagination.total_pages,
+  };
 }
 
-export async function createProduct(product: Product): Promise<Product> {
-  const apiData = {
-    ...convertKeysToSnakeCase(product),
-    price: priceToString(product.price),
-    status: statusToApi(product.status),
-  };
+export async function createProduct(
+  product: Omit<ApiProduct, "id">,
+): Promise<ApiProduct> {
   const response = await apiRequest<{
     success: boolean;
     message: string;
     data: ApiProduct;
   }>("/api/v1/products", {
     method: "POST",
-    body: apiData,
+    body: product,
   });
-  return convertKeysToCamelCase(response.data) as Product;
-}
-
-export async function updateProduct(
-  id: string,
-  product: Product
-): Promise<Product> {
-  const apiData = {
-    ...convertKeysToSnakeCase(product),
-    price: priceToString(product.price),
-    status: statusToApi(product.status),
-  };
-  const response = await apiRequest<{
-    success: boolean;
-    message: string;
-    data: ApiProduct;
-  }>(`/api/v1/products/${id}`, {
-    method: "PUT",
-    body: apiData,
-  });
-  return convertKeysToCamelCase(response.data) as Product;
+  return response.data;
 }
 
 export async function deleteProduct(id: string): Promise<void> {

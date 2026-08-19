@@ -8,21 +8,22 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { TableCell, TableRow } from "@/components/ui/table";
-import type { Product, ProductTableRowProps } from "@/types/data-type";
+import type { ApiProduct, ProductTableRowProps } from "@/types/data-type";
 import { ProductImage } from "./product-image";
+import { formatStatus } from "@/lib/converters";
 
-function getStatusClassName(status: Product["status"]) {
+function getStatusClassName(status: string) {
   switch (status) {
-    case "Active":
+    case "active":
       return "border-emerald-200 bg-emerald-50 text-emerald-700";
 
-    case "Draft":
+    case "draft":
       return "border-slate-200 bg-slate-50 text-slate-600";
 
-    case "Out of Stock":
+    case "out of stock":
       return "border-orange-200 bg-orange-50 text-orange-700";
 
-    case "Archived":
+    case "archived":
       return "border-slate-200 bg-slate-50 text-slate-500";
 
     default:
@@ -30,8 +31,8 @@ function getStatusClassName(status: Product["status"]) {
   }
 }
 
-function getPrimaryImage(product: Product) {
-  return product.images?.find((image) => image.isPrimary)?.url;
+function getPrimaryImage(product: ApiProduct) {
+  return product.images?.find((image) => image.is_primary)?.url;
 }
 
 export function ProductTableRow({
@@ -54,7 +55,7 @@ export function ProductTableRow({
               <ProductImage src={primaryImage} alt={product.name} />
 
               <div>
-                <p className="text-sm font-medium">Archive “{product.name}”?</p>
+                <p className="text-sm font-medium">Archive &quot;{product.name}&quot;?</p>
 
                 <p className="text-sm text-muted-foreground">
                   It disappears from the active list.
@@ -104,23 +105,23 @@ export function ProductTableRow({
       </TableCell>
 
       <TableCell className="text-sm text-muted-foreground">
-        {product.category}
+        {product.category_name}
       </TableCell>
 
       <TableCell className="text-right font-mono text-sm">
-        ${product.price.toFixed(2)}
+        ${Number(product.price).toFixed(2)}
       </TableCell>
 
       <TableCell className="text-right text-sm">{product.stock}</TableCell>
 
       <TableCell>
         <Badge variant="outline" className={getStatusClassName(product.status)}>
-          {product.status}
+          {formatStatus(product.status)}
         </Badge>
       </TableCell>
 
       <TableCell className="text-sm text-muted-foreground">
-        {product.updatedAt}
+        {product.updated_at}
       </TableCell>
 
       <TableCell>
@@ -138,7 +139,7 @@ export function ProductTableRow({
             </DropdownMenuTrigger>
 
             <DropdownMenuContent align="end">
-              {product.status !== "Archived" && (
+              {product.status !== "archived" && (
                 <DropdownMenuItem onClick={onArchive}>Archive</DropdownMenuItem>
               )}
 

@@ -55,6 +55,7 @@ export function ProductFilters({
       <div className="flex items-center gap-1">
         {statuses.map((item) => {
           const active = status === item;
+
           return (
             <Button
               key={item}
@@ -68,9 +69,7 @@ export function ProductFilters({
               }
               onClick={() => onStatusChange(item)}
             >
-              {item === "All"
-                ? "All"
-                : item.charAt(0).toUpperCase() + item.slice(1)}
+              {item}
             </Button>
           );
         })}
@@ -106,11 +105,8 @@ export function ProductFilters({
         </Label>
       </div>
 
-      {/* Result count */}
-
       <div className="ml-auto flex items-center gap-1 text-xs text-muted-foreground">
         <span>{productCount} products · sorted by Price</span>
-
         <Button
           variant="ghost"
           size="icon"

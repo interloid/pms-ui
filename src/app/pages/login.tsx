@@ -25,7 +25,7 @@ import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa";
 import MicrosoftLogo from "@/components/icons/logos-microsoft-icon";
 
-export function LoginForm({
+export default function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {

@@ -1,4 +1,5 @@
 import { useState, type ChangeEvent } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,6 +21,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import type { ImageError, ProductImage } from "@/types/data-type";
+import { createProduct } from "@/services/product-service";
 
 const MAX_IMAGES = 6;
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
@@ -36,14 +38,76 @@ const categories = [
 const statuses = [
   { value: "active", label: "Active" },
   { value: "draft", label: "Draft" },
-  { value: "out-of-stock", label: "Out of Stock" },
+  { value: "out of stock", label: "Out of Stock" },
   { value: "archived", label: "Archived" },
 ];
 
-export function AddProducts() {
+type AddProductsProps = {
+  onProductCreated?: () => void;
+};
+
+export function AddProducts({ onProductCreated }: AddProductsProps) {
+  const [name, setName] = useState("");
+  const [sku, setSku] = useState("");
+  const [category, setCategory] = useState("");
+  const [price, setPrice] = useState("");
+  const [stock, setStock] = useState("0");
+  const [status, setStatus] = useState("draft");
+  const [description, setDescription] = useState("");
   const [images, setImages] = useState<ProductImage[]>([]);
   const [imageError, setImageError] = useState<ImageError | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
   const remainingImages = MAX_IMAGES - images.length;
+
+  function resetForm() {
+    setName("");
+    setSku("");
+    setCategory("");
+    setPrice("");
+    setStock("0");
+    setStatus("draft");
+    setDescription("");
+    setImages([]);
+    setImageError(null);
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+
+    if (!name.trim() || !sku.trim() || !category || !price) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      await createProduct({
+        name: name.trim(),
+        sku: sku.trim(),
+        category_name: category,
+        price: Number(price),
+        stock: Number(stock),
+        status,
+        description: description.trim(),
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        images: [],
+      });
+
+      toast.success("Product created successfully");
+      resetForm();
+      setSheetOpen(false);
+      onProductCreated?.();
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to create product",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
 
   const handleImageChange = (event: ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(event.target.files ?? []);
@@ -159,7 +223,7 @@ export function AddProducts() {
   };
 
   return (
-    <Sheet>
+    <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
       <SheetTrigger asChild>
         <Button>+ Add Product</Button>
       </SheetTrigger>
@@ -169,239 +233,253 @@ export function AddProducts() {
           <SheetTitle className="font-bold">Add Product</SheetTitle>
         </SheetHeader>
 
-        <div className="grid flex-1 auto-rows-min gap-6 overflow-y-auto px-4">
-          <div className="grid gap-3">
-            <Label htmlFor="product-name" className="text-xs">
-              Product Name
-              <span className="text-destructive"> *</span>
-            </Label>
-
-            <Input
-              id="product-name"
-              placeholder="e.g. Meridian Desk Lamp"
-              className="h-10 placeholder:text-xs focus-visible:border-primary focus-visible:ring-primary/20"
-            />
-          </div>
-
-          <div className="grid w-full grid-cols-2 gap-4">
-            <div className="grid w-full gap-2">
-              <Label htmlFor="product-sku" className="text-xs">
-                SKU
+        <form onSubmit={handleSubmit} className="contents">
+          <div className="grid flex-1 auto-rows-min gap-6 overflow-y-auto px-4">
+            <div className="grid gap-3">
+              <Label htmlFor="product-name" className="text-xs">
+                Product Name
                 <span className="text-destructive"> *</span>
               </Label>
 
               <Input
-                id="product-sku"
-                placeholder="ABC-ITEM-000"
-                className="h-10 w-full placeholder:text-xs focus-visible:border-primary focus-visible:ring-primary/20"
+                id="product-name"
+                placeholder="e.g. Meridian Desk Lamp"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="h-10 placeholder:text-xs focus-visible:border-primary focus-visible:ring-primary/20"
               />
             </div>
 
-            <div className="grid w-full gap-2">
-              <Label htmlFor="product-category" className="text-xs">
-                Category
-                <span className="text-destructive"> *</span>
-              </Label>
+            <div className="grid w-full grid-cols-2 gap-4">
+              <div className="grid w-full gap-2">
+                <Label htmlFor="product-sku" className="text-xs">
+                  SKU
+                  <span className="text-destructive"> *</span>
+                </Label>
 
-              <Select>
-                <SelectTrigger
-                  id="product-category"
-                  className="h-10 w-full focus-visible:border-primary focus-visible:ring-primary/20"
-                >
-                  <SelectValue placeholder="Select..." />
-                </SelectTrigger>
+                <Input
+                  id="product-sku"
+                  placeholder="ABC-ITEM-000"
+                  value={sku}
+                  onChange={(e) => setSku(e.target.value)}
+                  className="h-10 w-full placeholder:text-xs focus-visible:border-primary focus-visible:ring-primary/20"
+                />
+              </div>
 
-                <SelectContent>
-                  {categories.map((category) => (
-                    <SelectItem key={category.value} value={category.value}>
-                      {category.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+              <div className="grid w-full gap-2">
+                <Label htmlFor="product-category" className="text-xs">
+                  Category
+                  <span className="text-destructive"> *</span>
+                </Label>
 
-          <div className="grid w-full grid-cols-3 gap-4">
-            <div className="grid w-full gap-2">
-              <Label htmlFor="product-price" className="text-xs">
-                Price
-                <span className="text-destructive"> *</span>
-              </Label>
-
-              <Input
-                id="product-price"
-                type="number"
-                placeholder="0.00"
-                min={0}
-                className="h-10 w-full placeholder:text-xs focus-visible:border-primary focus-visible:ring-primary/20"
-              />
-            </div>
-
-            <div className="grid w-full gap-2">
-              <Label htmlFor="product-stock" className="text-xs">
-                Stock
-              </Label>
-
-              <Input
-                id="product-stock"
-                type="number"
-                placeholder="0"
-                min={0}
-                className="h-10 w-full placeholder:text-xs focus-visible:border-primary focus-visible:ring-primary/20"
-              />
-            </div>
-
-            <div className="grid w-full gap-2">
-              <Label htmlFor="product-status" className="text-xs">
-                Status
-              </Label>
-
-              <Select>
-                <SelectTrigger
-                  id="product-status"
-                  className="h-10 w-full focus-visible:border-primary focus-visible:ring-primary/20"
-                >
-                  <SelectValue placeholder="Select..." />
-                </SelectTrigger>
-
-                <SelectContent>
-                  {statuses.map((status) => (
-                    <SelectItem key={status.value} value={status.value}>
-                      {status.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="grid w-full gap-2">
-            <Label htmlFor="product-description" className="text-xs">
-              Description
-            </Label>
-
-            <Textarea
-              id="product-description"
-              placeholder="Optional"
-              className="h-25 min-h-25 w-full resize-none placeholder:text-xs focus-visible:border-primary focus-visible:ring-primary/20"
-            />
-          </div>
-
-          <div className="grid w-full gap-2">
-            <div className="flex items-center gap-1">
-              <Label htmlFor="product-images" className="text-xs">
-                Images
-              </Label>
-
-              <span className="text-xs text-muted-foreground">
-                {images.length} of {MAX_IMAGES}
-              </span>
-            </div>
-
-            {images.length > 0 && (
-              <div className="grid grid-cols-3 gap-3">
-                {images.map((image) => (
-                  <div
-                    key={image.id}
-                    className="relative aspect-square overflow-hidden rounded-lg border bg-muted"
+                <Select value={category} onValueChange={setCategory}>
+                  <SelectTrigger
+                    id="product-category"
+                    className="h-10 w-full focus-visible:border-primary focus-visible:ring-primary/20"
                   >
-                    <img
-                      src={image.previewUrl}
-                      alt={image.file.name}
-                      className="h-full w-full object-cover"
-                    />
+                    <SelectValue placeholder="Select..." />
+                  </SelectTrigger>
 
-                    <button
-                      type="button"
-                      onClick={() => removeImage(image.id)}
-                      className="absolute right-2 top-2 flex size-6 items-center justify-center rounded-full border bg-background/90 text-muted-foreground shadow-sm hover:text-destructive"
-                      aria-label={`Remove ${image.file.name}`}
+                  <SelectContent>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat.value} value={cat.value}>
+                        {cat.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid w-full grid-cols-3 gap-4">
+              <div className="grid w-full gap-2">
+                <Label htmlFor="product-price" className="text-xs">
+                  Price
+                  <span className="text-destructive"> *</span>
+                </Label>
+
+                <Input
+                  id="product-price"
+                  type="number"
+                  placeholder="0.00"
+                  min={0}
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                  className="h-10 w-full placeholder:text-xs focus-visible:border-primary focus-visible:ring-primary/20"
+                />
+              </div>
+
+              <div className="grid w-full gap-2">
+                <Label htmlFor="product-stock" className="text-xs">
+                  Stock
+                </Label>
+
+                <Input
+                  id="product-stock"
+                  type="number"
+                  placeholder="0"
+                  min={0}
+                  value={stock}
+                  onChange={(e) => setStock(e.target.value)}
+                  className="h-10 w-full placeholder:text-xs focus-visible:border-primary focus-visible:ring-primary/20"
+                />
+              </div>
+
+              <div className="grid w-full gap-2">
+                <Label htmlFor="product-status" className="text-xs">
+                  Status
+                </Label>
+
+                <Select value={status} onValueChange={setStatus}>
+                  <SelectTrigger
+                    id="product-status"
+                    className="h-10 w-full focus-visible:border-primary focus-visible:ring-primary/20"
+                  >
+                    <SelectValue placeholder="Select..." />
+                  </SelectTrigger>
+
+                  <SelectContent>
+                    {statuses.map((s) => (
+                      <SelectItem key={s.value} value={s.value}>
+                        {s.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid w-full gap-2">
+              <Label htmlFor="product-description" className="text-xs">
+                Description
+              </Label>
+
+              <Textarea
+                id="product-description"
+                placeholder="Optional"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="h-25 min-h-25 w-full resize-none placeholder:text-xs focus-visible:border-primary focus-visible:ring-primary/20"
+              />
+            </div>
+
+            <div className="grid w-full gap-2">
+              <div className="flex items-center gap-1">
+                <Label htmlFor="product-images" className="text-xs">
+                  Images
+                </Label>
+
+                <span className="text-xs text-muted-foreground">
+                  {images.length} of {MAX_IMAGES}
+                </span>
+              </div>
+
+              {images.length > 0 && (
+                <div className="grid grid-cols-3 gap-3">
+                  {images.map((image) => (
+                    <div
+                      key={image.id}
+                      className="relative aspect-square overflow-hidden rounded-lg border bg-muted"
                     >
-                      ×
-                    </button>
+                      <img
+                        src={image.previewUrl}
+                        alt={image.file.name}
+                        className="h-full w-full object-cover"
+                      />
 
-                    {image.isPrimary ? (
-                      <span className="absolute bottom-2 left-2 rounded-full bg-primary px-2 py-0.5 text-[10px] font-medium text-primary-foreground">
-                        Primary
-                      </span>
-                    ) : (
                       <button
                         type="button"
-                        onClick={() => setPrimaryImage(image.id)}
-                        className="absolute bottom-2 left-2 rounded-full border bg-background/90 px-2 py-0.5 text-[10px] text-muted-foreground hover:bg-background"
+                        onClick={() => removeImage(image.id)}
+                        className="absolute right-2 top-2 flex size-6 items-center justify-center rounded-full border bg-background/90 text-muted-foreground shadow-sm hover:text-destructive"
+                        aria-label={`Remove ${image.file.name}`}
                       >
-                        Set primary
+                        ×
                       </button>
+
+                      {image.isPrimary ? (
+                        <span className="absolute bottom-2 left-2 rounded-full bg-primary px-2 py-0.5 text-[10px] font-medium text-primary-foreground">
+                          Primary
+                        </span>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setPrimaryImage(image.id)}
+                          className="absolute bottom-2 left-2 rounded-full border bg-background/90 px-2 py-0.5 text-[10px] text-muted-foreground hover:bg-background"
+                        >
+                          Set primary
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+              {imageError && (
+                <div className="rounded-lg border border-red-300 bg-red-50 px-3 py-2">
+                  <p className="text-xs font-semibold text-red-600">
+                    {imageError.fileName && (
+                      <span className="font-medium">{imageError.fileName} </span>
                     )}
-                  </div>
-                ))}
-              </div>
-            )}
-            {imageError && (
-              <div className="rounded-lg border border-red-300 bg-red-50 px-3 py-2">
-                <p className="text-xs font-semibold text-red-600">
-                  {imageError.fileName && (
-                    <span className="font-medium">{imageError.fileName} </span>
-                  )}
-                  {imageError.message}
-                </p>
-
-                {imageError.details && (
-                  <p className="text-xs text-muted-foreground">
-                    {imageError.details}
+                    {imageError.message}
                   </p>
-                )}
-              </div>
-            )}
-            {images.length === 0 && (
-              <label
-                htmlFor="product-images"
-                className="flex min-h-25 w-full cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-hover-text bg-primary-hover px-4 py-4 text-center transition-colors hover:bg-primary-hover/50"
-              >
-                <span className="text-xs font-bold text-hover-text">
-                  Drop images here, or click to browse
-                </span>
 
-                <span className="text-[11px] text-muted-foreground">
-                  JPG, PNG or WEBP · maximum 5 MB each · {MAX_IMAGES} images
-                  remaining
-                </span>
-              </label>
-            )}
-            {images.length > 0 && images.length < MAX_IMAGES && (
-              <label
-                htmlFor="product-images"
-                className="flex min-h-25 w-full cursor-pointer items-center justify-center rounded-lg border border-dashed border-hover-text px-4 py-4 text-center transition-colors hover:bg-primary-hover/50"
-              >
-                <span className="text-xs text-hover-text">
-                  Drop {remainingImages === 1 ? "more image" : "more images"} or
-                  click to browse · {remainingImages}{" "}
-                  {remainingImages === 1 ? "slot" : "slots"} left
-                </span>
-              </label>
-            )}
+                  {imageError.details && (
+                    <p className="text-xs text-muted-foreground">
+                      {imageError.details}
+                    </p>
+                  )}
+                </div>
+              )}
+              {images.length === 0 && (
+                <label
+                  htmlFor="product-images"
+                  className="flex min-h-25 w-full cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-hover-text bg-primary-hover px-4 py-4 text-center transition-colors hover:bg-primary-hover/50"
+                >
+                  <span className="text-xs font-bold text-hover-text">
+                    Drop images here, or click to browse
+                  </span>
 
-            <Input
-              id="product-images"
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              multiple
-              onChange={handleImageChange}
-              className="hidden"
-            />
+                  <span className="text-[11px] text-muted-foreground">
+                    JPG, PNG or WEBP · maximum 5 MB each · {MAX_IMAGES} images
+                    remaining
+                  </span>
+                </label>
+              )}
+              {images.length > 0 && images.length < MAX_IMAGES && (
+                <label
+                  htmlFor="product-images"
+                  className="flex min-h-25 w-full cursor-pointer items-center justify-center rounded-lg border border-dashed border-hover-text px-4 py-4 text-center transition-colors hover:bg-primary-hover/50"
+                >
+                  <span className="text-xs text-hover-text">
+                    Drop {remainingImages === 1 ? "more image" : "more images"} or
+                    click to browse · {remainingImages}{" "}
+                    {remainingImages === 1 ? "slot" : "slots"} left
+                  </span>
+                </label>
+              )}
+
+              <Input
+                id="product-images"
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                multiple
+                onChange={handleImageChange}
+                className="hidden"
+              />
+            </div>
           </div>
-        </div>
 
-        <SheetFooter className="w-full border-t">
-          <div className="flex w-full flex-row-reverse justify-start gap-2">
-            <Button type="submit">Save product</Button>
+          <SheetFooter className="w-full border-t">
+            <div className="flex w-full flex-row-reverse justify-start gap-2">
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? "Saving..." : "Save product"}
+              </Button>
 
-            <SheetClose asChild>
-              <Button variant="outline">Cancel</Button>
-            </SheetClose>
-          </div>
-        </SheetFooter>
+              <SheetClose asChild>
+                <Button variant="outline" type="button">Cancel</Button>
+              </SheetClose>
+            </div>
+          </SheetFooter>
+        </form>
       </SheetContent>
     </Sheet>
   );

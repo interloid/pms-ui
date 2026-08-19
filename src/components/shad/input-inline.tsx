@@ -19,7 +19,7 @@ type InputInlineProps = {
 };
 
 export function InputInline({ user }: InputInlineProps) {
-  const { searchQuery, setSearchQuery } = useSearch();
+  const { searchQuery, setSearchQuery, refresh } = useSearch();
 
   const initials = user.name
     .split(" ")
@@ -38,7 +38,7 @@ export function InputInline({ user }: InputInlineProps) {
           onChange={(e) => setSearchQuery(e.target.value)}
           className="w-81"
         />
-      <AddProducts />
+      <AddProducts onProductCreated={refresh} />
 
       </Field>
 

@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/alert";
 import { useAuth } from "@/hooks/useAuth";
 
-export function Callback() {
+export default function Callback() {
   const navigate = useNavigate();
   const { checkAuth } = useAuth();
   const [error, setError] = useState("");

@@ -18,15 +18,20 @@ const user = {
 export default function DashboardLayout() {
   const [productCount, setProductCount] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
-    getProducts()
-      .then((products) => setProductCount(products.length))
+    getProducts(1, 1)
+      .then((response) => setProductCount(response.total))
       .catch(() => setProductCount(0));
-  }, []);
+  }, [refreshKey]);
+
+  function refresh() {
+    setRefreshKey((k) => k + 1);
+  }
 
   return (
-    <SearchContext.Provider value={{ searchQuery, setSearchQuery }}>
+    <SearchContext.Provider value={{ searchQuery, setSearchQuery, refreshKey, refresh }}>
       <SidebarProvider>
         <AppSidebar user={user} />
 

@@ -8,27 +8,28 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import type { Product } from "@/types/data-type";
+import { formatStatus } from "@/lib/converters";
+import type { ApiProduct } from "@/types/data-type";
+import { DetailLabel, DetailValue } from "@/components/shad/detail-label";
 
 type ProductViewProps = {
-  product: Product | null;
+  product: ApiProduct | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onEdit?: (product: Product) => void;
 };
 
-function getStatusClassName(status: Product["status"]) {
+function getStatusClassName(status: string) {
   switch (status) {
-    case "Active":
+    case "active":
       return "border-emerald-200 bg-emerald-50 text-emerald-700";
 
-    case "Draft":
+    case "draft":
       return "border-slate-200 bg-slate-50 text-slate-600";
 
-    case "Out of Stock":
+    case "out of stock":
       return "border-orange-200 bg-orange-50 text-orange-700";
 
-    case "Archived":
+    case "archived":
       return "border-slate-200 bg-slate-50 text-slate-500";
 
     default:
@@ -40,33 +41,16 @@ export function ProductView({
   product,
   open,
   onOpenChange,
-  onEdit,
 }: ProductViewProps) {
   if (!product) {
     return null;
   }
-
-  function DetailLabel({ children }: { children: React.ReactNode }) {
-    return <span className="text-muted-foreground">{children}</span>;
-  }
-
-  function DetailValue({
-    children,
-    className = "",
-  }: {
-    children: React.ReactNode;
-    className?: string;
-  }) {
-    return <span className={className}>{children}</span>;
-  }
-
   const primaryImage =
-    product.images?.find((image) => image.isPrimary) ?? product.images?.[0];
+    product.images?.find((image) => image.is_primary) ?? product.images?.[0];
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="gap-0 sm:max-w-xl">
-        {/* Header */}
         <SheetHeader className="border-b px-5 py-4">
           <div className="flex items-center gap-3">
             <div className="min-w-0 flex-1">
@@ -105,7 +89,7 @@ export function ProductView({
                     <div
                       key={image.id}
                       className={`aspect-square overflow-hidden rounded-md border bg-muted ${
-                        image.isPrimary
+                        image.is_primary
                           ? "border-2 border-primary"
                           : "border-border"
                       }`}
@@ -127,11 +111,11 @@ export function ProductView({
               </DetailValue>
 
               <DetailLabel>Category</DetailLabel>
-              <DetailValue>{product.category}</DetailValue>
+              <DetailValue>{product.category_name}</DetailValue>
 
               <DetailLabel>Price</DetailLabel>
               <DetailValue className="font-mono text-xs">
-                ${product.price.toFixed(2)}
+                ${Number(product.price).toFixed(2)}
               </DetailValue>
 
               <DetailLabel>Stock</DetailLabel>
@@ -145,7 +129,7 @@ export function ProductView({
                   variant="outline"
                   className={getStatusClassName(product.status)}
                 >
-                  {product.status}
+                  {formatStatus(product.status)}
                 </Badge>
               </div>
 
@@ -156,25 +140,22 @@ export function ProductView({
 
               <DetailLabel>Created</DetailLabel>
               <DetailValue className="text-muted-foreground">
-                {product.createdAt || "—"}
+                {product.created_at || "—"}
               </DetailValue>
 
               <DetailLabel>Updated</DetailLabel>
               <DetailValue className="text-muted-foreground">
-                {product.updatedAt || "—"}
+                {product.updated_at || "—"}
               </DetailValue>
             </div>
           </div>
         </div>
 
-        {/* Footer */}
         <SheetFooter className="border-t px-5 py-3">
           <div className="flex w-full justify-end gap-2">
             <SheetClose asChild>
               <Button variant="outline">Close</Button>
             </SheetClose>
-
-            <Button onClick={() => onEdit?.(product)}>Edit</Button>
           </div>
         </SheetFooter>
       </SheetContent>

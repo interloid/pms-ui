@@ -49,10 +49,31 @@ export type Product = {
   updatedAt: string;
 };
 
+export type Pagination = {
+  page: number;
+  page_size: number;
+  total: number;
+  total_pages: number;
+};
+
+export const statuses: ProductStatusFilter[] = [
+  "All",
+  "Active",
+  "Draft",
+  "Out of Stock",
+  "Archived",
+];
+
 export type GetProductsResponse = {
   success: boolean;
   message: string;
   data: ApiProduct[];
+  pagination: Pagination;
+};
+export type ProductsResult = {
+  products: ApiProduct[];
+  total: number;
+  totalPages: number;
 };
 
 export type GetProductsParams = {
@@ -81,7 +102,6 @@ export const categories: ProductCategory[] = [
   "Stationery",
 ];
 
-
 export interface ProductImage {
   id: string;
   file: File;
@@ -96,7 +116,7 @@ export interface ProductImageResponse {
 }
 
 export interface ProductTableRowProps {
-  product: Product;
+  product: ApiProduct;
   isArchiving: boolean;
   onView: () => void;
   onArchive: () => void;
@@ -106,8 +126,9 @@ export interface ProductTableRowProps {
 }
 
 export interface ProductTableProps {
+  products: ApiProduct[];
   archiveId: string | null;
-  onView: (product: Product) => void;
+  onView: (product: ApiProduct) => void;
   onArchive: (id: string) => void;
   onCancelArchive: () => void;
   onConfirmArchive: (id: string) => void;
@@ -135,4 +156,3 @@ export type ImageError = {
   message: string;
   details?: string;
 };
-
