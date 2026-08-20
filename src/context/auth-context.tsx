@@ -20,20 +20,16 @@ import type {
   LoginCredentials,
 } from "@/types/auth";
 
-export const AuthContext =
-  createContext<AuthContextValue | undefined>(
-    undefined,
-  );
+export const AuthContext = createContext<AuthContextValue | undefined>(
+  undefined,
+);
 
-export function AuthProvider({
-  children,
-}: AuthProviderProps) {
-  const [status, setStatus] =
-    useState<AuthStatus>("loading");
+export function AuthProvider({ children }: AuthProviderProps) {
+  const [status, setStatus] = useState<AuthStatus>("loading");
 
   const checkAuth = useCallback(async () => {
     try {
-     await getCurrentSession();
+      await getCurrentSession();
       setStatus("authenticated");
       return true;
     } catch {
@@ -42,23 +38,14 @@ export function AuthProvider({
     }
   }, []);
 
-  const login = useCallback(
-    async (credentials: LoginCredentials) => {
-      await loginService(credentials);
-      setStatus("authenticated");
-    },
-    [],
-  );
+  const login = useCallback(async (credentials: LoginCredentials) => {
+    await loginService(credentials);
+    setStatus("authenticated");
+  }, []);
 
   const loginWithPasscode = useCallback(
-    async (
-      email: string,
-      passcode: string,
-    ) => {
-      await loginWithPasscodeService(
-        email,
-        passcode,
-      );
+    async (email: string, passcode: string) => {
+      await loginWithPasscodeService(email, passcode);
       setStatus("authenticated");
     },
     [],
@@ -79,25 +66,14 @@ export function AuthProvider({
   const value = useMemo(
     () => ({
       status,
-      isAuthenticated:
-        status === "authenticated",
+      isAuthenticated: status === "authenticated",
       login,
       loginWithPasscode,
       checkAuth,
       logout,
     }),
-    [
-      status,
-      login,
-      loginWithPasscode,
-      checkAuth,
-      logout,
-    ],
+    [status, login, loginWithPasscode, checkAuth, logout],
   );
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
