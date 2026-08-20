@@ -20,7 +20,11 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import type { ImageError, ProductImage } from "@/types/data-type";
+import type {
+  AddProductsProps,
+  ImageError,
+  ProductImage,
+} from "@/types/data-type";
 import { createProduct } from "@/services/product-service";
 import { Spinner } from "@/components/ui/spinner";
 
@@ -43,10 +47,6 @@ const statuses = [
   { value: "archived", label: "Archived" },
 ];
 
-type AddProductsProps = {
-  onProductCreated?: () => void;
-};
-
 export function AddProducts({ onProductCreated }: AddProductsProps) {
   const [name, setName] = useState("");
   const [sku, setSku] = useState("");
@@ -58,7 +58,6 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
   const [images, setImages] = useState<ProductImage[]>([]);
   const [imageError, setImageError] = useState<ImageError | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [sheetOpen, setSheetOpen] = useState(false);
   const remainingImages = MAX_IMAGES - images.length;
 
   function resetForm() {
@@ -84,22 +83,25 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
     setIsSubmitting(true);
 
     try {
-      await createProduct({
-        name: name.trim(),
-        sku: sku.trim(),
-        category_name: category,
-        price: Number(price),
-        stock: Number(stock),
-        status,
-        description: description.trim(),
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        images: [],
+      const formData = new FormData();
+
+      formData.append("name", name.trim());
+      formData.append("sku", sku.trim());
+      formData.append("category_name", category);
+      formData.append("price", String(Number(price)));
+      formData.append("stock", String(Number(stock)));
+      formData.append("status", status);
+      formData.append("description", description.trim());
+
+      images.forEach((image) => {
+        formData.append("images", image.file);
       });
 
+      await createProduct(formData);
+
       toast.success("Product created successfully");
+
       resetForm();
-      setSheetOpen(false);
       onProductCreated?.();
     } catch (error) {
       toast.error(
@@ -156,7 +158,9 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
         error = {
           fileName: file.name,
           message: "wasn't added",
-          details: `${(file.size / 1024 / 1024).toFixed(1)} MB exceeds the 5 MB limit (413). Compress it and try again.`,
+          details: `${(file.size / 1024 / 1024).toFixed(
+            1,
+          )} MB exceeds the 5 MB limit.`,
         };
         continue;
       }
@@ -191,6 +195,7 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
     setImageError(error);
     event.target.value = "";
   };
+
   const removeImage = (id: string) => {
     setImages((previousImages) => {
       const imageToRemove = previousImages.find((image) => image.id === id);
@@ -213,7 +218,6 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
       return remainingImages;
     });
   };
-
   const setPrimaryImage = (id: string) => {
     setImages((previousImages) =>
       previousImages.map((image) => ({
@@ -222,9 +226,8 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
       })),
     );
   };
-
   return (
-    <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+    <Sheet>
       <SheetTrigger asChild>
         <Button>+ Add Product</Button>
       </SheetTrigger>
@@ -233,8 +236,7 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
         <SheetHeader className="border-b">
           <SheetTitle className="font-bold">Add Product</SheetTitle>
         </SheetHeader>
-
-        <form onSubmit={handleSubmit} className="contents">
+        <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
           <div className="grid flex-1 auto-rows-min gap-6 overflow-y-auto px-4">
             <div className="grid gap-3">
               <Label htmlFor="product-name" className="text-xs">
@@ -245,8 +247,6 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
               <Input
                 id="product-name"
                 placeholder="e.g. Meridian Desk Lamp"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
                 className="h-10 placeholder:text-xs focus-visible:border-primary focus-visible:ring-primary/20"
               />
             </div>
@@ -261,8 +261,6 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
                 <Input
                   id="product-sku"
                   placeholder="ABC-ITEM-000"
-                  value={sku}
-                  onChange={(e) => setSku(e.target.value)}
                   className="h-10 w-full placeholder:text-xs focus-visible:border-primary focus-visible:ring-primary/20"
                 />
               </div>
@@ -273,7 +271,7 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
                   <span className="text-destructive"> *</span>
                 </Label>
 
-                <Select value={category} onValueChange={setCategory}>
+                <Select>
                   <SelectTrigger
                     id="product-category"
                     className="h-10 w-full focus-visible:border-primary focus-visible:ring-primary/20"
@@ -282,9 +280,9 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
                   </SelectTrigger>
 
                   <SelectContent>
-                    {categories.map((cat) => (
-                      <SelectItem key={cat.value} value={cat.value}>
-                        {cat.label}
+                    {categories.map((category) => (
+                      <SelectItem key={category.value} value={category.value}>
+                        {category.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -304,8 +302,6 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
                   type="number"
                   placeholder="0.00"
                   min={0}
-                  value={price}
-                  onChange={(e) => setPrice(e.target.value)}
                   className="h-10 w-full placeholder:text-xs focus-visible:border-primary focus-visible:ring-primary/20"
                 />
               </div>
@@ -320,8 +316,6 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
                   type="number"
                   placeholder="0"
                   min={0}
-                  value={stock}
-                  onChange={(e) => setStock(e.target.value)}
                   className="h-10 w-full placeholder:text-xs focus-visible:border-primary focus-visible:ring-primary/20"
                 />
               </div>
@@ -331,7 +325,7 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
                   Status
                 </Label>
 
-                <Select value={status} onValueChange={setStatus}>
+                <Select>
                   <SelectTrigger
                     id="product-status"
                     className="h-10 w-full focus-visible:border-primary focus-visible:ring-primary/20"
@@ -340,9 +334,9 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
                   </SelectTrigger>
 
                   <SelectContent>
-                    {statuses.map((s) => (
-                      <SelectItem key={s.value} value={s.value}>
-                        {s.label}
+                    {statuses.map((status) => (
+                      <SelectItem key={status.value} value={status.value}>
+                        {status.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -358,8 +352,6 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
               <Textarea
                 id="product-description"
                 placeholder="Optional"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
                 className="h-25 min-h-25 w-full resize-none placeholder:text-xs focus-visible:border-primary focus-visible:ring-primary/20"
               />
             </div>
@@ -470,28 +462,27 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
               />
             </div>
           </div>
-
-          <SheetFooter className="w-full border-t">
-            <div className="flex w-full flex-row-reverse justify-start gap-2">
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? (
-                  <>
-                    <Spinner />
-                    Saving...
-                  </>
-                ) : (
-                  "Save product"
-                )}
-              </Button>
-
-              <SheetClose asChild>
-                <Button variant="outline" type="button">
-                  Cancel
-                </Button>
-              </SheetClose>
-            </div>
-          </SheetFooter>
         </form>
+        <SheetFooter className="w-full border-t">
+          <div className="flex w-full flex-row-reverse justify-start gap-2">
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <Spinner />
+                  Saving...
+                </>
+              ) : (
+                "Save product"
+              )}
+            </Button>
+
+            <SheetClose asChild>
+              <Button variant="outline" type="button" disabled={isSubmitting}>
+                Cancel
+              </Button>
+            </SheetClose>
+          </div>
+        </SheetFooter>
       </SheetContent>
     </Sheet>
   );

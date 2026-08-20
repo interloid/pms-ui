@@ -178,3 +178,7 @@ export type ProductForm = {
   status: ProductStatus;
   description: string;
 };
+
+export type AddProductsProps = {
+  onProductCreated?: () => void;
+};

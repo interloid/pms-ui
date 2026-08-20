@@ -8,35 +8,32 @@ export const OAuthCallbackEndpoints: Record<OAuthProvider, string> = {
   microsoft: "/api/v1/auth/microsoft/callback",
 };
 
-interface ApiRequestOptions extends Omit<RequestInit, "body"> {
+type ApiRequestOptions = Omit<RequestInit, "body"> & {
   body?: unknown;
-}
+};
 
 export async function apiRequest<T>(
-  endpoint: string,
+  url: string,
   options: ApiRequestOptions = {},
 ): Promise<T> {
-  const { body, headers, ...requestOptions } = options;
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    ...requestOptions,
-    credentials: "include",
+  const { body, headers, ...rest } = options;
+  const isFormData = body instanceof FormData;
+  const response = await fetch(`${API_BASE_URL}${url}`, {
+    ...rest,
     headers: {
-      Accept: "application/json",
-      ...(body !== undefined
-        ? {
-            "Content-Type": "application/json",
-          }
-        : {}),
+      ...(isFormData ? {} : { "Content-Type": "application/json" }),
       ...headers,
     },
-    body: body !== undefined ? JSON.stringify(body) : undefined,
+    credentials: "include",
+    body: isFormData
+      ? body
+      : body !== undefined
+        ? JSON.stringify(body)
+        : undefined,
   });
-
-  const data = await response.json().catch(() => null);
-
+  const data = await response.json();
   if (!response.ok) {
-    throw new Error(data?.message || "Something went wrong");
+    throw new Error(data?.message || "Request failed");
   }
-
   return data;
 }

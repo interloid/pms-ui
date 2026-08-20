@@ -548,7 +548,6 @@ export function ProductEdit({ product, open, onOpenChange, onUpdated }: ProductE
           </div>
 
           <div className="flex h-16 shrink-0 items-center gap-2 border-t px-5">
-            <span className="text-[12px] text-muted-foreground">Row updates in place on success</span>
             <div className="flex-1" />
             <Button
               type="button"

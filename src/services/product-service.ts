@@ -19,16 +19,14 @@ export async function getProducts(
   };
 }
 
-export async function createProduct(
-  product: Omit<ApiProduct, "id">,
-): Promise<ApiProduct> {
+export async function createProduct(formData: FormData): Promise<ApiProduct> {
   const response = await apiRequest<{
     success: boolean;
     message: string;
     data: ApiProduct;
   }>("/api/v1/products", {
     method: "POST",
-    body: product,
+    body: formData,
   });
   return response.data;
 }

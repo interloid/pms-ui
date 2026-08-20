@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/avatar";
 import { AddProducts } from "@/app/pages/dashboard/products/crud-operations/add-product";
 import { useSearch } from "@/context/search-context";
+import { useAuth } from "@/hooks/useAuth";
 
 type User = {
   name: string;
@@ -20,6 +21,7 @@ type InputInlineProps = {
 
 export function InputInline({ user }: InputInlineProps) {
   const { searchQuery, setSearchQuery, refresh } = useSearch();
+  const { logout } = useAuth();
 
   const initials = user.name
     .split(" ")
@@ -53,7 +55,7 @@ export function InputInline({ user }: InputInlineProps) {
         </AvatarFallback>
       </Avatar>
 
-      <Button variant="outline">
+      <Button variant="outline" onClick={logout}>
         Log out
       </Button>
     </div>
