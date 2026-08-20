@@ -304,7 +304,7 @@ export function ProductEdit({ product, open, onOpenChange, onUpdated }: ProductE
                   setName(e.target.value);
                   setIsDirty(checkDirty(e.target.value, sku, category, price, status, stock, description, removedImageIds, newImages));
                 }}
-                className="h-9 text-[13px]"
+                className="h-10 text-[13px] placeholder:text-xs focus-visible:border-primary focus-visible:ring-primary/20"
               />
             </div>
 
@@ -320,7 +320,7 @@ export function ProductEdit({ product, open, onOpenChange, onUpdated }: ProductE
                     setSku(e.target.value);
                     setIsDirty(checkDirty(name, e.target.value, category, price, status, stock, description, removedImageIds, newImages));
                   }}
-                  className="h-9 font-mono text-[12px]"
+                  className="h-10 font-mono text-[12px] placeholder:text-xs focus-visible:border-primary focus-visible:ring-primary/20"
                 />
               </div>
               <div className="grid gap-1.5">
@@ -362,7 +362,7 @@ export function ProductEdit({ product, open, onOpenChange, onUpdated }: ProductE
                     setPrice(e.target.value);
                     setIsDirty(checkDirty(name, sku, category, e.target.value, status, stock, description, removedImageIds, newImages));
                   }}
-                  className="h-9 font-mono text-[12px]"
+                  className="h-10 font-mono text-[12px] placeholder:text-xs focus-visible:border-primary focus-visible:ring-primary/20"
                 />
               </div>
               <div className="grid gap-1.5">
@@ -378,7 +378,7 @@ export function ProductEdit({ product, open, onOpenChange, onUpdated }: ProductE
                     setStock(e.target.value);
                     setIsDirty(checkDirty(name, sku, category, price, status, e.target.value, description, removedImageIds, newImages));
                   }}
-                  className="h-9 font-mono text-[12px]"
+                  className="h-10 font-mono text-[12px] placeholder:text-xs focus-visible:border-primary focus-visible:ring-primary/20"
                 />
               </div>
               <div className="grid gap-1.5">
@@ -497,7 +497,6 @@ export function ProductEdit({ product, open, onOpenChange, onUpdated }: ProductE
                     )}
                   </div>
                 ))}
-
                 {remainingSlots > 0 && (
                   <label
                     htmlFor="edit-product-images"
