@@ -26,6 +26,7 @@ import type {
   ImageError,
   ProductImage,
 } from "@/types/data-type";
+import { statuses } from "@/types/data-type";
 import { createProduct } from "@/services/product-service";
 import { Spinner } from "@/components/ui/spinner";
 

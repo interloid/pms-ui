@@ -24,13 +24,13 @@ export function ProductTable({
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/50 hover:bg-muted/50 text-muted-text text-xs">
-              <TableHead className="text-center">SKU ↕</TableHead>
-              <TableHead className="min-w-55">PRODUCT NAME ↕</TableHead>
-              <TableHead>CATEGORY ↕</TableHead>
-              <TableHead className="text-right">PRICE ↕</TableHead>
-              <TableHead className="text-right">STOCK ↕</TableHead>
-              <TableHead>STATUS ↕</TableHead>
-              <TableHead>UPDATED ↓</TableHead>
+              <TableHead className="text-center">SKU</TableHead>
+              <TableHead className="min-w-55">PRODUCT NAME</TableHead>
+              <TableHead>CATEGORY</TableHead>
+              <TableHead className="text-right">PRICE</TableHead>
+              <TableHead className="text-right">STOCK</TableHead>
+              <TableHead>STATUS </TableHead>
+              <TableHead>UPDATED </TableHead>
               <TableHead>ACTIONS</TableHead>
             </TableRow>
           </TableHeader>

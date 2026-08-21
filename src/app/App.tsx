@@ -31,7 +31,7 @@ export default function App() {
                   <Route path="/login" element={<LoginForm/>}/>
                   <Route path="/passcode" element={<PasscodeRequestPage />}/>
                   <Route path="/passcode/verify" element={<PasscodeVerifyPage />} />
-                  <Route path="/callback" element={<Callback />} />
+                  <Route path="/callback" element={<Callback />}  />
                 </Route>
                 <Route element={<ProtectedRoute />}>
                   <Route element={<DashboardLayout />}>

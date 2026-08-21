@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { formatStatus } from "@/lib/converters";
+import { getStatusLabel } from "@/lib/converters";
 import type { ProductViewProps } from "@/types/data-type";
 import { DetailLabel, DetailValue } from "@/components/shad/detail-label";
 
@@ -18,7 +18,7 @@ function getStatusClassName(status: string) {
       return "border-emerald-200 bg-emerald-50 text-emerald-700";
     case "draft":
       return "border-slate-200 bg-slate-50 text-slate-600";
-    case "out of stock":
+    case "out_of_stock":
       return "border-orange-200 bg-orange-50 text-orange-700";
     case "archived":
       return "border-slate-200 bg-slate-50 text-slate-500";
@@ -118,7 +118,7 @@ export function ProductView({
                   variant="outline"
                   className={getStatusClassName(product.status)}
                 >
-                  {formatStatus(product.status)}
+                  {getStatusLabel(product.status)}
                 </Badge>
               </div>
 

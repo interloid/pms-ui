@@ -10,7 +10,7 @@ import {
 import { TableCell, TableRow } from "@/components/ui/table";
 import type { ApiProduct, ProductTableRowProps } from "@/types/data-type";
 import { ProductImage } from "./product-image";
-import { formatDateTime, formatStatus } from "@/lib/converters";
+import { formatDateTime, getStatusLabel } from "@/lib/converters";
 
 function getStatusClassName(status: string) {
   switch (status) {
@@ -18,7 +18,7 @@ function getStatusClassName(status: string) {
       return "border-emerald-200 bg-emerald-50 text-emerald-700";
     case "draft":
       return "border-slate-200 bg-slate-50 text-slate-600";
-    case "out of stock":
+    case "out_of_stock":
       return "border-orange-200 bg-orange-50 text-orange-700";
     case "archived":
       return "border-slate-200 bg-slate-50 text-slate-500";
@@ -81,8 +81,8 @@ export function ProductTableRow({
     );
   }
   return (
-    <TableRow>
-      <TableCell>
+    <TableRow  className="cursor-pointer">
+      <TableCell >
         <div className="flex items-center gap-3">
           <ProductImage src={primaryImage} alt={product.name} />
           <span className="font-mono text-xs text-muted-foreground">
@@ -92,7 +92,7 @@ export function ProductTableRow({
       </TableCell>
       <TableCell>
         <button
-          type="button"
+          type="button"   
           onClick={onView}
           className="text-left text-sm font-semibold hover:underline"
         >
@@ -108,7 +108,7 @@ export function ProductTableRow({
       <TableCell className="text-right text-sm">{product.stock}</TableCell>
       <TableCell>
         <Badge variant="outline" className={getStatusClassName(product.status)}>
-          {formatStatus(product.status)}
+          {getStatusLabel(product.status)}
         </Badge>
       </TableCell>
       <TableCell className="text-sm text-muted-foreground">

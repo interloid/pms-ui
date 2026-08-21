@@ -31,7 +31,6 @@ export default function DashboardLayout() {
     <SearchContext.Provider value={{ searchQuery, setSearchQuery, refreshKey, refresh }}>
       <SidebarProvider>
         <AppSidebar user={user} />
-
         <SidebarInset>
             <Header user={user} productCount={productCount} />
           <main className="flex flex-1 flex-col p-4">

@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import type { ProductCategory, ProductFiltersProps } from "@/types/data-type";
-import { categories, statuses } from "@/types/data-type";
+import { categories, statusFilters } from "@/types/data-type";
 
 const priceRanges = [
   { value: "all", label: "All" },
@@ -60,7 +60,7 @@ export function ProductFilters({
         </SelectContent>
       </Select>
       <div className="flex items-center gap-1">
-        {statuses.map((item) => {
+        {statusFilters.map((item) => {
           const active = status === item.value;
           return (
             <Button
@@ -75,7 +75,7 @@ export function ProductFilters({
               }
               onClick={() => onStatusChange(item.value)}
             >
-              {item.value}
+              {item.label}
             </Button>
           );
         })}

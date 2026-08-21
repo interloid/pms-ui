@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useSearch } from "@/context/search-context";
-import { priceToNumber, formatStatus } from "@/lib/converters";
+import { priceToNumber } from "@/lib/converters";
 import type {
   ApiProduct,
   ProductCategory,
@@ -28,7 +28,7 @@ import { ProductEdit } from "./crud-operations/edit-product";
 import {
   getProducts,
   deleteProduct as deleteProductApi,
-} from "@/services/product-service";
+} from "@/services/product-service";  
 import { ProductListSkeleton } from "@/components/shad/product-list-skeleton";
 
 export default function Products() {
@@ -85,7 +85,7 @@ export default function Products() {
     }
     if (status !== "All") {
       result = result.filter(
-        (product) => formatStatus(product.status) === status,
+        (product) => product.status === status,
       );
     }
 

@@ -99,18 +99,23 @@ export const categories: Array<{
 export type ProductStatus =
   | "active"
   | "draft"
-  | "out of stock"
+  | "out_of_stock"
   | "archived";
 
 export const statuses: Array<{
   value: ProductStatus;
   label: string;
 }> = [
-  {value: "active",label: "Active"},
-  {value: "draft",label: "Draft"},
-  {value: "out of stock",label: "Out of Stock"},
-  {value: "archived",label: "Archived"},
+  { value: "active", label: "Active" },
+  { value: "draft", label: "Draft" },
+  { value: "out_of_stock", label: "Out of Stock" },
+  { value: "archived", label: "Archived" },
 ];
+
+export const statusFilters: Array<{
+  value: ProductStatusFilter;
+  label: string;
+}> = [{ value: "All", label: "All" }, ...statuses];
 
 export interface ProductImage {
   id: string;
@@ -206,7 +211,7 @@ export type User = {
 };
 
 export type InputInlineProps = {
-  user: AuthUser| null;
+  user: AuthUser | null;
 };
 
 export type FormErrors = {

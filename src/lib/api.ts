@@ -31,9 +31,13 @@ export async function apiRequest<T>(
         ? JSON.stringify(body)
         : undefined,
   });
-  const data = await response.json();
+  const text = await response.text();
+  const data: unknown = text ? JSON.parse(text) : null;
   if (!response.ok) {
-    throw new Error(data?.message || "Request failed");
+    throw new Error(
+      (data as { message?: string } | null)?.message ||
+        `Request failed with status ${response.status}`,
+    );
   }
-  return data;
+  return data as T;
 }

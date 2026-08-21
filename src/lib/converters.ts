@@ -1,3 +1,5 @@
+import { statuses } from "@/types/data-type";
+
 export function toCamelCase(str: string): string {
   return str.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
 }
@@ -45,6 +47,17 @@ export function formatStatus(status: string): string {
     .split(" ")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(" ");
+}
+
+const statusLabels = new Map<string, string>(
+  statuses.map((item) => [item.value, item.label]),
+);
+
+export function getStatusLabel(status: string): string {
+  return (
+    statusLabels.get(status) ??
+    status.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
+  );
 }
 
 export function statusToApi(status: string): string {
