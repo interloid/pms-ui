@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/sheet";
 import type {
   AddProductsProps,
+  FormErrors,
   ImageError,
   ProductImage,
 } from "@/types/data-type";
@@ -60,6 +61,7 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
   const [imageError, setImageError] = useState<ImageError | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const remainingImages = MAX_IMAGES - images.length;
+  const [errors, setErrors] = useState<FormErrors>({});
 
   function resetForm() {
     setName("");
@@ -73,10 +75,30 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
     setImageError(null);
   }
 
+  const validateForm = (): boolean => {
+    const newErrors: FormErrors = {};
+    if (!name.trim()) {
+      newErrors.name = "This name is required.";
+    }
+    if (!sku.trim()) {
+      newErrors.sku = "This sku is required.";
+    }
+    if (!category) {
+      newErrors.category = "Please select a category.";
+    }
+    if (!price) {
+      newErrors.price = "This price is required.";
+    }
+    if (!stock) {
+      newErrors.price = "This stock is required.";
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!name.trim() || !sku.trim() || !category || !price) {
-      toast.error("Please fill in all required fields");
+    if (!validateForm()) {
       return;
     }
     setIsSubmitting(true);
@@ -246,9 +268,29 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
                 id="product-name"
                 placeholder="e.g. Meridian Desk Lamp"
                 value={name}
-                onChange={(event) => setName(event.target.value)}
-                className="h-10 placeholder:text-xs focus-visible:border-primary focus-visible:ring-primary/20"
+                onChange={(event) => {
+                  setName(event.target.value);
+
+                  if (errors.name) {
+                    setErrors((previous) => ({
+                      ...previous,
+                      name: undefined,
+                    }));
+                  }
+                }}
+                aria-invalid={Boolean(errors.name)}
+                className={`h-10 w-full placeholder:text-xs focus-visible:ring-primary/20 ${
+                  errors.name
+                    ? "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20"
+                    : "focus-visible:border-primary"
+                }`}
               />
+
+              {errors.name && (
+                <span className="text-xs font-medium text-destructive">
+                  {errors.name}
+                </span>
+              )}
             </div>
 
             <div className="grid w-full grid-cols-2 gap-4">
@@ -262,33 +304,62 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
                   id="product-sku"
                   placeholder="ABC-ITEM-000"
                   value={sku}
-                  onChange={(event) => setSku(event.target.value)}
-                  className="h-10 w-full placeholder:text-xs focus-visible:border-primary focus-visible:ring-primary/20"
-                />
-              </div>
+                  onChange={(event) => {
+                    setSku(event.target.value);
 
+                    if (errors.sku) {
+                      setErrors((previous) => ({
+                        ...previous,
+                        sku: undefined,
+                      }));
+                    }
+                  }}
+                  aria-invalid={Boolean(errors.sku)}
+                  className={`h-10 w-full placeholder:text-xs focus-visible:ring-primary/20 ${
+                    errors.sku
+                      ? "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20"
+                      : "focus-visible:border-primary"
+                  }`}
+                />
+
+                {errors.sku && (
+                  <span className="text-[11px] font-normal text-destructive">
+                    {errors.sku}
+                  </span>
+                )}
+              </div>
               <div className="grid w-full gap-2">
                 <Label htmlFor="product-category" className="text-xs">
                   Category
                   <span className="text-destructive"> *</span>
                 </Label>
 
-                <Select value={category} onValueChange={setCategory}>
+                <Select
+                  value={category}
+                  onValueChange={(value) => {
+                    setCategory(value);
+
+                    if (errors.category) {
+                      setErrors((previous) => ({
+                        ...previous,
+                        category: undefined,
+                      }));
+                    }
+                  }}
+                >
                   <SelectTrigger
                     id="product-category"
-                    className="h-10 w-full focus-visible:border-primary focus-visible:ring-primary/20"
+                    aria-invalid={Boolean(errors.category)}
+                    className={`h-10 w-full focus-visible:ring-primary/20 ${
+                      errors.category
+                        ? "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20"
+                        : "focus-visible:border-primary"
+                    }`}
                   >
                     <SelectValue placeholder="Select..." />
                   </SelectTrigger>
 
-                  <SelectContent
-                    position="popper"
-                    side="bottom"
-                    align="start"
-                    sideOffset={4}
-                    avoidCollisions={false}
-                    className="w-36"
-                  >
+                  <SelectContent>
                     {categories.map((category) => (
                       <SelectItem key={category.value} value={category.value}>
                         {category.label}
@@ -296,6 +367,12 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
                     ))}
                   </SelectContent>
                 </Select>
+
+                {errors.category && (
+                  <span className="text-[11px] font-normal text-destructive">
+                    {errors.category}
+                  </span>
+                )}
               </div>
             </div>
 
@@ -305,18 +382,38 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
                   Price
                   <span className="text-destructive"> *</span>
                 </Label>
+
                 <Input
                   id="product-price"
                   type="number"
                   value={price}
-                  onChange={(event) => setPrice(event.target.value)}
+                  onChange={(event) => {
+                    setPrice(event.target.value);
+
+                    if (errors.price) {
+                      setErrors((previous) => ({
+                        ...previous,
+                        price: undefined,
+                      }));
+                    }
+                  }}
                   placeholder="0.00"
                   min={0}
                   step="0.01"
-                  className="h-10 w-full placeholder:text-xs focus-visible:border-primary focus-visible:ring-primary/20"
+                  aria-invalid={Boolean(errors.price)}
+                  className={`h-10 w-full placeholder:text-xs focus-visible:ring-primary/20 ${
+                    errors.price
+                      ? "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20"
+                      : "focus-visible:border-primary"
+                  }`}
                 />
-              </div>
 
+                {errors.price && (
+                  <span className="text-xs text-destructive">
+                    {errors.price}
+                  </span>
+                )}
+              </div>
               <div className="grid w-full gap-2">
                 <Label htmlFor="product-stock" className="text-xs">
                   Stock

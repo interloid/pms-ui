@@ -19,9 +19,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-
 import { updateProduct } from "@/services/product-service";
-
 import {
   categories,
   statuses,
@@ -37,15 +35,15 @@ import {
 
 const MAX_IMAGES = 6;
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
-
 const ALLOWED_FILE_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;
-
 const FORM_DATA_FIELDS = {
   images: "images",
   removedImageIds: "removed_image_ids",
   primaryImageId: "primary_image_id",
   primaryNewImageIndex: "primary_new_image_index",
 } as const;
+
+type FormErrors = Partial<Record<keyof ProductForm, string>>;
 
 function getInitialForm(product: ApiProduct): ProductForm {
   return {
@@ -81,7 +79,9 @@ function validateImage(file: File): ImageError | null {
     return {
       fileName: file.name,
       message: "wasn't added",
-      details: `${(file.size / 1024 / 1024).toFixed(1)} MB exceeds the 5 MB limit.`,
+      details: `${(file.size / 1024 / 1024).toFixed(
+        1,
+      )} MB exceeds the 5 MB limit.`,
     };
   }
 
@@ -106,6 +106,7 @@ export function ProductEdit({
   onUpdated,
 }: ProductEditProps) {
   const [form, setForm] = useState<ProductForm | null>(null);
+  const [errors, setErrors] = useState<FormErrors>({});
   const [existingImages, setExistingImages] = useState<ApiProductImage[]>([]);
   const [newImages, setNewImages] = useState<ProductImage[]>([]);
   const [removedImageIds, setRemovedImageIds] = useState<Set<string>>(
@@ -115,15 +116,18 @@ export function ProductEdit({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const originalForm = useRef<ProductForm | null>(null);
   const originalPrimaryImageId = useRef<string | null>(null);
+
   useEffect(() => {
     if (!product || !open) {
       return;
     }
+
     const initialForm = getInitialForm(product);
     const images = product.images ?? [];
     const primaryImage = images.find((image) => image.is_primary);
 
     setForm(initialForm);
+    setErrors({});
     setExistingImages(images);
     setRemovedImageIds(new Set());
     setNewImages([]);
@@ -132,43 +136,36 @@ export function ProductEdit({
     originalForm.current = initialForm;
     originalPrimaryImageId.current = primaryImage?.id ?? null;
   }, [product, open]);
+
   const activeExistingImages = useMemo(
     () => existingImages.filter((image) => !removedImageIds.has(image.id)),
     [existingImages, removedImageIds],
   );
-
   const removedExistingImages = useMemo(
     () => existingImages.filter((image) => removedImageIds.has(image.id)),
     [existingImages, removedImageIds],
   );
 
   const activeImageCount = activeExistingImages.length + newImages.length;
-
   const remainingSlots = Math.max(MAX_IMAGES - activeImageCount, 0);
-
   const primaryExistingImage = useMemo(
     () => getPrimaryExistingImage(existingImages, removedImageIds),
     [existingImages, removedImageIds],
   );
-
   const primaryNewImage = useMemo(
     () => getPrimaryNewImage(newImages),
     [newImages],
   );
 
   const currentPrimaryImageId = primaryExistingImage?.id ?? null;
-
   const currentPrimaryNewImageIndex = primaryNewImage
     ? newImages.findIndex((image) => image.id === primaryNewImage.id)
     : -1;
-
   const isDirty = useMemo(() => {
     if (!form || !originalForm.current) {
       return false;
     }
-
     const original = originalForm.current;
-
     const formChanged =
       form.name !== original.name ||
       form.sku !== original.sku ||
@@ -179,11 +176,9 @@ export function ProductEdit({
       form.description !== original.description;
 
     const imagesChanged = removedImageIds.size > 0 || newImages.length > 0;
-
     const primaryImageChanged =
       currentPrimaryImageId !== originalPrimaryImageId.current ||
       currentPrimaryNewImageIndex >= 0;
-
     return formChanged || imagesChanged || primaryImageChanged;
   }, [
     form,
@@ -207,6 +202,57 @@ export function ProductEdit({
         [field]: value,
       };
     });
+
+    setErrors((previous) => {
+      if (!previous[field]) {
+        return previous;
+      }
+
+      return {
+        ...previous,
+        [field]: undefined,
+      };
+    });
+  }
+
+  function validateForm(): boolean {
+    if (!form) {
+      return false;
+    }
+
+    const newErrors: FormErrors = {};
+
+    if (!form.name.trim()) {
+      newErrors.name = "This Name is required.";
+    }
+
+    if (!form.sku.trim()) {
+      newErrors.sku = "This SKU is required.";
+    }
+
+    if (!form.category) {
+      newErrors.category = "This category is required.";
+    }
+
+    if (!form.price.trim()) {
+      newErrors.price = "This price is required.";
+    } else if (!Number.isFinite(Number(form.price))) {
+      newErrors.price = "Please enter a valid price.";
+    } else if (Number(form.price) < 0) {
+      newErrors.price = "Price cannot be negative.";
+    }
+
+    if (!form.stock.trim()) {
+      newErrors.stock = "This stock is required.";
+    } else if (!Number.isFinite(Number(form.stock))) {
+      newErrors.stock = "Please enter a valid stock.";
+    } else if (Number(form.stock) < 0) {
+      newErrors.stock = "Stock cannot be negative.";
+    }
+
+    setErrors(newErrors);
+
+    return Object.keys(newErrors).length === 0;
   }
 
   function discardChanges() {
@@ -221,6 +267,7 @@ export function ProductEdit({
     const primaryImage = images.find((image) => image.is_primary);
 
     setForm(initialForm);
+    setErrors({});
     setExistingImages(images);
     setRemovedImageIds(new Set());
     setNewImages([]);
@@ -251,7 +298,6 @@ export function ProductEdit({
       })),
     );
   }
-
   function setNewImagePrimary(id: string) {
     const imageExists = newImages.some((image) => image.id === id);
 
@@ -273,6 +319,7 @@ export function ProductEdit({
       })),
     );
   }
+
 
   function toggleRemoveExistingImage(id: string) {
     const image = existingImages.find((item) => item.id === id);
@@ -315,17 +362,14 @@ export function ProductEdit({
 
   function handleNewImageChange(event: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(event.target.files ?? []);
+
     if (!files.length) {
       return;
     }
 
     setImageError(null);
 
-    const activeExistingCount = activeExistingImages.length;
-
-    const availableSlots = MAX_IMAGES - activeExistingCount - newImages.length;
-
-    if (availableSlots <= 0) {
+    if (remainingSlots <= 0) {
       setImageError({
         message: `You can upload a maximum of ${MAX_IMAGES} images.`,
       });
@@ -334,8 +378,10 @@ export function ProductEdit({
       return;
     }
 
-    const filesToProcess = files.slice(0, availableSlots);
+    const filesToProcess = files.slice(0, remainingSlots);
+
     const addedImages: ProductImage[] = [];
+
     let firstError: ImageError | null = null;
 
     for (const file of filesToProcess) {
@@ -362,22 +408,26 @@ export function ProductEdit({
     if (addedImages.length > 0) {
       setNewImages((previous) => [...previous, ...addedImages]);
     }
+
     setImageError(firstError);
     event.target.value = "";
   }
 
   function removeNewImage(id: string) {
     const image = newImages.find((item) => item.id === id);
+
     if (!image) {
       return;
     }
 
     URL.revokeObjectURL(image.previewUrl);
+
     const remainingImages = newImages.filter((item) => item.id !== id);
 
     if (image.isPrimary) {
       if (remainingImages.length > 0) {
         const nextPrimaryId = remainingImages[0].id;
+
         setExistingImages((images) =>
           images.map((item) => ({
             ...item,
@@ -396,6 +446,7 @@ export function ProductEdit({
       }
 
       const fallbackExisting = activeExistingImages[0];
+
       if (fallbackExisting) {
         setExistingImagePrimary(fallbackExisting.id);
       }
@@ -411,39 +462,37 @@ export function ProductEdit({
       return;
     }
 
+    if (!validateForm()) {
+      return;
+    }
+
     const name = form.name.trim();
     const sku = form.sku.trim();
     const description = form.description.trim();
 
-    if (!name || !sku || !form.category || !form.price) {
-      toast.error("Please fill in all required fields");
-      return;
-    }
     const price = Number(form.price);
     const stock = Number(form.stock);
 
-    if (!Number.isFinite(price) || price < 0) {
-      toast.error("Please enter a valid price");
-      return;
-    }
-    if (!Number.isFinite(stock) || stock < 0) {
-      toast.error("Please enter a valid stock");
-      return;
-    }
     if (activeImageCount > MAX_IMAGES) {
       toast.error(`You can have a maximum of ${MAX_IMAGES} images.`);
       return;
     }
+
     setIsSubmitting(true);
 
     try {
       const formData = new FormData();
+
       formData.append("name", name);
       formData.append("sku", sku);
       formData.append("category_name", form.category);
+
       formData.append("price", String(price));
+
       formData.append("stock", String(stock));
+
       formData.append("status", form.status);
+
       formData.append("description", description);
 
       if (removedImageIds.size > 0) {
@@ -474,13 +523,23 @@ export function ProductEdit({
       const updated = await updateProduct(product.id, formData);
 
       toast.success("Product updated successfully");
-      
+
       onOpenChange(false);
       onUpdated?.(updated);
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Failed to update product",
-      );
+      const message =
+        error instanceof Error ? error.message : "Failed to update product";
+
+      if (message.toLowerCase().includes("sku")) {
+        setErrors((previous) => ({
+          ...previous,
+          sku: "This SKU already exists.",
+        }));
+
+        return;
+      }
+
+      toast.error(message);
     } finally {
       setIsSubmitting(false);
     }
@@ -490,11 +549,14 @@ export function ProductEdit({
     if (open) {
       return;
     }
+
     revokeImageUrls(newImages);
   }, [open]);
+
   if (!product || !form) {
     return null;
   }
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="gap-0 p-0 sm:max-w-xl!">
@@ -505,12 +567,15 @@ export function ProductEdit({
             </SheetTitle>
           </div>
         </SheetHeader>
+
         {isDirty && (
           <div className="flex items-center gap-2.5 border-b bg-accent px-5 py-3">
             <span className="text-[12px] font-medium text-accent-foreground">
               Unsaved changes
             </span>
+
             <div className="flex-1" />
+
             <Button
               type="button"
               variant="outline"
@@ -526,6 +591,7 @@ export function ProductEdit({
             </span>
           </div>
         )}
+
         <form onSubmit={handleSubmit} className="contents">
           <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-5">
             <div className="grid gap-1.5">
@@ -533,17 +599,30 @@ export function ProductEdit({
                 htmlFor="edit-product-name"
                 className="text-[12px] font-medium"
               >
-                Product name <span className="text-destructive">*</span>
+                Product Name <span className="text-destructive">*</span>
               </Label>
+
               <Input
                 id="edit-product-name"
+                placeholder="e.g. Meridian Desk Lamp"
                 value={form.name}
                 onChange={(event) => updateField("name", event.target.value)}
-                className="h-10 placeholder:text-xs focus-visible:border-primary focus-visible:ring-primary/20"
+                aria-invalid={Boolean(errors.name)}
+                className={`h-10 placeholder:text-xs focus-visible:ring-primary/20 ${
+                  errors.name
+                    ? "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20"
+                    : "focus-visible:border-primary"
+                }`}
               />
+
+              {errors.name && (
+                <span className="text-[11px] font-normal text-destructive">
+                  {errors.name}
+                </span>
+              )}
             </div>
             <div className="grid w-full grid-cols-2 gap-3">
-              <div className="grid gap-1.5 w-full">
+              <div className="grid gap-1.5">
                 <Label
                   htmlFor="edit-product-sku"
                   className="text-[12px] font-medium"
@@ -555,11 +634,23 @@ export function ProductEdit({
                   id="edit-product-sku"
                   value={form.sku}
                   onChange={(event) => updateField("sku", event.target.value)}
-                  className="h-10 font-mono placeholder:text-xs focus-visible:border-primary focus-visible:ring-primary/20"
+                  aria-invalid={Boolean(errors.sku)}
+                  className={`h-10 font-mono placeholder:text-xs focus-visible:ring-primary/20 ${
+                    errors.sku
+                      ? "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20"
+                      : "focus-visible:border-primary"
+                  }`}
                 />
+
+                {errors.sku && (
+                  <span className="text-[11px] font-normal text-destructive">
+                    {errors.sku}
+                  </span>
+                )}
               </div>
 
-              <div className="grid gap-1.5 w-full">
+              {/* Category */}
+              <div className="grid gap-1.5">
                 <Label
                   htmlFor="edit-product-category"
                   className="text-[12px] font-medium"
@@ -575,18 +666,17 @@ export function ProductEdit({
                 >
                   <SelectTrigger
                     id="edit-product-category"
-                    className="h-9 w-full"
+                    aria-invalid={Boolean(errors.category)}
+                    className={`h-9 w-full focus-visible:ring-primary/20 ${
+                      errors.category
+                        ? "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20"
+                        : "focus-visible:border-primary"
+                    }`}
                   >
                     <SelectValue placeholder="Select..." />
                   </SelectTrigger>
-                  <SelectContent
-                    position="popper"
-                    side="bottom"
-                    align="start"
-                    sideOffset={4}
-                    avoidCollisions={false}
-                    className="w-36"
-                  >
+
+                  <SelectContent>
                     {categories.map((category) => (
                       <SelectItem key={category.value} value={category.value}>
                         {category.label}
@@ -594,9 +684,18 @@ export function ProductEdit({
                     ))}
                   </SelectContent>
                 </Select>
+
+                {errors.category && (
+                  <span className="text-[11px] font-normal text-destructive">
+                    {errors.category}
+                  </span>
+                )}
               </div>
             </div>
+
+            {/* Price + Stock + Status */}
             <div className="grid grid-cols-3 gap-3">
+              {/* Price */}
               <div className="grid gap-1.5">
                 <Label
                   htmlFor="edit-product-price"
@@ -604,6 +703,7 @@ export function ProductEdit({
                 >
                   Price <span className="text-destructive">*</span>
                 </Label>
+
                 <Input
                   id="edit-product-price"
                   type="number"
@@ -611,9 +711,22 @@ export function ProductEdit({
                   step="0.01"
                   value={form.price}
                   onChange={(event) => updateField("price", event.target.value)}
-                  className="h-10 font-mono"
+                  aria-invalid={Boolean(errors.price)}
+                  className={`h-10 font-mono focus-visible:ring-primary/20 ${
+                    errors.price
+                      ? "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20"
+                      : "focus-visible:border-primary"
+                  }`}
                 />
+
+                {errors.price && (
+                  <span className="text-[11px] font-normal text-destructive">
+                    {errors.price}
+                  </span>
+                )}
               </div>
+
+              {/* Stock */}
               <div className="grid gap-1.5">
                 <Label
                   htmlFor="edit-product-stock"
@@ -626,11 +739,25 @@ export function ProductEdit({
                   id="edit-product-stock"
                   type="number"
                   min={0}
+                  step="1"
                   value={form.stock}
                   onChange={(event) => updateField("stock", event.target.value)}
-                  className="h-10 font-mono"
+                  aria-invalid={Boolean(errors.stock)}
+                  className={`h-10 font-mono focus-visible:ring-primary/20 ${
+                    errors.stock
+                      ? "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20"
+                      : "focus-visible:border-primary"
+                  }`}
                 />
+
+                {errors.stock && (
+                  <span className="text-[11px] font-normal text-destructive">
+                    {errors.stock}
+                  </span>
+                )}
               </div>
+
+              {/* Status */}
               <div className="grid gap-1.5">
                 <Label
                   htmlFor="edit-product-status"
@@ -652,14 +779,7 @@ export function ProductEdit({
                     <SelectValue placeholder="Select..." />
                   </SelectTrigger>
 
-                  <SelectContent
-                    position="popper"
-                    side="bottom"
-                    align="start"
-                    sideOffset={4}
-                    avoidCollisions={false}
-                    className="w-36"
-                  >
+                  <SelectContent>
                     {statuses.map((status) => (
                       <SelectItem key={status.value} value={status.value}>
                         {status.label}
@@ -669,6 +789,8 @@ export function ProductEdit({
                 </Select>
               </div>
             </div>
+
+            {/* Images */}
             <div className="grid gap-1.5">
               <div className="flex items-center justify-between">
                 <Label className="text-[12px] font-medium">Images</Label>
@@ -694,7 +816,6 @@ export function ProductEdit({
                       type="button"
                       onClick={() => toggleRemoveExistingImage(image.id)}
                       className="absolute right-1.5 top-1.5 flex size-4.5 items-center justify-center rounded-full border bg-background text-[10px] hover:text-destructive"
-                      aria-label="Remove image"
                     >
                       ×
                     </button>
@@ -714,6 +835,7 @@ export function ProductEdit({
                     )}
                   </div>
                 ))}
+
                 {removedExistingImages.map((image) => (
                   <div
                     key={`removed-${image.id}`}
@@ -727,12 +849,12 @@ export function ProductEdit({
                       type="button"
                       onClick={() => toggleRemoveExistingImage(image.id)}
                       className="absolute right-1.5 top-1.5 flex size-4.5 items-center justify-center rounded-full border bg-background text-[10px]"
-                      aria-label="Restore image"
                     >
                       ↩
                     </button>
                   </div>
                 ))}
+
                 {newImages.map((image) => (
                   <div
                     key={image.id}
@@ -748,7 +870,6 @@ export function ProductEdit({
                       type="button"
                       onClick={() => removeNewImage(image.id)}
                       className="absolute right-1.5 top-1.5 flex size-4.5 items-center justify-center rounded-full border bg-background text-[10px] hover:text-destructive"
-                      aria-label="Remove image"
                     >
                       ×
                     </button>
@@ -768,6 +889,7 @@ export function ProductEdit({
                     )}
                   </div>
                 ))}
+
                 {remainingSlots > 0 && (
                   <label
                     htmlFor="edit-product-images"
@@ -807,6 +929,8 @@ export function ProductEdit({
                 </div>
               )}
             </div>
+
+            {/* Description */}
             <div className="grid gap-1.5">
               <Label
                 htmlFor="edit-product-description"
@@ -825,6 +949,8 @@ export function ProductEdit({
               />
             </div>
           </div>
+
+          {/* Footer */}
           <div className="flex h-16 shrink-0 items-center gap-2 border-t px-5">
             <div className="flex-1" />
 
@@ -833,6 +959,7 @@ export function ProductEdit({
               variant="secondary"
               className="h-9 px-3.5 text-[13px] font-medium"
               onClick={() => onOpenChange(false)}
+              disabled={isSubmitting}
             >
               Cancel
             </Button>

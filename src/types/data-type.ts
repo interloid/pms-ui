@@ -119,6 +119,12 @@ export interface ProductImage {
   isPrimary: boolean;
 }
 
+export interface ProductImageProps {
+  src?: string;
+  alt: string;
+  className?: string;
+}
+
 export interface ProductImageResponse {
   id: string;
   url: string;
@@ -201,4 +207,11 @@ export type User = {
 
 export type InputInlineProps = {
   user: AuthUser| null;
+};
+
+export type FormErrors = {
+  name?: string;
+  sku?: string;
+  category?: string;
+  price?: string;
 };

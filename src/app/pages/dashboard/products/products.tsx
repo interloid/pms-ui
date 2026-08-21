@@ -167,7 +167,7 @@ export default function Products() {
     }
   }
 
-  function handleViewProduct(product: ApiProduct) {
+ function handleViewProduct(product: ApiProduct) {
     setViewProduct(product);
     setViewOpen(true);
   }

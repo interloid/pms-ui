@@ -29,7 +29,7 @@ function getStatusClassName(status: string) {
 
 function getPrimaryImage(product: ApiProduct) {
   return (
-    product.images?.find((image) => image.is_primary)?.url??
+    product.images?.find((image) => image.is_primary)?.url ??
     product.images?.[0]?.url
   );
 }
@@ -47,7 +47,9 @@ export function ProductTableRow({
 
   if (isArchiving) {
     return (
-      <TableRow className="bg-red-50 hover:bg-red-50">
+      <TableRow
+        className="bg-red-50 hover:bg-red-50"
+      >
         <TableCell colSpan={8} className="border-l-2 border-l-red-500 py-4">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
