@@ -311,7 +311,6 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
                   Price
                   <span className="text-destructive"> *</span>
                 </Label>
-
                 <Input
                   id="product-price"
                   type="number"
@@ -319,6 +318,7 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
                   onChange={(event) => setPrice(event.target.value)}
                   placeholder="0.00"
                   min={0}
+                  step="0.01"
                   className="h-10 w-full placeholder:text-xs focus-visible:border-primary focus-visible:ring-primary/20"
                 />
               </div>

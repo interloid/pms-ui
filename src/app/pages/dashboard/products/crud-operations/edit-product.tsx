@@ -119,10 +119,8 @@ export function ProductEdit({
     if (!product || !open) {
       return;
     }
-
     const initialForm = getInitialForm(product);
     const images = product.images ?? [];
-
     const primaryImage = images.find((image) => image.is_primary);
 
     setForm(initialForm);
@@ -317,7 +315,6 @@ export function ProductEdit({
 
   function handleNewImageChange(event: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(event.target.files ?? []);
-
     if (!files.length) {
       return;
     }
@@ -338,9 +335,7 @@ export function ProductEdit({
     }
 
     const filesToProcess = files.slice(0, availableSlots);
-
     const addedImages: ProductImage[] = [];
-
     let firstError: ImageError | null = null;
 
     for (const file of filesToProcess) {
@@ -616,6 +611,7 @@ export function ProductEdit({
                   id="edit-product-price"
                   type="number"
                   min={0}
+                  step="0.01"
                   value={form.price}
                   onChange={(event) => updateField("price", event.target.value)}
                   className="h-10 font-mono"
