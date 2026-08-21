@@ -75,12 +75,10 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-
     if (!name.trim() || !sku.trim() || !category || !price) {
       toast.error("Please fill in all required fields");
       return;
     }
-
     setIsSubmitting(true);
 
     try {
@@ -120,7 +118,6 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
     }
 
     setImageError(null);
-
     const remainingSlots = MAX_IMAGES - images.length;
 
     if (remainingSlots <= 0) {
@@ -187,7 +184,6 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
         isPrimary: images.length === 0 && newImages.length === 0,
       });
     }
-
     if (newImages.length > 0) {
       setImages((previousImages) => [...previousImages, ...newImages]);
     }
@@ -206,14 +202,12 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
       URL.revokeObjectURL(imageToRemove.previewUrl);
 
       const remainingImages = previousImages.filter((image) => image.id !== id);
-
       if (imageToRemove.isPrimary && remainingImages.length > 0) {
         remainingImages[0] = {
           ...remainingImages[0],
           isPrimary: true,
         };
       }
-
       return remainingImages;
     });
   };

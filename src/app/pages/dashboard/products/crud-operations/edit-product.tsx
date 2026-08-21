@@ -474,7 +474,7 @@ export function ProductEdit({
       const updated = await updateProduct(product.id, formData);
 
       toast.success("Product updated successfully");
-
+      
       onOpenChange(false);
       onUpdated?.(updated);
     } catch (error) {
@@ -510,9 +510,7 @@ export function ProductEdit({
             <span className="text-[12px] font-medium text-accent-foreground">
               Unsaved changes
             </span>
-
             <div className="flex-1" />
-
             <Button
               type="button"
               variant="outline"
@@ -537,7 +535,6 @@ export function ProductEdit({
               >
                 Product name <span className="text-destructive">*</span>
               </Label>
-
               <Input
                 id="edit-product-name"
                 value={form.name}

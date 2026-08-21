@@ -12,6 +12,7 @@ export async function getProducts(
   const response = await apiRequest<GetProductsResponse>(
     `/api/v1/products?sort=updated&order=desc&page=${page}&page_size=${pageSize}`,
   );
+  console.log('response.data', response)
   return {
     products: response.data,
     total: response.pagination.total,

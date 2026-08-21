@@ -59,3 +59,13 @@ export function priceToNumber(price: string | number): number {
   return Number(price);
 }
 
+export function formatDateTime(dateString: string): string {
+  return new Date(dateString).toLocaleString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
+}

@@ -49,7 +49,7 @@ export default function Products() {
   const [viewOpen, setViewOpen] = useState(false);
   const [editProduct, setEditProduct] = useState<ApiProduct | null>(null);
   const [editOpen, setEditOpen] = useState(false);
-  
+
   useEffect(() => {
     async function loadProducts() {
       try {
