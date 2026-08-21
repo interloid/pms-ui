@@ -20,13 +20,13 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import type {
-  AddProductsProps,
-  FormErrors,
-  ImageError,
-  ProductImage,
+import {
+    statuses,
+  type AddProductsProps,
+  type FormErrors,
+  type ImageError,
+  type ProductImage,
 } from "@/types/data-type";
-import { statuses } from "@/types/data-type";
 import { createProduct } from "@/services/product-service";
 import { Spinner } from "@/components/ui/spinner";
 
@@ -41,12 +41,6 @@ const categories = [
   { value: "Electronics", label: "Electronics" },
   { value: "Outdoor", label: "Outdoor" },
   { value: "Stationery", label: "Stationery" },
-];
-const statuses = [
-  { value: "active", label: "Active" },
-  { value: "draft", label: "Draft" },
-  { value: "out of stock", label: "Out of Stock" },
-  { value: "archived", label: "Archived" },
 ];
 
 export function AddProducts({ onProductCreated }: AddProductsProps) {
