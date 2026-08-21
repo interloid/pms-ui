@@ -287,7 +287,14 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
                     <SelectValue placeholder="Select..." />
                   </SelectTrigger>
 
-                  <SelectContent>
+                  <SelectContent
+                    position="popper"
+                    side="bottom"
+                    align="start"
+                    sideOffset={4}
+                    avoidCollisions={false}
+                    className="w-36"
+                  >
                     {categories.map((category) => (
                       <SelectItem key={category.value} value={category.value}>
                         {category.label}
@@ -345,7 +352,14 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
                     <SelectValue placeholder="Select..." />
                   </SelectTrigger>
 
-                  <SelectContent>
+                  <SelectContent
+                    position="popper"
+                    side="bottom"
+                    align="start"
+                    sideOffset={4}
+                    avoidCollisions={false}
+                    className="w-36"
+                  >
                     {statuses.map((status) => (
                       <SelectItem key={status.value} value={status.value}>
                         {status.label}

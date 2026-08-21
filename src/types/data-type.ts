@@ -87,6 +87,7 @@ export const categories: Array<{
   value: ProductCategory;
   label: string;
 }> = [
+  { value: "All", label: "All" },
   { value: "Lighting", label: "Lighting" },
   { value: "Apparel", label: "Apparel" },
   { value: "Home", label: "Home" },
@@ -105,22 +106,10 @@ export const statuses: Array<{
   value: ProductStatus;
   label: string;
 }> = [
-  {
-    value: "active",
-    label: "Active",
-  },
-  {
-    value: "draft",
-    label: "Draft",
-  },
-  {
-    value: "out of stock",
-    label: "Out of Stock",
-  },
-  {
-    value: "archived",
-    label: "Archived",
-  },
+  {value: "active",label: "Active"},
+  {value: "draft",label: "Draft"},
+  {value: "out of stock",label: "Out of Stock"},
+  {value: "archived",label: "Archived"},
 ];
 
 export interface ProductImage {

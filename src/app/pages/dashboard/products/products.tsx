@@ -35,7 +35,6 @@ export default function Products() {
   const { searchQuery, refreshKey } = useSearch();
   const [products, setProducts] = useState<ApiProduct[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-
   const [category, setCategory] = useState<ProductCategory>("All");
   const [status, setStatus] = useState<ProductStatusFilter>("All");
   const [priceRange, setPriceRange] = useState("all");
@@ -50,6 +49,7 @@ export default function Products() {
   const [viewOpen, setViewOpen] = useState(false);
   const [editProduct, setEditProduct] = useState<ApiProduct | null>(null);
   const [editOpen, setEditOpen] = useState(false);
+  
   useEffect(() => {
     async function loadProducts() {
       try {
@@ -185,9 +185,7 @@ export default function Products() {
   }
 
   if (isLoading) {
-    return (
-        <ProductListSkeleton/>
-    );
+    return <ProductListSkeleton />;
   }
 
   return (
@@ -242,7 +240,8 @@ export default function Products() {
               <SelectValue />
             </SelectTrigger>
 
-            <SelectContent>
+            <SelectContent
+            >
               {[10, 20, 30, 40, 50].map((size) => (
                 <SelectItem key={size} value={String(size)}>
                   {size}

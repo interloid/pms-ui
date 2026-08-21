@@ -5,7 +5,7 @@ import { AuthProvider } from "@/context/auth-context";
 import { ProtectedRoute } from "@/app/auth/protected-route";
 import { PublicRoute } from "@/app/auth/public-route";
 import { Toaster } from "sonner";
-import { Spinner } from "@/components/ui/spinner";
+import LoadingScreen from "@/components/shad/loading-screen";
 
 const LoginForm = lazy(() => import("./pages/login"));
 const Callback = lazy(() => import("./pages/callback"));
@@ -18,17 +18,6 @@ const Reports = lazy(() => import("./pages/dashboard/reports"));
 const Settings = lazy(() => import("./pages/settings"));
 const PasscodeRequestPage = lazy(() => import("./pages/passcode/request"));
 const PasscodeVerifyPage = lazy(() => import("./pages/passcode/verify"));
-
-function LoadingScreen() {
-  return (
-    <div className="flex min-h-screen items-center justify-center gap-2">
-      <Spinner/>
-      <p className="text-sm text-muted-foreground">
-        Loading...
-      </p>
-    </div>
-  );
-}
 
 export default function App() {
   return (
@@ -61,7 +50,6 @@ export default function App() {
           </TooltipProvider>
         </AuthProvider>
       </BrowserRouter>
-
       <Toaster />
     </>
   );

@@ -44,7 +44,14 @@ export function ProductFilters({
           <span className="text-xs">Category:</span>
           <SelectValue />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent
+          position="popper"
+          side="bottom"
+          align="start"
+          sideOffset={4}
+          avoidCollisions={false}
+          className="w-36"
+        >
           {categories.map((item) => (
             <SelectItem key={item.value} value={item.value}>
               {item.value}
@@ -76,11 +83,19 @@ export function ProductFilters({
       <div className="mx-1 hidden h-6 w-px bg-border md:block" />
 
       <Select value={priceRange} onValueChange={onPriceChange}>
-        <SelectTrigger className="h-9 w-28.75">
+        <SelectTrigger className="h-9 w-32">
           <span className="text-xs">Price</span>
           <SelectValue />
         </SelectTrigger>
-        <SelectContent>
+
+        <SelectContent
+          position="popper"
+          side="bottom"
+          align="start"
+          sideOffset={4}
+          avoidCollisions={false}
+          className="w-36"
+        >
           {priceRanges.map((range) => (
             <SelectItem key={range.value} value={range.value}>
               {range.label}

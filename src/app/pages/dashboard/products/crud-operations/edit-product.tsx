@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,7 +19,9 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+
 import { updateProduct } from "@/services/product-service";
+
 import {
   categories,
   statuses,
@@ -35,7 +38,14 @@ import {
 const MAX_IMAGES = 6;
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
-const ALLOWED_FILE_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const ALLOWED_FILE_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;
+
+const FORM_DATA_FIELDS = {
+  images: "images",
+  removedImageIds: "removed_image_ids",
+  primaryImageId: "primary_image_id",
+  primaryNewImageIndex: "primary_new_image_index",
+} as const;
 
 function getInitialForm(product: ApiProduct): ProductForm {
   return {
@@ -56,7 +66,11 @@ function revokeImageUrls(images: ProductImage[]) {
 }
 
 function validateImage(file: File): ImageError | null {
-  if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+  if (
+    !ALLOWED_FILE_TYPES.includes(
+      file.type as (typeof ALLOWED_FILE_TYPES)[number],
+    )
+  ) {
     return {
       fileName: file.name,
       message: "is not supported. Please use JPG, PNG, or WEBP.",
@@ -74,6 +88,17 @@ function validateImage(file: File): ImageError | null {
   return null;
 }
 
+function getPrimaryExistingImage(
+  images: ApiProductImage[],
+  removedIds: Set<string>,
+): ApiProductImage | undefined {
+  return images.find((image) => !removedIds.has(image.id) && image.is_primary);
+}
+
+function getPrimaryNewImage(images: ProductImage[]): ProductImage | undefined {
+  return images.find((image) => image.isPrimary);
+}
+
 export function ProductEdit({
   product,
   open,
@@ -81,34 +106,68 @@ export function ProductEdit({
   onUpdated,
 }: ProductEditProps) {
   const [form, setForm] = useState<ProductForm | null>(null);
-
   const [existingImages, setExistingImages] = useState<ApiProductImage[]>([]);
+  const [newImages, setNewImages] = useState<ProductImage[]>([]);
   const [removedImageIds, setRemovedImageIds] = useState<Set<string>>(
     new Set(),
   );
-  const [newImages, setNewImages] = useState<ProductImage[]>([]);
-
   const [imageError, setImageError] = useState<ImageError | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
   const originalForm = useRef<ProductForm | null>(null);
-
+  const originalPrimaryImageId = useRef<string | null>(null);
   useEffect(() => {
-    if (!product || !open) return;
+    if (!product || !open) {
+      return;
+    }
 
     const initialForm = getInitialForm(product);
+    const images = product.images ?? [];
+
+    const primaryImage = images.find((image) => image.is_primary);
 
     setForm(initialForm);
-    setExistingImages(product.images ?? []);
+    setExistingImages(images);
     setRemovedImageIds(new Set());
     setNewImages([]);
     setImageError(null);
 
     originalForm.current = initialForm;
+    originalPrimaryImageId.current = primaryImage?.id ?? null;
   }, [product, open]);
+  const activeExistingImages = useMemo(
+    () => existingImages.filter((image) => !removedImageIds.has(image.id)),
+    [existingImages, removedImageIds],
+  );
+
+  const removedExistingImages = useMemo(
+    () => existingImages.filter((image) => removedImageIds.has(image.id)),
+    [existingImages, removedImageIds],
+  );
+
+  const activeImageCount = activeExistingImages.length + newImages.length;
+
+  const remainingSlots = Math.max(MAX_IMAGES - activeImageCount, 0);
+
+  const primaryExistingImage = useMemo(
+    () => getPrimaryExistingImage(existingImages, removedImageIds),
+    [existingImages, removedImageIds],
+  );
+
+  const primaryNewImage = useMemo(
+    () => getPrimaryNewImage(newImages),
+    [newImages],
+  );
+
+  const currentPrimaryImageId = primaryExistingImage?.id ?? null;
+
+  const currentPrimaryNewImageIndex = primaryNewImage
+    ? newImages.findIndex((image) => image.id === primaryNewImage.id)
+    : -1;
 
   const isDirty = useMemo(() => {
-    if (!form || !originalForm.current) return false;
+    if (!form || !originalForm.current) {
+      return false;
+    }
 
     const original = originalForm.current;
 
@@ -123,83 +182,299 @@ export function ProductEdit({
 
     const imagesChanged = removedImageIds.size > 0 || newImages.length > 0;
 
-    return formChanged || imagesChanged;
-  }, [form, removedImageIds, newImages]);
+    const primaryImageChanged =
+      currentPrimaryImageId !== originalPrimaryImageId.current ||
+      currentPrimaryNewImageIndex >= 0;
+
+    return formChanged || imagesChanged || primaryImageChanged;
+  }, [
+    form,
+    removedImageIds,
+    newImages,
+    currentPrimaryImageId,
+    currentPrimaryNewImageIndex,
+  ]);
 
   function updateField<K extends keyof ProductForm>(
     field: K,
     value: ProductForm[K],
   ) {
-    setForm((prev) => {
-      if (!prev) return prev;
+    setForm((previous) => {
+      if (!previous) {
+        return previous;
+      }
+
       return {
-        ...prev,
+        ...previous,
         [field]: value,
       };
     });
   }
 
   function discardChanges() {
-    if (!product) return;
+    if (!product) {
+      return;
+    }
 
     revokeImageUrls(newImages);
 
     const initialForm = getInitialForm(product);
+    const images = product.images ?? [];
+    const primaryImage = images.find((image) => image.is_primary);
 
     setForm(initialForm);
-    setExistingImages(product.images ?? []);
+    setExistingImages(images);
     setRemovedImageIds(new Set());
     setNewImages([]);
     setImageError(null);
 
     originalForm.current = initialForm;
+    originalPrimaryImageId.current = primaryImage?.id ?? null;
+  }
+
+  function setExistingImagePrimary(id: string) {
+    const imageExists = activeExistingImages.some((image) => image.id === id);
+
+    if (!imageExists) {
+      return;
+    }
+
+    setExistingImages((images) =>
+      images.map((image) => ({
+        ...image,
+        is_primary: image.id === id,
+      })),
+    );
+
+    setNewImages((images) =>
+      images.map((image) => ({
+        ...image,
+        isPrimary: false,
+      })),
+    );
+  }
+
+  function setNewImagePrimary(id: string) {
+    const imageExists = newImages.some((image) => image.id === id);
+
+    if (!imageExists) {
+      return;
+    }
+
+    setExistingImages((images) =>
+      images.map((image) => ({
+        ...image,
+        is_primary: false,
+      })),
+    );
+
+    setNewImages((images) =>
+      images.map((image) => ({
+        ...image,
+        isPrimary: image.id === id,
+      })),
+    );
+  }
+
+  function toggleRemoveExistingImage(id: string) {
+    const image = existingImages.find((item) => item.id === id);
+
+    if (!image) {
+      return;
+    }
+
+    const isRemoving = !removedImageIds.has(id);
+
+    setRemovedImageIds((previous) => {
+      const next = new Set(previous);
+
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+
+      return next;
+    });
+
+    if (isRemoving && image.is_primary) {
+      const fallbackExisting = existingImages.find(
+        (item) => item.id !== id && !removedImageIds.has(item.id),
+      );
+
+      if (fallbackExisting) {
+        setExistingImagePrimary(fallbackExisting.id);
+        return;
+      }
+
+      const fallbackNew = newImages[0];
+
+      if (fallbackNew) {
+        setNewImagePrimary(fallbackNew.id);
+      }
+    }
+  }
+
+  function handleNewImageChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(event.target.files ?? []);
+
+    if (!files.length) {
+      return;
+    }
+
+    setImageError(null);
+
+    const activeExistingCount = activeExistingImages.length;
+
+    const availableSlots = MAX_IMAGES - activeExistingCount - newImages.length;
+
+    if (availableSlots <= 0) {
+      setImageError({
+        message: `You can upload a maximum of ${MAX_IMAGES} images.`,
+      });
+
+      event.target.value = "";
+      return;
+    }
+
+    const filesToProcess = files.slice(0, availableSlots);
+
+    const addedImages: ProductImage[] = [];
+
+    let firstError: ImageError | null = null;
+
+    for (const file of filesToProcess) {
+      const validationError = validateImage(file);
+
+      if (validationError) {
+        firstError ??= validationError;
+        continue;
+      }
+
+      const shouldBecomePrimary =
+        activeExistingImages.length === 0 &&
+        newImages.length === 0 &&
+        addedImages.length === 0;
+
+      addedImages.push({
+        id: crypto.randomUUID(),
+        file,
+        previewUrl: URL.createObjectURL(file),
+        isPrimary: shouldBecomePrimary,
+      });
+    }
+
+    if (addedImages.length > 0) {
+      setNewImages((previous) => [...previous, ...addedImages]);
+    }
+    setImageError(firstError);
+    event.target.value = "";
+  }
+
+  function removeNewImage(id: string) {
+    const image = newImages.find((item) => item.id === id);
+    if (!image) {
+      return;
+    }
+
+    URL.revokeObjectURL(image.previewUrl);
+    const remainingImages = newImages.filter((item) => item.id !== id);
+
+    if (image.isPrimary) {
+      if (remainingImages.length > 0) {
+        const nextPrimaryId = remainingImages[0].id;
+        setExistingImages((images) =>
+          images.map((item) => ({
+            ...item,
+            is_primary: false,
+          })),
+        );
+
+        setNewImages(
+          remainingImages.map((item) => ({
+            ...item,
+            isPrimary: item.id === nextPrimaryId,
+          })),
+        );
+
+        return;
+      }
+
+      const fallbackExisting = activeExistingImages[0];
+      if (fallbackExisting) {
+        setExistingImagePrimary(fallbackExisting.id);
+      }
+    }
+
+    setNewImages(remainingImages);
   }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (!product || !form) return;
-
-    if (
-      !form.name.trim() ||
-      !form.sku.trim() ||
-      !form.category ||
-      !form.price
-    ) {
-      toast.error("Please fill in all required fields");
+    if (!product || !form) {
       return;
     }
 
+    const name = form.name.trim();
+    const sku = form.sku.trim();
+    const description = form.description.trim();
+
+    if (!name || !sku || !form.category || !form.price) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+    const price = Number(form.price);
+    const stock = Number(form.stock);
+
+    if (!Number.isFinite(price) || price < 0) {
+      toast.error("Please enter a valid price");
+      return;
+    }
+    if (!Number.isFinite(stock) || stock < 0) {
+      toast.error("Please enter a valid stock");
+      return;
+    }
+    if (activeImageCount > MAX_IMAGES) {
+      toast.error(`You can have a maximum of ${MAX_IMAGES} images.`);
+      return;
+    }
     setIsSubmitting(true);
 
     try {
       const formData = new FormData();
-      formData.append("name", form.name.trim());
-      formData.append("sku", form.sku.trim());
+      formData.append("name", name);
+      formData.append("sku", sku);
       formData.append("category_name", form.category);
-      formData.append("price", String(Number(form.price)));
-      formData.append("stock", String(Number(form.stock)));
+      formData.append("price", String(price));
+      formData.append("stock", String(stock));
       formData.append("status", form.status);
-      formData.append("description", form.description.trim());
+      formData.append("description", description);
 
       if (removedImageIds.size > 0) {
         formData.append(
-          "removed_image_ids",
-          JSON.stringify([...removedImageIds]),
+          FORM_DATA_FIELDS.removedImageIds,
+          JSON.stringify(Array.from(removedImageIds)),
         );
       }
 
-      const existingPrimary = existingImages.find((img) => img.is_primary);
-      if (existingPrimary) {
-        formData.append("primary_image_id", existingPrimary.id);
+      for (const image of newImages) {
+        formData.append(FORM_DATA_FIELDS.images, image.file);
       }
 
-      newImages.forEach((image, index) => {
-        formData.append("images", image.file);
-        if (image.isPrimary) {
-          formData.append("primary_new_image_index", String(index));
-        }
-      });
+      if (primaryExistingImage) {
+        formData.append(
+          FORM_DATA_FIELDS.primaryImageId,
+          primaryExistingImage.id,
+        );
+      }
+
+      if (currentPrimaryNewImageIndex >= 0) {
+        formData.append(
+          FORM_DATA_FIELDS.primaryNewImageIndex,
+          String(currentPrimaryNewImageIndex),
+        );
+      }
 
       const updated = await updateProduct(product.id, formData);
 
@@ -216,125 +491,15 @@ export function ProductEdit({
     }
   }
 
-  function toggleRemoveExistingImage(id: string) {
-    setRemovedImageIds((prev) => {
-      const next = new Set(prev);
-
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-
-      return next;
-    });
-  }
-
-  function setExistingImagePrimary(id: string) {
-    setExistingImages((images) =>
-      images.map((image) => ({
-        ...image,
-        is_primary: image.id === id,
-      })),
-    );
-  }
-  function handleNewImageChange(event: React.ChangeEvent<HTMLInputElement>) {
-    const files = Array.from(event.target.files ?? []);
-
-    if (!files.length) return;
-
-    setImageError(null);
-
-    const activeExistingCount = existingImages.filter(
-      (image) => !removedImageIds.has(image.id),
-    ).length;
-
-    const remainingSlots = MAX_IMAGES - activeExistingCount - newImages.length;
-
-    if (remainingSlots <= 0) {
-      setImageError({
-        message: `You can upload a maximum of ${MAX_IMAGES} images.`,
-      });
-
-      event.target.value = "";
+  useEffect(() => {
+    if (open) {
       return;
     }
-
-    const filesToAdd = files.slice(0, remainingSlots);
-
-    const addedImages: ProductImage[] = [];
-    let error: ImageError | null = null;
-
-    for (const file of filesToAdd) {
-      const validationError = validateImage(file);
-
-      if (validationError) {
-        error = validationError;
-        continue;
-      }
-
-      addedImages.push({
-        id: crypto.randomUUID(),
-        file,
-        previewUrl: URL.createObjectURL(file),
-
-        isPrimary:
-          existingImages.length === 0 &&
-          newImages.length === 0 &&
-          addedImages.length === 0,
-      });
-    }
-
-    if (addedImages.length) {
-      setNewImages((prev) => [...prev, ...addedImages]);
-    }
-
-    setImageError(error);
-    event.target.value = "";
-  }
-
-  function removeNewImage(id: string) {
-    setNewImages((prev) => {
-      const image = prev.find((item) => item.id === id);
-
-      if (image) {
-        URL.revokeObjectURL(image.previewUrl);
-      }
-
-      const remaining = prev.filter((item) => item.id !== id);
-
-      if (image?.isPrimary && remaining.length > 0) {
-        remaining[0] = {
-          ...remaining[0],
-          isPrimary: true,
-        };
-      }
-
-      return remaining;
-    });
-  }
-
-  function setNewImagePrimary(id: string) {
-    setNewImages((images) =>
-      images.map((image) => ({
-        ...image,
-        isPrimary: image.id === id,
-      })),
-    );
-  }
-
-  const activeExistingImages = existingImages.filter(
-    (image) => !removedImageIds.has(image.id),
-  );
-
-  const activeImageCount = activeExistingImages.length + newImages.length;
-
-  const remainingSlots = MAX_IMAGES - activeImageCount;
-
+    revokeImageUrls(newImages);
+  }, [open]);
   if (!product || !form) {
     return null;
   }
-
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="gap-0 p-0 sm:max-w-xl!">
@@ -368,7 +533,6 @@ export function ProductEdit({
             </span>
           </div>
         )}
-
         <form onSubmit={handleSubmit} className="contents">
           <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-5">
             <div className="grid gap-1.5">
@@ -383,12 +547,11 @@ export function ProductEdit({
                 id="edit-product-name"
                 value={form.name}
                 onChange={(event) => updateField("name", event.target.value)}
-                className="h-10 text-[13px]"
+                className="h-10 placeholder:text-xs focus-visible:border-primary focus-visible:ring-primary/20"
               />
             </div>
-
             <div className="grid w-full grid-cols-2 gap-3">
-              <div className="grid gap-1.5">
+              <div className="grid gap-1.5 w-full">
                 <Label
                   htmlFor="edit-product-sku"
                   className="text-[12px] font-medium"
@@ -400,11 +563,11 @@ export function ProductEdit({
                   id="edit-product-sku"
                   value={form.sku}
                   onChange={(event) => updateField("sku", event.target.value)}
-                  className="h-10 font-mono text-[12px]"
+                  className="h-10 font-mono placeholder:text-xs focus-visible:border-primary focus-visible:ring-primary/20"
                 />
               </div>
 
-              <div className="grid gap-1.5">
+              <div className="grid gap-1.5 w-full">
                 <Label
                   htmlFor="edit-product-category"
                   className="text-[12px] font-medium"
@@ -420,12 +583,18 @@ export function ProductEdit({
                 >
                   <SelectTrigger
                     id="edit-product-category"
-                    className="h-9 w-full text-[13px]"
+                    className="h-9 w-full"
                   >
                     <SelectValue placeholder="Select..." />
                   </SelectTrigger>
-
-                  <SelectContent>
+                  <SelectContent
+                    position="popper"
+                    side="bottom"
+                    align="start"
+                    sideOffset={4}
+                    avoidCollisions={false}
+                    className="w-36"
+                  >
                     {categories.map((category) => (
                       <SelectItem key={category.value} value={category.value}>
                         {category.label}
@@ -435,7 +604,6 @@ export function ProductEdit({
                 </Select>
               </div>
             </div>
-
             <div className="grid grid-cols-3 gap-3">
               <div className="grid gap-1.5">
                 <Label
@@ -444,17 +612,15 @@ export function ProductEdit({
                 >
                   Price <span className="text-destructive">*</span>
                 </Label>
-
                 <Input
                   id="edit-product-price"
                   type="number"
                   min={0}
                   value={form.price}
                   onChange={(event) => updateField("price", event.target.value)}
-                  className="h-10 font-mono text-[12px]"
+                  className="h-10 font-mono"
                 />
               </div>
-
               <div className="grid gap-1.5">
                 <Label
                   htmlFor="edit-product-stock"
@@ -469,10 +635,9 @@ export function ProductEdit({
                   min={0}
                   value={form.stock}
                   onChange={(event) => updateField("stock", event.target.value)}
-                  className="h-10 font-mono text-[12px]"
+                  className="h-10 font-mono"
                 />
               </div>
-
               <div className="grid gap-1.5">
                 <Label
                   htmlFor="edit-product-status"
@@ -489,12 +654,19 @@ export function ProductEdit({
                 >
                   <SelectTrigger
                     id="edit-product-status"
-                    className="h-9 w-full text-[13px]"
+                    className="h-9 w-full"
                   >
                     <SelectValue placeholder="Select..." />
                   </SelectTrigger>
 
-                  <SelectContent>
+                  <SelectContent
+                    position="popper"
+                    side="bottom"
+                    align="start"
+                    sideOffset={4}
+                    avoidCollisions={false}
+                    className="w-36"
+                  >
                     {statuses.map((status) => (
                       <SelectItem key={status.value} value={status.value}>
                         {status.label}
@@ -504,14 +676,14 @@ export function ProductEdit({
                 </Select>
               </div>
             </div>
-
             <div className="grid gap-1.5">
-              <Label className="text-[12px] font-medium">
-                Images{" "}
-                <span className="font-normal text-muted-foreground">
-                  drag to reorder
+              <div className="flex items-center justify-between">
+                <Label className="text-[12px] font-medium">Images</Label>
+
+                <span className="text-[11px] text-muted-foreground">
+                  {activeImageCount}/{MAX_IMAGES}
                 </span>
-              </Label>
+              </div>
 
               <div className="grid grid-cols-4 gap-2">
                 {activeExistingImages.map((image) => (
@@ -529,6 +701,7 @@ export function ProductEdit({
                       type="button"
                       onClick={() => toggleRemoveExistingImage(image.id)}
                       className="absolute right-1.5 top-1.5 flex size-4.5 items-center justify-center rounded-full border bg-background text-[10px] hover:text-destructive"
+                      aria-label="Remove image"
                     >
                       ×
                     </button>
@@ -548,26 +721,25 @@ export function ProductEdit({
                     )}
                   </div>
                 ))}
-                {existingImages
-                  .filter((image) => removedImageIds.has(image.id))
-                  .map((image) => (
-                    <div
-                      key={`removed-${image.id}`}
-                      className="relative flex aspect-square items-center justify-center rounded-md border border-dashed border-destructive bg-destructive/5"
-                    >
-                      <span className="text-center text-[10px] font-medium text-destructive">
-                        Removed on save
-                      </span>
+                {removedExistingImages.map((image) => (
+                  <div
+                    key={`removed-${image.id}`}
+                    className="relative flex aspect-square items-center justify-center rounded-md border border-dashed border-destructive bg-destructive/5"
+                  >
+                    <span className="px-2 text-center text-[10px] font-medium text-destructive">
+                      Removed on save
+                    </span>
 
-                      <button
-                        type="button"
-                        onClick={() => toggleRemoveExistingImage(image.id)}
-                        className="absolute right-1.5 top-1.5 flex size-4.5 items-center justify-center rounded-full border bg-background text-[10px]"
-                      >
-                        ↩
-                      </button>
-                    </div>
-                  ))}
+                    <button
+                      type="button"
+                      onClick={() => toggleRemoveExistingImage(image.id)}
+                      className="absolute right-1.5 top-1.5 flex size-4.5 items-center justify-center rounded-full border bg-background text-[10px]"
+                      aria-label="Restore image"
+                    >
+                      ↩
+                    </button>
+                  </div>
+                ))}
                 {newImages.map((image) => (
                   <div
                     key={image.id}
@@ -583,6 +755,7 @@ export function ProductEdit({
                       type="button"
                       onClick={() => removeNewImage(image.id)}
                       className="absolute right-1.5 top-1.5 flex size-4.5 items-center justify-center rounded-full border bg-background text-[10px] hover:text-destructive"
+                      aria-label="Remove image"
                     >
                       ×
                     </button>
@@ -620,6 +793,7 @@ export function ProductEdit({
                   className="hidden"
                 />
               </div>
+
               {imageError && (
                 <div className="rounded-lg border border-red-300 bg-red-50 px-3 py-2">
                   <p className="text-xs font-semibold text-red-600">
@@ -654,7 +828,7 @@ export function ProductEdit({
                 onChange={(event) =>
                   updateField("description", event.target.value)
                 }
-                className="h-20 resize-none text-[13px] leading-relaxed"
+                className="h-20 resize-none leading-relaxed"
               />
             </div>
           </div>

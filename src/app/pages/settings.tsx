@@ -1,14 +1,14 @@
 import { useNavigate } from "react-router-dom";
 import EmptyPage from "@/components/shad/empty-page";
 import { Button } from "@/components/ui/button";
-import ProductionQuantityLimitsIcon from "@mui/icons-material/ProductionQuantityLimits";
+import SettingsIcon from "@mui/icons-material/Settings";
 
 export default function Setting() {
   const navigate = useNavigate();
 
   return (
     <EmptyPage
-      icon={ProductionQuantityLimitsIcon}
+      icon={SettingsIcon}
       title="Nothing here yet"
       description="Settings isn’t part of this build. The nav item routes to this placeholder so the shell feels complete."
     >
