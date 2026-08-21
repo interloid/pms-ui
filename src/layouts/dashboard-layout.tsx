@@ -8,17 +8,14 @@ import { useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
 import { SearchContext } from "@/context/search-context";
 import { getProducts } from "@/services/product-service";
+import { useAuth } from "@/hooks/useAuth";
 
-const user = {
-  name: "kavikarthik",
-  email: "kavikarthik@interloid",
-  avatar: "src/assets/test-avatar.jpg",
-};
 
 export default function DashboardLayout() {
   const [productCount, setProductCount] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
   const [refreshKey, setRefreshKey] = useState(0);
+  const { user } = useAuth();
 
   useEffect(() => {
     getProducts(1, 1)

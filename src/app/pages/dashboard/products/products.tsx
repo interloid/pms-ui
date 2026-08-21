@@ -29,7 +29,7 @@ import {
   getProducts,
   deleteProduct as deleteProductApi,
 } from "@/services/product-service";
-import { Spinner } from "@/components/ui/spinner";
+import { ProductListSkeleton } from "@/components/shad/product-list-skeleton";
 
 export default function Products() {
   const { searchQuery, refreshKey } = useSearch();
@@ -186,10 +186,7 @@ export default function Products() {
 
   if (isLoading) {
     return (
-      <div className="flex h-full items-center justify-center gap-2">
-        <Spinner />
-        <p className="text-sm text-muted-foreground">Loading products...</p>
-      </div>
+        <ProductListSkeleton/>
     );
   }
 

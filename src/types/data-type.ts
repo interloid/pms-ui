@@ -1,4 +1,5 @@
 import type { LucideIcon } from "lucide-react";
+import type { AuthUser } from "./auth";
 
 export type NavItem = {
   title: string;
@@ -25,10 +26,10 @@ export type ApiProduct = {
   id: string;
   name: string;
   sku: string;
-  category_name: string;
+  category_name: ProductCategory;
   price: string | number;
   stock: number;
-  status: string;
+  status: ProductStatus;
   description: string;
   created_at: string;
   updated_at: string;
@@ -56,14 +57,6 @@ export type Pagination = {
   total_pages: number;
 };
 
-export const statuses: ProductStatusFilter[] = [
-  "All",
-  "Active",
-  "Draft",
-  "Out of Stock",
-  "Archived",
-];
-
 export type GetProductsResponse = {
   success: boolean;
   message: string;
@@ -81,8 +74,6 @@ export type GetProductsParams = {
   pageSize: number;
 };
 
-export type ProductStatus = "Active" | "Draft" | "Out of Stock" | "Archived";
-
 export type ProductCategory =
   | "All"
   | "Lighting"
@@ -92,14 +83,44 @@ export type ProductCategory =
   | "Outdoor"
   | "Stationery";
 
-export const categories: ProductCategory[] = [
-  "All",
-  "Lighting",
-  "Apparel",
-  "Home",
-  "Electronics",
-  "Outdoor",
-  "Stationery",
+export const categories: Array<{
+  value: ProductCategory;
+  label: string;
+}> = [
+  { value: "Lighting", label: "Lighting" },
+  { value: "Apparel", label: "Apparel" },
+  { value: "Home", label: "Home" },
+  { value: "Electronics", label: "Electronics" },
+  { value: "Outdoor", label: "Outdoor" },
+  { value: "Stationery", label: "Stationery" },
+];
+
+export type ProductStatus =
+  | "active"
+  | "draft"
+  | "out of stock"
+  | "archived";
+
+export const statuses: Array<{
+  value: ProductStatus;
+  label: string;
+}> = [
+  {
+    value: "active",
+    label: "Active",
+  },
+  {
+    value: "draft",
+    label: "Draft",
+  },
+  {
+    value: "out of stock",
+    label: "Out of Stock",
+  },
+  {
+    value: "archived",
+    label: "Archived",
+  },
 ];
 
 export interface ProductImage {
@@ -162,6 +183,7 @@ export type ImageError = {
   message: string;
   details?: string;
 };
+
 export type ProductEditProps = {
   product: ApiProduct | null;
   open: boolean;
@@ -172,7 +194,7 @@ export type ProductEditProps = {
 export type ProductForm = {
   name: string;
   sku: string;
-  category_name: ProductCategory;
+  category: ProductCategory;
   price: string;
   stock: string;
   status: ProductStatus;
@@ -181,4 +203,13 @@ export type ProductForm = {
 
 export type AddProductsProps = {
   onProductCreated?: () => void;
+};
+
+export type User = {
+  name: string;
+  avatar?: string;
+};
+
+export type InputInlineProps = {
+  user: AuthUser| null;
 };

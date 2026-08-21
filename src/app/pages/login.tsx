@@ -35,19 +35,20 @@ export default function LoginForm({
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState("");
   const [providerLoading, setProviderLoading] = useState<string | null>(null);
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
     setError("");
     setLoading(true);
-
     try {
       await login({
         email,
         password,
+        remember_me: rememberMe,
       });
       const from =
         (location.state as { from?: { pathname?: string } } | null)?.from
@@ -192,7 +193,13 @@ export default function LoginForm({
                     </div>
                   </Field>
                   <div className="flex items-center gap-2">
-                    <Checkbox />
+                    <Checkbox
+                      id="remember-me"
+                      checked={rememberMe}
+                      onCheckedChange={(checked) =>
+                        setRememberMe(checked === true)
+                      }
+                    />
                     <label
                       htmlFor="remember-me"
                       className="text-xs font-normal text-muted-text leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"

@@ -1,3 +1,4 @@
+import type { AuthUser } from "@/types/auth";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -7,10 +8,7 @@ import {
 import { InputInline } from "@/components/shad/input-inline";
 
 type HeaderProps = {
-  user: {
-    name: string;
-    avatar?: string;
-  };
+  user: AuthUser | null;
   productCount?: number;
 };
 
@@ -35,7 +33,6 @@ export default function Header({
           </BreadcrumbList>
         </Breadcrumb>
       </div>
-
       <InputInline user={user} />
     </header>
   );

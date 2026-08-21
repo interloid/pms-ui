@@ -19,7 +19,6 @@ async function parseResponse<T>(
         `Request failed with status ${response.status}`,
     );
   }
-
   return data;
 }
 
@@ -37,7 +36,6 @@ export async function login(
       body: JSON.stringify(credentials),
     },
   );
-
   return parseResponse<LoginResponse>(response);
 }
 

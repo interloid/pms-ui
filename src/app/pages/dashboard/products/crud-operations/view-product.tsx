@@ -31,16 +31,20 @@ function getStatusClassName(status: string) {
   }
 }
 
-export function ProductView({ product, open, onOpenChange, onEdit }: ProductViewProps) {
+export function ProductView({
+  product,
+  open,
+  onOpenChange,
+  onEdit,
+}: ProductViewProps) {
   if (!product) {
     return null;
   }
   const primaryImage =
     product.images?.find((image) => image.is_primary) ?? product.images?.[0];
-
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="gap-8 sm:max-w-xl!">
+      <SheetContent className="gap-0 sm:max-w-xl!">
         <SheetHeader className="border-b px-5 py-4">
           <div className="flex items-center gap-3">
             <div className="min-w-0 flex-1">
@@ -143,10 +147,7 @@ export function ProductView({ product, open, onOpenChange, onEdit }: ProductView
 
         <SheetFooter className="border-t px-5 py-3">
           <div className="flex flex-row-reverse w-full justify-start gap-2">
-            <Button
-              variant="default"
-              onClick={() => onEdit(product)}
-            >
+            <Button variant="default" onClick={() => onEdit(product)}>
               Edit
             </Button>
             <SheetClose asChild>

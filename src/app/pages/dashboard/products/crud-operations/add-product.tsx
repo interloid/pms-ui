@@ -56,6 +56,7 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
   const [status, setStatus] = useState("draft");
   const [description, setDescription] = useState("");
   const [images, setImages] = useState<ProductImage[]>([]);
+  const [open, setOpen] = useState(false);
   const [imageError, setImageError] = useState<ImageError | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const remainingImages = MAX_IMAGES - images.length;
@@ -88,8 +89,8 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
       formData.append("name", name.trim());
       formData.append("sku", sku.trim());
       formData.append("category_name", category);
-      formData.append("price", String(Number(price)));
-      formData.append("stock", String(Number(stock)));
+      formData.append("price", String(price));
+      formData.append("stock", String(stock));
       formData.append("status", status);
       formData.append("description", description.trim());
 
@@ -98,10 +99,9 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
       });
 
       await createProduct(formData);
-
       toast.success("Product created successfully");
-
       resetForm();
+      setOpen(false);
       onProductCreated?.();
     } catch (error) {
       toast.error(
@@ -195,7 +195,6 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
     setImageError(error);
     event.target.value = "";
   };
-
   const removeImage = (id: string) => {
     setImages((previousImages) => {
       const imageToRemove = previousImages.find((image) => image.id === id);
@@ -226,8 +225,9 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
       })),
     );
   };
+
   return (
-    <Sheet>
+    <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         <Button>+ Add Product</Button>
       </SheetTrigger>
@@ -236,7 +236,11 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
         <SheetHeader className="border-b">
           <SheetTitle className="font-bold">Add Product</SheetTitle>
         </SheetHeader>
-        <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
+        <form
+          id="add-product-form"
+          onSubmit={handleSubmit}
+          className="flex min-h-0 flex-1 flex-col"
+        >
           <div className="grid flex-1 auto-rows-min gap-6 overflow-y-auto px-4">
             <div className="grid gap-3">
               <Label htmlFor="product-name" className="text-xs">
@@ -247,6 +251,8 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
               <Input
                 id="product-name"
                 placeholder="e.g. Meridian Desk Lamp"
+                value={name}
+                onChange={(event) => setName(event.target.value)}
                 className="h-10 placeholder:text-xs focus-visible:border-primary focus-visible:ring-primary/20"
               />
             </div>
@@ -261,6 +267,8 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
                 <Input
                   id="product-sku"
                   placeholder="ABC-ITEM-000"
+                  value={sku}
+                  onChange={(event) => setSku(event.target.value)}
                   className="h-10 w-full placeholder:text-xs focus-visible:border-primary focus-visible:ring-primary/20"
                 />
               </div>
@@ -271,7 +279,7 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
                   <span className="text-destructive"> *</span>
                 </Label>
 
-                <Select>
+                <Select value={category} onValueChange={setCategory}>
                   <SelectTrigger
                     id="product-category"
                     className="h-10 w-full focus-visible:border-primary focus-visible:ring-primary/20"
@@ -300,6 +308,8 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
                 <Input
                   id="product-price"
                   type="number"
+                  value={price}
+                  onChange={(event) => setPrice(event.target.value)}
                   placeholder="0.00"
                   min={0}
                   className="h-10 w-full placeholder:text-xs focus-visible:border-primary focus-visible:ring-primary/20"
@@ -314,6 +324,8 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
                 <Input
                   id="product-stock"
                   type="number"
+                  value={stock}
+                  onChange={(event) => setStock(event.target.value)}
                   placeholder="0"
                   min={0}
                   className="h-10 w-full placeholder:text-xs focus-visible:border-primary focus-visible:ring-primary/20"
@@ -325,7 +337,7 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
                   Status
                 </Label>
 
-                <Select>
+                <Select value={status} onValueChange={setStatus}>
                   <SelectTrigger
                     id="product-status"
                     className="h-10 w-full focus-visible:border-primary focus-visible:ring-primary/20"
@@ -352,6 +364,8 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
               <Textarea
                 id="product-description"
                 placeholder="Optional"
+                value={description}
+                onChange={(event) => setDescription(event.target.value)}
                 className="h-25 min-h-25 w-full resize-none placeholder:text-xs focus-visible:border-primary focus-visible:ring-primary/20"
               />
             </div>
@@ -465,7 +479,11 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
         </form>
         <SheetFooter className="w-full border-t">
           <div className="flex w-full flex-row-reverse justify-start gap-2">
-            <Button type="submit" disabled={isSubmitting}>
+            <Button
+              type="submit"
+              form="add-product-form"
+              disabled={isSubmitting}
+            >
               {isSubmitting ? (
                 <>
                   <Spinner />

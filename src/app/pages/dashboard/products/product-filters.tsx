@@ -46,19 +46,18 @@ export function ProductFilters({
         </SelectTrigger>
         <SelectContent>
           {categories.map((item) => (
-            <SelectItem key={item} value={item}>
-              {item}
+            <SelectItem key={item.value} value={item.value}>
+              {item.value}
             </SelectItem>
           ))}
         </SelectContent>
       </Select>
       <div className="flex items-center gap-1">
         {statuses.map((item) => {
-          const active = status === item;
-
+          const active = status === item.value;
           return (
             <Button
-              key={item}
+              key={item.value}
               type="button"
               variant={active ? "default" : "outline"}
               size="sm"
@@ -67,9 +66,9 @@ export function ProductFilters({
                   ? "h-9 rounded-full px-4"
                   : "h-9 rounded-full px-4 font-normal"
               }
-              onClick={() => onStatusChange(item)}
+              onClick={() => onStatusChange(item.value)}
             >
-              {item}
+              {item.value}
             </Button>
           );
         })}

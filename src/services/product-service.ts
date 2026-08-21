@@ -33,7 +33,7 @@ export async function createProduct(formData: FormData): Promise<ApiProduct> {
 
 export async function updateProduct(
   id: string,
-  product: Partial<Omit<ApiProduct, "id">>,
+  body: FormData,
 ): Promise<ApiProduct> {
   const response = await apiRequest<{
     success: boolean;
@@ -41,7 +41,7 @@ export async function updateProduct(
     data: ApiProduct;
   }>(`/api/v1/products/${id}`, {
     method: "PATCH",
-    body: product,
+    body,
   });
 
   return response.data;

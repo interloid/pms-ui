@@ -1,13 +1,20 @@
-export default function Settings() {
-  return (
-    <>
-      <h1 className="text-2xl font-bold">
-        Settings
-      </h1>
+import { useNavigate } from "react-router-dom";
+import EmptyPage from "@/components/shad/empty-page";
+import { Button } from "@/components/ui/button";
+import ProductionQuantityLimitsIcon from "@mui/icons-material/ProductionQuantityLimits";
 
-      <div className="mt-4">
-        {/* Product content */}
-      </div>
-    </>
+export default function Setting() {
+  const navigate = useNavigate();
+
+  return (
+    <EmptyPage
+      icon={ProductionQuantityLimitsIcon}
+      title="Nothing here yet"
+      description="Settings isn’t part of this build. The nav item routes to this placeholder so the shell feels complete."
+    >
+      <Button variant="secondary" onClick={() => navigate("/products")}>
+        Go to Products
+      </Button>
+    </EmptyPage>
   );
 }

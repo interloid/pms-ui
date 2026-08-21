@@ -1,4 +1,4 @@
-  import { NavMain } from "@/components/shad/nav-main";
+import { NavMain } from "@/components/shad/nav-main";
 import { NavUser } from "@/components/shad/nav-user";
 import {
   Sidebar,
@@ -7,6 +7,7 @@ import {
   SidebarRail,
   SidebarGroupLabel,
 } from "@/components/ui/sidebar";
+
 import {
   Package,
   ShoppingCart,
@@ -17,6 +18,7 @@ import {
 } from "lucide-react";
 
 import SidebarTitle from "@/components/shad/sidebar-title";
+import type { AuthUser } from "@/types/auth";
 
 const data = {
   navMain: [
@@ -56,14 +58,8 @@ const data = {
   ],
 };
 
-type User = {
-  name: string;
-  email: string;
-  avatar: string;
-};
-
 type AppSidebarProps = React.ComponentProps<typeof Sidebar> & {
-  user: User;
+  user: AuthUser | null;
 };
 
 export function AppSidebar({
