@@ -19,7 +19,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { getProducts, updateProduct } from "@/services/product-service";
+import { updateProduct } from "@/services/product-service";
 import {
   categories,
   statuses,
