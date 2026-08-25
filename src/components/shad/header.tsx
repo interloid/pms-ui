@@ -17,7 +17,7 @@ export default function Header({
  productCount=0,
 }: HeaderProps) {
   return (
-    <header className="flex h-16 w-full items-center justify-between border-b px-4">
+    <header className="flex h-16 items-center justify-between border-b px-4">
       <div className="flex w-3/4 items-center">
         <Breadcrumb>
           <BreadcrumbList>

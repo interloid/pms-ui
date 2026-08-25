@@ -37,7 +37,7 @@ export function InputInline({ user }: InputInlineProps) {
             .toUpperCase() ?? "?"}
         </AvatarFallback>
       </Avatar>
-      <Button variant="outline" onClick={logout}>
+      <Button variant="destructive" onClick={logout} className="hover:bg-destructive! text-secondary bg-red-500 cursor-pointer">
         Log out
       </Button>
     </div>

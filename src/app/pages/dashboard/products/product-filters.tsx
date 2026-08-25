@@ -27,7 +27,7 @@ export function ProductFilters({
   priceRange,
   inStockOnly,
   productCount,
-  sortDescending,
+  sortOrder,
   onCategoryChange,
   onStatusChange,
   onPriceChange,
@@ -40,7 +40,7 @@ export function ProductFilters({
         value={category}
         onValueChange={(value) => onCategoryChange(value as ProductCategory)}
       >
-        <SelectTrigger className="h-9 w-35">
+        <SelectTrigger className="h-9 w-35 hover:bg-primary-hover! hover:border-primary">
           <span className="text-xs">Category:</span>
           <SelectValue />
         </SelectTrigger>
@@ -53,7 +53,7 @@ export function ProductFilters({
           className="w-36"
         >
           {categories.map((item) => (
-            <SelectItem key={item.value} value={item.value}>
+            <SelectItem key={item.value} value={item.value} className="hover:bg-primary-hover!">
               {item.value}
             </SelectItem>
           ))}
@@ -71,7 +71,7 @@ export function ProductFilters({
               className={
                 active
                   ? "h-9 rounded-full px-4"
-                  : "h-9 rounded-full px-4 font-normal"
+                  : "h-9 rounded-full px-4 font-normal hover:bg-primary-hover! hover:border-primary "
               }
               onClick={() => onStatusChange(item.value)}
             >
@@ -81,9 +81,8 @@ export function ProductFilters({
         })}
       </div>
       <div className="mx-1 hidden h-6 w-px bg-border md:block" />
-
       <Select value={priceRange} onValueChange={onPriceChange}>
-        <SelectTrigger className="h-9 w-32">
+        <SelectTrigger className="h-9 w-32 hover:bg-primary-hover! hover:border-primary">
           <span className="text-xs">Price</span>
           <SelectValue />
         </SelectTrigger>
@@ -97,14 +96,14 @@ export function ProductFilters({
           className="w-36"
         >
           {priceRanges.map((range) => (
-            <SelectItem key={range.value} value={range.value}>
+            <SelectItem key={range.value} value={range.value} className="hover:bg-primary-hover!">
               {range.label}
             </SelectItem>
           ))}
         </SelectContent>
       </Select>
 
-      <div className="flex h-9 items-center gap-2 rounded-md border px-3">
+      <div className="flex h-9 items-center gap-2 rounded-md border px-3 hover:bg-primary-hover! hover:border-primary">
         <Switch
           id="in-stock-only"
           checked={inStockOnly}
@@ -124,12 +123,12 @@ export function ProductFilters({
         <Button
           variant="ghost"
           size="icon"
-          className="size-7"
+          className="size-7 hover:bg-primary-hover! hover:border-primary!"
           onClick={onSortChange}
           aria-label="Change product sort order"
         >
           <ChevronDown
-            className={sortDescending ? "size-4" : "size-4 rotate-180"}
+            className={sortOrder ? "size-4 " : "size-4 rotate-180"}
           />
         </Button>
       </div>

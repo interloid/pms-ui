@@ -69,7 +69,7 @@ export type ProductsResult = {
   totalPages: number;
 };
 
-export interface GetProductsParams {
+export type GetProductsParams = {
   page: number;
   pageSize: number;
   status: ProductStatusFilter;
@@ -77,7 +77,9 @@ export interface GetProductsParams {
   search?: string;
   priceRange?: string;
   inStockOnly?: boolean;
-}
+  sort?: "price" | "updated";
+  order?: "asc" | "desc";
+};
 
 export type ProductCategory =
   | "All"
@@ -165,11 +167,11 @@ export interface ProductFiltersProps {
   priceRange: string;
   inStockOnly: boolean;
   productCount: number;
-  sortDescending: boolean;
   onCategoryChange: (value: ProductCategory) => void;
   onStatusChange: (value: ProductStatusFilter) => void;
   onPriceChange: (value: string) => void;
   onStockChange: (value: boolean) => void;
+  sortOrder: "asc" | "desc";
   onSortChange: () => void;
 }
 export type ProductViewProps = {

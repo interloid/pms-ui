@@ -38,7 +38,7 @@ export default function Products() {
   const [status, setStatus] = useState<ProductStatusFilter>("All");
   const [priceRange, setPriceRange] = useState("all");
   const [inStockOnly, setInStockOnly] = useState(false);
-  const [sortDescending, setSortDescending] = useState(true);
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [productCount, setProductCount] = useState<number>(0);
   const [totalPages, setTotalPages] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -62,6 +62,8 @@ export default function Products() {
           search: searchQuery,
           priceRange,
           inStockOnly,
+          sort: "price",
+          order: sortOrder,
         });
         setProducts(response.products);
         setProductCount(response.total);
@@ -81,6 +83,7 @@ export default function Products() {
     debouncedSearch,
     priceRange,
     inStockOnly,
+    sortOrder,
     refreshKey,
   ]);
 
@@ -177,12 +180,14 @@ export default function Products() {
           priceRange={priceRange}
           inStockOnly={inStockOnly}
           productCount={productCount}
-          sortDescending={sortDescending}
+          sortOrder={sortOrder}
           onCategoryChange={updateCategory}
           onStatusChange={updateStatus}
           onPriceChange={updatePrice}
           onStockChange={updateStock}
-          onSortChange={() => setSortDescending((current) => !current)}
+          onSortChange={() =>
+          setSortOrder((current) => (current === "asc" ? "desc" : "asc"))
+          }
         />
       </div>
       <ProductTable
@@ -216,13 +221,13 @@ export default function Products() {
               setPage(1);
             }}
           >
-            <SelectTrigger className="h-8 w-16.25">
+            <SelectTrigger className="h-8 w-16.25 hover:bg-primary-hover hover:border-primary">
               <SelectValue />
             </SelectTrigger>
 
             <SelectContent>
               {[10, 20, 30, 40, 50].map((size) => (
-                <SelectItem key={size} value={String(size)}>
+                <SelectItem key={size} value={String(size)} className="hover:bg-primary-hover! ">
                   {size}
                 </SelectItem>
               ))}
@@ -240,7 +245,7 @@ export default function Products() {
             <Button
               variant="outline"
               size="icon"
-              className="size-8"
+              className="size-8 hover:bg-primary-hover! hover:border-primary"
               disabled={page === 1}
               onClick={() => setPage(1)}
             >
@@ -250,7 +255,7 @@ export default function Products() {
             <Button
               variant="outline"
               size="icon"
-              className="size-8"
+              className="size-8 hover:bg-primary-hover! hover:border-primary"
               disabled={page === 1}
               onClick={() => setPage((current) => current - 1)}
             >
@@ -260,7 +265,7 @@ export default function Products() {
             <Button
               variant="outline"
               size="icon"
-              className="size-8"
+              className="size-8 hover:bg-primary-hover! hover:border-primary"
               disabled={page === totalPages}
               onClick={() => setPage((current) => current + 1)}
             >
@@ -270,7 +275,7 @@ export default function Products() {
             <Button
               variant="outline"
               size="icon"
-              className="size-8"
+              className="size-8 hover:bg-primary-hover! hover:border-primary"
               disabled={page === totalPages}
               onClick={() => setPage(totalPages)}
             >

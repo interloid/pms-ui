@@ -13,12 +13,14 @@ export async function getProducts({
   category,
   search = "",
   priceRange = "all",
-  inStockOnly,
+  inStockOnly = false,
+  sort = "updated",
+  order = "desc",
 }: GetProductsParams): Promise<ProductsResult> {
   const params = new URLSearchParams();
 
-  params.set("sort", "updated");
-  params.set("order", "desc");
+  params.set("sort", sort);
+  params.set("order", order);
   params.set("page", String(page));
   params.set("page_size", String(pageSize));
 
@@ -28,7 +30,6 @@ export async function getProducts({
   if (category !== "All") {
     params.set("category_name", category);
   }
-
   const trimmedSearch = search.trim();
 
   if (trimmedSearch) {
@@ -42,7 +43,6 @@ export async function getProducts({
   if (inStockOnly) {
     params.set("in_stock", "true");
   }
-
   const response = await apiRequest<GetProductsResponse>(
     `/api/v1/products?${params.toString()}`,
   );
