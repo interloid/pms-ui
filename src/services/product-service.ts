@@ -26,7 +26,7 @@ export async function getProducts({
     params.set("status", status);
   }
   if (category !== "All") {
-    params.set("category", category);
+    params.set("category_name", category);
   }
 
   const trimmedSearch = search.trim();

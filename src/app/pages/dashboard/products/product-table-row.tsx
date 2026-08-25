@@ -47,9 +47,7 @@ export function ProductTableRow({
 
   if (isArchiving) {
     return (
-      <TableRow
-        className="bg-red-50 hover:bg-red-50"
-      >
+      <TableRow className="bg-red-50 hover:bg-red-50">
         <TableCell colSpan={8} className="border-l-2 border-l-red-500 py-4">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
@@ -81,8 +79,8 @@ export function ProductTableRow({
     );
   }
   return (
-    <TableRow  className="cursor-pointer">
-      <TableCell >
+    <TableRow className="cursor-pointer">
+      <TableCell>
         <div className="flex items-center gap-3">
           <ProductImage src={primaryImage} alt={product.name} />
           <span className="font-mono text-xs text-muted-foreground">
@@ -92,7 +90,7 @@ export function ProductTableRow({
       </TableCell>
       <TableCell>
         <button
-          type="button"   
+          type="button"
           onClick={onView}
           className="text-left text-sm font-semibold hover:underline"
         >
@@ -111,7 +109,7 @@ export function ProductTableRow({
           {getStatusLabel(product.status)}
         </Badge>
       </TableCell>
-      <TableCell className="text-sm text-muted-foreground">
+      <TableCell className="text-xs text-muted-foreground">
         {formatDateTime(product.updated_at)}
       </TableCell>
       <TableCell>
