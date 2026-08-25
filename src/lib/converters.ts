@@ -18,7 +18,7 @@ export function convertKeysToCamelCase<T>(obj: T): T {
       Object.entries(obj).map(([key, value]) => [
         toCamelCase(key),
         convertKeysToCamelCase(value),
-      ])
+      ]),
     ) as T;
   }
 
@@ -35,7 +35,7 @@ export function convertKeysToSnakeCase<T>(obj: T): T {
       Object.entries(obj).map(([key, value]) => [
         toSnakeCase(key),
         convertKeysToSnakeCase(value),
-      ])
+      ]),
     ) as T;
   }
 
@@ -82,6 +82,3 @@ export function formatDateTime(dateString: string): string {
     hour12: true,
   });
 }
-
-
-

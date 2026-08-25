@@ -29,27 +29,27 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [status, setStatus] = useState<AuthStatus>("loading");
   const [user, setUser] = useState<AuthUser | null>(null);
 
- const checkAuth = useCallback(async () => {
-  try {
-    const response = await getCurrentSession();
-    const apiUser = response?.data?.user;
-    if (!apiUser?.id || !apiUser?.email) {
-      throw new Error("Invalid user data");
+  const checkAuth = useCallback(async () => {
+    try {
+      const response = await getCurrentSession();
+      const apiUser = response?.data?.user;
+      if (!apiUser?.id || !apiUser?.email) {
+        throw new Error("Invalid user data");
+      }
+      const userData: AuthUser = {
+        id: apiUser.id,
+        email: apiUser.email,
+        name: `${apiUser.first_name ?? ""} ${apiUser.last_name ?? ""}`.trim(),
+      };
+      setUser(userData);
+      setStatus("authenticated");
+      return true;
+    } catch {
+      setUser(null);
+      setStatus("unauthenticated");
+      return false;
     }
-    const userData: AuthUser = {
-      id: apiUser.id,
-      email: apiUser.email,
-      name: `${apiUser.first_name ?? ""} ${apiUser.last_name ?? ""}`.trim(),
-    };
-    setUser(userData);
-    setStatus("authenticated");
-    return true;
-  } catch {
-    setUser(null);
-    setStatus("unauthenticated");
-    return false;
-  }
-}, []);
+  }, []);
 
   const login = useCallback(async (credentials: LoginCredentials) => {
     const response = await loginService(credentials);
@@ -65,7 +65,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setUser(userData);
     setStatus("authenticated");
   }, []);
-
 
   const loginWithPasscode = useCallback(
     async (email: string, passcode: string) => {

@@ -28,23 +28,26 @@ export default function App() {
             <Suspense fallback={<LoadingScreen />}>
               <Routes>
                 <Route element={<PublicRoute />}>
-                  <Route path="/login" element={<LoginForm/>}/>
-                  <Route path="/passcode" element={<PasscodeRequestPage />}/>
-                  <Route path="/passcode/verify" element={<PasscodeVerifyPage />} />
-                  <Route path="/callback" element={<Callback />}  />
+                  <Route path="/login" element={<LoginForm />} />
+                  <Route path="/passcode" element={<PasscodeRequestPage />} />
+                  <Route
+                    path="/passcode/verify"
+                    element={<PasscodeVerifyPage />}
+                  />
+                  <Route path="/callback" element={<Callback />} />
                 </Route>
                 <Route element={<ProtectedRoute />}>
                   <Route element={<DashboardLayout />}>
-                    <Route path="/products" element={<Products />}/>
-                    <Route path="/categories" element={<Categories />}/>
+                    <Route path="/products" element={<Products />} />
+                    <Route path="/categories" element={<Categories />} />
                     <Route path="/orders" element={<Orders />} />
-                    <Route path="/customers" element={<Customers />}/>
+                    <Route path="/customers" element={<Customers />} />
                     <Route path="/reports" element={<Reports />} />
-                    <Route path="/settings" element={<Settings />}/>
+                    <Route path="/settings" element={<Settings />} />
                   </Route>
                 </Route>
-                <Route path="/" element={<Navigate to="/login" replace />}/>
-                <Route path="*" element={<Navigate to="/login" replace />}/>
+                <Route path="/" element={<Navigate to="/login" replace />} />
+                <Route path="*" element={<Navigate to="/login" replace />} />
               </Routes>
             </Suspense>
           </TooltipProvider>

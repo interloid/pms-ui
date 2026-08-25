@@ -43,7 +43,7 @@ export default function PasscodeVerifyPage() {
     if (passcode.length !== OTP_LENGTH) {
       return;
     }
-    
+
     try {
       setIsLoading(true);
       await loginWithPasscode(email, passcode);

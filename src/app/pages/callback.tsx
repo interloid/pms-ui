@@ -1,17 +1,14 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {Empty,
+import {
+  Empty,
   EmptyDescription,
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
 import { Spinner } from "@/components/ui/spinner";
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function Callback() {
@@ -43,9 +40,7 @@ export default function Callback() {
             </EmptyMedia>
 
             <EmptyTitle>
-              {error
-                ? "Sign-in failed"
-                : "Finishing sign-in…"}
+              {error ? "Sign-in failed" : "Finishing sign-in…"}
             </EmptyTitle>
 
             <EmptyDescription>
@@ -61,9 +56,7 @@ export default function Callback() {
                 Authentication error
               </AlertTitle>
 
-              <AlertDescription className="text-xs">
-                {error}
-              </AlertDescription>
+              <AlertDescription className="text-xs">{error}</AlertDescription>
             </Alert>
           )}
         </Empty>

@@ -12,10 +12,7 @@ export default function Orders() {
       title="Nothing here yet"
       description="Orders isn’t part of this build. The nav item routes to this placeholder so the shell feels complete."
     >
-      <Button
-        variant="secondary"
-        onClick={() => navigate("/products")}
-      >
+      <Button variant="secondary" onClick={() => navigate("/products")}>
         Go to Products
       </Button>
     </EmptyPage>

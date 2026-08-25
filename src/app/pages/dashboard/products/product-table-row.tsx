@@ -114,12 +114,21 @@ export function ProductTableRow({
       </TableCell>
       <TableCell>
         <div className="flex items-center gap-1">
-          <Button variant="outline" size="sm" className="h-8 hover:bg-primary-hover hover:border-primary" onClick={onView}>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 hover:bg-primary-hover hover:border-primary"
+            onClick={onView}
+          >
             View
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon" className="size-8 hover:bg-primary-hover hover:border-primary">
+              <Button
+                variant="outline"
+                size="icon"
+                className="size-8 hover:bg-primary-hover hover:border-primary"
+              >
                 <MoreHorizontal className="size-4" />
                 <span className="sr-only">Product actions</span>
               </Button>

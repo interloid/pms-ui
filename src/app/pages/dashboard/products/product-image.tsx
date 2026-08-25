@@ -2,11 +2,7 @@ import { useEffect, useState } from "react";
 import { Spinner } from "@/components/ui/spinner";
 import type { ProductImageProps } from "@/types/data-type";
 
-export function ProductImage({
-  src,
-  alt,
-  className = "",
-}: ProductImageProps) {
+export function ProductImage({ src, alt, className = "" }: ProductImageProps) {
   const [isLoading, setIsLoading] = useState(Boolean(src));
   const [hasError, setHasError] = useState(false);
 

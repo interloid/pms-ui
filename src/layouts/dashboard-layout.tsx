@@ -15,7 +15,7 @@ export default function DashboardLayout() {
   const refresh = () => {
     setRefreshKey((current) => current + 1);
   };
-  
+
   useEffect(() => {
     const loadProductCount = async () => {
       try {

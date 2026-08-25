@@ -53,7 +53,11 @@ export function ProductFilters({
           className="w-36"
         >
           {categories.map((item) => (
-            <SelectItem key={item.value} value={item.value} className="hover:bg-primary-hover!">
+            <SelectItem
+              key={item.value}
+              value={item.value}
+              className="hover:bg-primary-hover!"
+            >
               {item.value}
             </SelectItem>
           ))}
@@ -96,7 +100,11 @@ export function ProductFilters({
           className="w-36"
         >
           {priceRanges.map((range) => (
-            <SelectItem key={range.value} value={range.value} className="hover:bg-primary-hover!">
+            <SelectItem
+              key={range.value}
+              value={range.value}
+              className="hover:bg-primary-hover!"
+            >
               {range.label}
             </SelectItem>
           ))}

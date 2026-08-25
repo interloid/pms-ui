@@ -8,7 +8,7 @@ import {
 } from "../ui/empty";
 
 type EmptyPageProps = {
-    icon?: ComponentType<{
+  icon?: ComponentType<{
     className?: string;
   }>;
   title?: string;
@@ -33,9 +33,7 @@ export default function EmptyPage({
           )}
           <EmptyTitle>{title}</EmptyTitle>
 
-          <EmptyDescription>
-            {description}
-          </EmptyDescription>
+          <EmptyDescription>{description}</EmptyDescription>
         </EmptyHeader>
 
         {children}

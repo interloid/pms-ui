@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import EmptyPage from "@/components/shad/empty-page";
 import { Button } from "@/components/ui/button";
-import PersonOffIcon from '@mui/icons-material/PersonOff';
+import PersonOffIcon from "@mui/icons-material/PersonOff";
 
 export default function Customers() {
   const navigate = useNavigate();
@@ -12,10 +12,7 @@ export default function Customers() {
       title="Nothing here yet"
       description="Categories isn’t part of this build. The nav item routes to this placeholder so the shell feels complete."
     >
-      <Button
-        variant="secondary"
-        onClick={() => navigate("/products")}
-      >
+      <Button variant="secondary" onClick={() => navigate("/products")}>
         Go to Products
       </Button>
     </EmptyPage>

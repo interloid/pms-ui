@@ -21,7 +21,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import {
-    statuses,
+  statuses,
   type AddProductsProps,
   type FormErrors,
   type ImageError,

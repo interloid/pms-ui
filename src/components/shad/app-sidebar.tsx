@@ -62,10 +62,7 @@ type AppSidebarProps = React.ComponentProps<typeof Sidebar> & {
   user: AuthUser | null;
 };
 
-export function AppSidebar({
-  user,
-  ...props
-}: AppSidebarProps) {
+export function AppSidebar({ user, ...props }: AppSidebarProps) {
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarTitle />
@@ -73,9 +70,7 @@ export function AppSidebar({
       <SidebarContent className="gap-0">
         <NavMain items={data.navMain} />
 
-        <SidebarGroupLabel>
-          WORKSPACE
-        </SidebarGroupLabel>
+        <SidebarGroupLabel>WORKSPACE</SidebarGroupLabel>
 
         <NavMain items={data.workspace} />
       </SidebarContent>

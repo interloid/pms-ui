@@ -317,7 +317,6 @@ export function ProductEdit({
     );
   }
 
-
   function toggleRemoveExistingImage(id: string) {
     const image = existingImages.find((item) => item.id === id);
 

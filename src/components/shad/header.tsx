@@ -12,19 +12,14 @@ type HeaderProps = {
   productCount?: number;
 };
 
-export default function Header({
-  user,
- productCount=0,
-}: HeaderProps) {
+export default function Header({ user, productCount = 0 }: HeaderProps) {
   return (
     <header className="flex h-16 items-center justify-between border-b px-4">
       <div className="flex w-3/4 items-center">
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbPage className="line-clamp-1">
-                Products
-              </BreadcrumbPage>
+              <BreadcrumbPage className="line-clamp-1">Products</BreadcrumbPage>
 
               <span className="text-sm text-muted-foreground">
                 ({productCount})

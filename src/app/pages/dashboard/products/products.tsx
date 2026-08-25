@@ -186,7 +186,7 @@ export default function Products() {
           onPriceChange={updatePrice}
           onStockChange={updateStock}
           onSortChange={() =>
-          setSortOrder((current) => (current === "asc" ? "desc" : "asc"))
+            setSortOrder((current) => (current === "asc" ? "desc" : "asc"))
           }
         />
       </div>
@@ -227,7 +227,11 @@ export default function Products() {
 
             <SelectContent>
               {[10, 20, 30, 40, 50].map((size) => (
-                <SelectItem key={size} value={String(size)} className="hover:bg-primary-hover! ">
+                <SelectItem
+                  key={size}
+                  value={String(size)}
+                  className="hover:bg-primary-hover! "
+                >
                   {size}
                 </SelectItem>
               ))}
