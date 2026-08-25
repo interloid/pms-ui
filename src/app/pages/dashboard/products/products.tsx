@@ -4,7 +4,7 @@ import {
   ChevronsLeft,
   ChevronsRight,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { ProductFilters } from "@/app/pages/dashboard/products/product-filters";
 import { Button } from "@/components/ui/button";
@@ -16,7 +16,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useSearch } from "@/context/search-context";
-import { priceToNumber } from "@/lib/converters";
 import type {
   ApiProduct,
   ProductCategory,
@@ -28,7 +27,7 @@ import { ProductEdit } from "./crud-operations/edit-product";
 import {
   getProducts,
   deleteProduct as deleteProductApi,
-} from "@/services/product-service";  
+} from "@/services/product-service";
 import { ProductListSkeleton } from "@/components/shad/product-list-skeleton";
 
 export default function Products() {
@@ -49,12 +48,21 @@ export default function Products() {
   const [viewOpen, setViewOpen] = useState(false);
   const [editProduct, setEditProduct] = useState<ApiProduct | null>(null);
   const [editOpen, setEditOpen] = useState(false);
+  const [debouncedSearch, setDebouncedSearch] = useState(searchQuery);
 
   useEffect(() => {
     async function loadProducts() {
       try {
         setIsLoading(true);
-        const response = await getProducts(page, pageSize);
+        const response = await getProducts({
+          page,
+          pageSize,
+          status,
+          category,
+          search: searchQuery,
+          priceRange,
+          inStockOnly,
+        });
         setProducts(response.products);
         setProductCount(response.total);
         setTotalPages(response.totalPages);
@@ -65,60 +73,26 @@ export default function Products() {
       }
     }
     loadProducts();
-  }, [page, pageSize, refreshKey]);
-
-  const filteredProducts = useMemo(() => {
-    let result = [...products];
-
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-
-      result = result.filter(
-        (product) =>
-          product.name.toLowerCase().includes(query) ||
-          product.sku.toLowerCase().includes(query),
-      );
-    }
-
-    if (category !== "All") {
-      result = result.filter((product) => product.category_name === category);
-    }
-    if (status !== "All") {
-      result = result.filter(
-        (product) => product.status === status,
-      );
-    }
-
-    if (inStockOnly) {
-      result = result.filter((product) => product.stock > 0);
-    }
-
-    if (priceRange !== "all") {
-      const [minimumPrice, maximumPrice] = priceRange.split("-").map(Number);
-
-      result = result.filter((product) => {
-        const price = priceToNumber(product.price);
-
-        return price >= minimumPrice && price <= maximumPrice;
-      });
-    }
-
-    result.sort((a, b) =>
-      sortDescending
-        ? priceToNumber(b.price) - priceToNumber(a.price)
-        : priceToNumber(a.price) - priceToNumber(b.price),
-    );
-
-    return result;
   }, [
-    products,
-    searchQuery,
-    category,
+    page,
+    pageSize,
     status,
+    category,
+    debouncedSearch,
     priceRange,
     inStockOnly,
-    sortDescending,
+    refreshKey,
   ]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 500);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [searchQuery]);
 
   function updateCategory(value: ProductCategory) {
     setCategory(value);
@@ -167,7 +141,7 @@ export default function Products() {
     }
   }
 
- function handleViewProduct(product: ApiProduct) {
+  function handleViewProduct(product: ApiProduct) {
     setViewProduct(product);
     setViewOpen(true);
   }
@@ -206,7 +180,7 @@ export default function Products() {
         />
       </div>
       <ProductTable
-        products={filteredProducts}
+        products={products}
         archiveId={archiveId}
         onView={handleViewProduct}
         onArchive={setArchiveId}
@@ -240,8 +214,7 @@ export default function Products() {
               <SelectValue />
             </SelectTrigger>
 
-            <SelectContent
-            >
+            <SelectContent>
               {[10, 20, 30, 40, 50].map((size) => (
                 <SelectItem key={size} value={String(size)}>
                   {size}

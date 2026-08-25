@@ -1,18 +1,52 @@
 import { apiRequest } from "@/lib/api";
 import type {
   ApiProduct,
+  GetProductsParams,
   GetProductsResponse,
   ProductsResult,
 } from "@/types/data-type";
 
-export async function getProducts(
-  page: number,
-  pageSize: number,
-): Promise<ProductsResult> {
+export async function getProducts({
+  page,
+  pageSize,
+  status,
+  category,
+  search = "",
+  priceRange = "all",
+  inStockOnly,
+}: GetProductsParams): Promise<ProductsResult> {
+  const params = new URLSearchParams();
+
+  params.set("sort", "updated");
+  params.set("order", "desc");
+  params.set("page", String(page));
+  params.set("page_size", String(pageSize));
+
+  if (status !== "All") {
+    params.set("status", status);
+  }
+  if (category !== "All") {
+    params.set("category", category);
+  }
+
+  const trimmedSearch = search.trim();
+
+  if (trimmedSearch) {
+    params.set("search", trimmedSearch);
+  }
+
+  if (priceRange !== "all") {
+    params.set("price_range", priceRange);
+  }
+
+  if (inStockOnly) {
+    params.set("in_stock", "true");
+  }
+
   const response = await apiRequest<GetProductsResponse>(
-    `/api/v1/products?sort=updated&order=desc&page=${page}&page_size=${pageSize}`,
+    `/api/v1/products?${params.toString()}`,
   );
-  console.log('response.data', response)
+
   return {
     products: response.data,
     total: response.pagination.total,

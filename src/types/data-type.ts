@@ -69,10 +69,15 @@ export type ProductsResult = {
   totalPages: number;
 };
 
-export type GetProductsParams = {
+export interface GetProductsParams {
   page: number;
   pageSize: number;
-};
+  status: ProductStatusFilter;
+  category: ProductCategory;
+  search?: string;
+  priceRange?: string;
+  inStockOnly?: boolean;
+}
 
 export type ProductCategory =
   | "All"
@@ -96,11 +101,7 @@ export const categories: Array<{
   { value: "Stationery", label: "Stationery" },
 ];
 
-export type ProductStatus =
-  | "active"
-  | "draft"
-  | "out_of_stock"
-  | "archived";
+export type ProductStatus = "active" | "draft" | "out_of_stock" | "archived";
 
 export const statuses: Array<{
   value: ProductStatus;
