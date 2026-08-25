@@ -11,6 +11,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import type { ProductCategory, ProductFiltersProps } from "@/types/data-type";
 import { categories, statusFilters } from "@/types/data-type";
+import { RxReset } from "react-icons/rx";
 
 const priceRanges = [
   { value: "all", label: "All" },
@@ -27,12 +28,14 @@ export function ProductFilters({
   priceRange,
   inStockOnly,
   productCount,
-  sortOrder,
+  sort,
+  order,
   onCategoryChange,
   onStatusChange,
   onPriceChange,
   onStockChange,
   onSortChange,
+  onReset,
 }: ProductFiltersProps) {
   return (
     <div className="flex flex-wrap items-center gap-2">
@@ -75,7 +78,7 @@ export function ProductFilters({
               className={
                 active
                   ? "h-9 rounded-full px-4"
-                  : "h-9 rounded-full px-4 font-normal hover:bg-primary-hover! hover:border-primary "
+                  : "h-9 rounded-full px-4 font-normal hover:bg-primary-hover! hover:border-primary"
               }
               onClick={() => onStatusChange(item.value)}
             >
@@ -90,7 +93,6 @@ export function ProductFilters({
           <span className="text-xs">Price</span>
           <SelectValue />
         </SelectTrigger>
-
         <SelectContent
           position="popper"
           side="bottom"
@@ -117,7 +119,6 @@ export function ProductFilters({
           checked={inStockOnly}
           onCheckedChange={onStockChange}
         />
-
         <Label
           htmlFor="in-stock-only"
           className="cursor-pointer text-xs font-normal"
@@ -127,17 +128,50 @@ export function ProductFilters({
       </div>
 
       <div className="ml-auto flex items-center gap-1 text-xs text-muted-foreground">
-        <span>{productCount} products · sorted by Price</span>
+        <span>
+          {productCount} products ·{" "}
+          {sort === "updated"
+            ? order === "desc"
+              ? "Newest"
+              : "Oldest"
+            : order === "desc"
+              ? "Highest price"
+              : "Lowest price"}
+        </span>
+
         <Button
+          type="button"
           variant="ghost"
           size="icon"
           className="size-7 hover:bg-primary-hover! hover:border-primary!"
-          onClick={onSortChange}
-          aria-label="Change product sort order"
+          onClick={() =>
+            onSortChange(
+              "price",
+              sort === "price" && order === "asc" ? "desc" : "asc",
+            )
+          }
+          aria-label={
+            sort === "price" && order === "asc"
+              ? "Sort price high to low"
+              : "Sort price low to high"
+          }
         >
           <ChevronDown
-            className={sortOrder ? "size-4 " : "size-4 rotate-180"}
+            className={`size-4 transition-transform ${
+              sort === "price" && order === "desc" ? "rotate-180" : ""
+            }`}
           />
+        </Button>
+
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="h-9 px-3 hover:border-primary hover:bg-primary-hover!"
+          onClick={onReset}
+          aria-label="Reset sorting"
+        >
+          <RxReset />
         </Button>
       </div>
     </div>

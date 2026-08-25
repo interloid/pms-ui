@@ -38,7 +38,6 @@ export default function Products() {
   const [status, setStatus] = useState<ProductStatusFilter>("All");
   const [priceRange, setPriceRange] = useState("all");
   const [inStockOnly, setInStockOnly] = useState(false);
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [productCount, setProductCount] = useState<number>(0);
   const [totalPages, setTotalPages] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -49,6 +48,8 @@ export default function Products() {
   const [editProduct, setEditProduct] = useState<ApiProduct | null>(null);
   const [editOpen, setEditOpen] = useState(false);
   const [debouncedSearch, setDebouncedSearch] = useState(searchQuery);
+  const [sort, setSort] = useState<"price" | "updated">("updated");
+  const [order, setOrder] = useState<"asc" | "desc">("desc");
 
   useEffect(() => {
     async function loadProducts() {
@@ -59,11 +60,11 @@ export default function Products() {
           pageSize,
           status,
           category,
-          search: searchQuery,
+          search: debouncedSearch,
           priceRange,
           inStockOnly,
-          sort: "price",
-          order: sortOrder,
+          sort,
+          order,
         });
         setProducts(response.products);
         setProductCount(response.total);
@@ -83,8 +84,9 @@ export default function Products() {
     debouncedSearch,
     priceRange,
     inStockOnly,
-    sortOrder,
     refreshKey,
+    sort,
+    order,
   ]);
 
   useEffect(() => {
@@ -117,6 +119,15 @@ export default function Products() {
     setPage(1);
   }
 
+  function updateSort(
+    nextSort: "price" | "updated",
+    nextOrder: "asc" | "desc",
+  ) {
+    setSort(nextSort);
+    setOrder(nextOrder);
+    setPage(1);
+  }
+
   function archiveProduct(id: string) {
     setProducts((current) =>
       current.map((product) =>
@@ -130,6 +141,16 @@ export default function Products() {
     );
     setArchiveId(null);
     toast.success("Product archived successfully");
+  }
+
+  function resetFilters() {
+    setCategory("All");
+    setStatus("All");
+    setPriceRange("all");
+    setInStockOnly(false);
+    setSort("updated");
+    setOrder("desc");
+    setPage(1);
   }
 
   async function handleDeleteProduct(id: string) {
@@ -180,14 +201,14 @@ export default function Products() {
           priceRange={priceRange}
           inStockOnly={inStockOnly}
           productCount={productCount}
-          sortOrder={sortOrder}
+          sort={sort}
+          order={order}
           onCategoryChange={updateCategory}
           onStatusChange={updateStatus}
           onPriceChange={updatePrice}
           onStockChange={updateStock}
-          onSortChange={() =>
-            setSortOrder((current) => (current === "asc" ? "desc" : "asc"))
-          }
+          onSortChange={updateSort}
+          onReset={resetFilters}
         />
       </div>
       <ProductTable
@@ -275,7 +296,6 @@ export default function Products() {
             >
               <ChevronRight className="size-4" />
             </Button>
-
             <Button
               variant="outline"
               size="icon"

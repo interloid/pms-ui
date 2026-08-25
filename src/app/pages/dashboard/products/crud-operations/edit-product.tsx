@@ -224,11 +224,9 @@ export function ProductEdit({
     if (!form.name.trim()) {
       newErrors.name = "This Name is required.";
     }
-
     if (!form.sku.trim()) {
       newErrors.sku = "This SKU is required.";
     }
-
     if (!form.category) {
       newErrors.category = "This category is required.";
     }
@@ -240,7 +238,6 @@ export function ProductEdit({
     } else if (Number(form.price) < 0) {
       newErrors.price = "Price cannot be negative.";
     }
-
     if (!form.stock.trim()) {
       newErrors.stock = "This stock is required.";
     } else if (!Number.isFinite(Number(form.stock))) {
@@ -463,7 +460,6 @@ export function ProductEdit({
     const name = form.name.trim();
     const sku = form.sku.trim();
     const description = form.description.trim();
-
     const price = Number(form.price);
     const stock = Number(form.stock);
 
@@ -565,7 +561,6 @@ export function ProductEdit({
             </span>
 
             <div className="flex-1" />
-
             <Button
               type="button"
               variant="outline"
@@ -638,8 +633,6 @@ export function ProductEdit({
                   </span>
                 )}
               </div>
-
-              {/* Category */}
               <div className="grid gap-1.5">
                 <Label
                   htmlFor="edit-product-category"
@@ -666,7 +659,13 @@ export function ProductEdit({
                     <SelectValue placeholder="Select..." />
                   </SelectTrigger>
 
-                  <SelectContent>
+                  <SelectContent
+                    position="popper"
+                    side="bottom"
+                    align="start"
+                    sideOffset={4}
+                    avoidCollisions={false}
+                  >
                     {categories.map((category) => (
                       <SelectItem key={category.value} value={category.value}>
                         {category.label}
@@ -682,10 +681,7 @@ export function ProductEdit({
                 )}
               </div>
             </div>
-
-            {/* Price + Stock + Status */}
             <div className="grid grid-cols-3 gap-3">
-              {/* Price */}
               <div className="grid gap-1.5">
                 <Label
                   htmlFor="edit-product-price"
@@ -715,8 +711,6 @@ export function ProductEdit({
                   </span>
                 )}
               </div>
-
-              {/* Stock */}
               <div className="grid gap-1.5">
                 <Label
                   htmlFor="edit-product-stock"
@@ -746,8 +740,6 @@ export function ProductEdit({
                   </span>
                 )}
               </div>
-
-              {/* Status */}
               <div className="grid gap-1.5">
                 <Label
                   htmlFor="edit-product-status"
@@ -769,7 +761,13 @@ export function ProductEdit({
                     <SelectValue placeholder="Select..." />
                   </SelectTrigger>
 
-                  <SelectContent>
+                  <SelectContent
+                    position="popper"
+                    side="bottom"
+                    align="start"
+                    sideOffset={4}
+                    avoidCollisions={false}
+                  >
                     {statuses.map((status) => (
                       <SelectItem key={status.value} value={status.value}>
                         {status.label}
@@ -779,8 +777,6 @@ export function ProductEdit({
                 </Select>
               </div>
             </div>
-
-            {/* Images */}
             <div className="grid gap-1.5">
               <div className="flex items-center justify-between">
                 <Label className="text-[12px] font-medium">Images</Label>
@@ -879,7 +875,6 @@ export function ProductEdit({
                     )}
                   </div>
                 ))}
-
                 {remainingSlots > 0 && (
                   <label
                     htmlFor="edit-product-images"
@@ -888,7 +883,6 @@ export function ProductEdit({
                     +
                   </label>
                 )}
-
                 <Input
                   id="edit-product-images"
                   type="file"
@@ -920,7 +914,6 @@ export function ProductEdit({
               )}
             </div>
 
-            {/* Description */}
             <div className="grid gap-1.5">
               <Label
                 htmlFor="edit-product-description"
@@ -935,12 +928,11 @@ export function ProductEdit({
                 onChange={(event) =>
                   updateField("description", event.target.value)
                 }
-                className="h-20 resize-none leading-relaxed"
+                className="h-20 resize-none leading-relaxed focus-visible:ring-primary/20 focus-visible:border-primary"
               />
             </div>
           </div>
 
-          {/* Footer */}
           <div className="flex h-16 shrink-0 items-center gap-2 border-t px-5">
             <div className="flex-1" />
 

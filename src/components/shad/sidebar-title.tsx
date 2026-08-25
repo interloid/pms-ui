@@ -5,7 +5,7 @@ export default function SidebarTitle() {
   return (
     <div
       className="
-        flex h-16 items-center justify-between gap-2 px-2 pb-2
+        flex h-16 items-center justify-between gap-2 px-2 pb-2 pt-2
         group-data-[collapsible=icon]:flex-col
         group-data-[collapsible=icon]:justify-center
         group-data-[collapsible=icon]:gap-1  

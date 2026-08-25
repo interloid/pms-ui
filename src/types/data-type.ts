@@ -167,13 +167,19 @@ export interface ProductFiltersProps {
   priceRange: string;
   inStockOnly: boolean;
   productCount: number;
+  sort: "price" | "updated";
+  order: "asc" | "desc";
   onCategoryChange: (value: ProductCategory) => void;
   onStatusChange: (value: ProductStatusFilter) => void;
   onPriceChange: (value: string) => void;
   onStockChange: (value: boolean) => void;
-  sortOrder: "asc" | "desc";
-  onSortChange: () => void;
+  onSortChange: (
+    sort: "price" | "updated",
+    order: "asc" | "desc",
+  ) => void;
+  onReset: () => void;
 }
+
 export type ProductViewProps = {
   product: ApiProduct | null;
   open: boolean;
