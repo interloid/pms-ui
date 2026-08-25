@@ -22,7 +22,6 @@ export default function Callback() {
   useEffect(() => {
     const authenticate = async () => {
       const isAuthenticated = await checkAuth();
-      console.log('isAuthenticated', isAuthenticated)
       if (isAuthenticated) {
         navigate("/products", {
           replace: true,

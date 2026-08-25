@@ -54,7 +54,6 @@ export default function PasscodeRequestPage() {
       });
     } catch (error) {
       console.error("Passcode request error:", error);
-
       toast.error(
         error instanceof Error ? error.message : "Failed to send passcode",
       );

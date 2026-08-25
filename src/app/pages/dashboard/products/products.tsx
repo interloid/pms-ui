@@ -151,13 +151,19 @@ export default function Products() {
     setEditProduct(product);
     setEditOpen(true);
   }
-
   function handleProductUpdated(updatedProduct: ApiProduct) {
     setProducts((current) =>
-      current.map((p) => (p.id === updatedProduct.id ? updatedProduct : p)),
+      current.map((product) =>
+        product.id === updatedProduct.id ? updatedProduct : product,
+      ),
+    );
+    setViewProduct((current) =>
+      current?.id === updatedProduct.id ? updatedProduct : current,
+    );
+    setEditProduct((current) =>
+      current?.id === updatedProduct.id ? updatedProduct : current,
     );
   }
-
   if (isLoading) {
     return <ProductListSkeleton />;
   }

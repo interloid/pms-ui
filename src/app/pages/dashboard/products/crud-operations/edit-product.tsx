@@ -19,7 +19,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { updateProduct } from "@/services/product-service";
+import { getProducts, updateProduct } from "@/services/product-service";
 import {
   categories,
   statuses,
@@ -132,7 +132,6 @@ export function ProductEdit({
     setRemovedImageIds(new Set());
     setNewImages([]);
     setImageError(null);
-
     originalForm.current = initialForm;
     originalPrimaryImageId.current = primaryImage?.id ?? null;
   }, [product, open]);
@@ -249,9 +248,7 @@ export function ProductEdit({
     } else if (Number(form.stock) < 0) {
       newErrors.stock = "Stock cannot be negative.";
     }
-
     setErrors(newErrors);
-
     return Object.keys(newErrors).length === 0;
   }
 
@@ -379,9 +376,7 @@ export function ProductEdit({
     }
 
     const filesToProcess = files.slice(0, remainingSlots);
-
     const addedImages: ProductImage[] = [];
-
     let firstError: ImageError | null = null;
 
     for (const file of filesToProcess) {
@@ -486,13 +481,9 @@ export function ProductEdit({
       formData.append("name", name);
       formData.append("sku", sku);
       formData.append("category_name", form.category);
-
       formData.append("price", String(price));
-
       formData.append("stock", String(stock));
-
       formData.append("status", form.status);
-
       formData.append("description", description);
 
       if (removedImageIds.size > 0) {
