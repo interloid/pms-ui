@@ -6,13 +6,16 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ProductTableRow } from "./product-table-row";
-import type { ProductTableProps } from "@/types/data-type";
+import { SortableHeader } from "@/components/shad/sortable-header";
 import EmptyProductTableRow from "@/components/shad/empty-products";
+import type { ProductTableProps } from "@/types/data-type";
 
 export function ProductTable({
   products,
   archiveId,
   deleteId,
+  sort,
+  onSort,
   onView,
   onArchive,
   onCancelArchive,
@@ -26,14 +29,56 @@ export function ProductTable({
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
-            <TableRow className="bg-muted/50 hover:bg-muted/50 text-muted-text text-xs">
-              <TableHead className="text-center">SKU</TableHead>
-              <TableHead className="min-w-55">PRODUCT NAME</TableHead>
-              <TableHead>CATEGORY</TableHead>
-              <TableHead className="text-right">PRICE</TableHead>
-              <TableHead className="text-right">STOCK</TableHead>
-              <TableHead>STATUS </TableHead>
-              <TableHead>UPDATED </TableHead>
+            <TableRow className="bg-muted/50 text-xs text-muted-text hover:bg-muted/50">
+              <SortableHeader
+                label="SKU"
+                field="sku"
+                sort={sort}
+                onSort={onSort}
+              />
+
+              <SortableHeader
+                label="PRODUCT NAME"
+                field="name"
+                sort={sort}
+                onSort={onSort}
+              />
+
+              <SortableHeader
+                label="CATEGORY"
+                field="category"
+                sort={sort}
+                onSort={onSort}
+              />
+
+              <SortableHeader
+                label="PRICE"
+                field="price"
+                sort={sort}
+                onSort={onSort}
+              />
+
+              <SortableHeader
+                label="STOCK"
+                field="stock"
+                sort={sort}
+                onSort={onSort}
+              />
+
+              <SortableHeader
+                label="STATUS"
+                field="status"
+                sort={sort}
+                onSort={onSort}
+              />
+
+              <SortableHeader
+                label="UPDATED"
+                field="updated"
+                sort={sort}
+                onSort={onSort}
+              />
+
               <TableHead>ACTIONS</TableHead>
             </TableRow>
           </TableHeader>

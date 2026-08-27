@@ -19,6 +19,8 @@ import { useSearch } from "@/context/search-context";
 import type {
   ApiProduct,
   ProductCategory,
+  ProductSort,
+  ProductSortField,
   ProductStatusFilter,
 } from "@/types/data-type";
 import { ProductTable } from "./product-table";
@@ -49,9 +51,10 @@ export default function ProductsPage() {
   const [editProduct, setEditProduct] = useState<ApiProduct | null>(null);
   const [editOpen, setEditOpen] = useState(false);
   const [debouncedSearch, setDebouncedSearch] = useState(searchQuery);
-  const [sort, setSort] = useState<"price" | "updated">("updated");
-  const [order, setOrder] = useState<"asc" | "desc">("desc");
-
+  const [sort, setSort] = useState<ProductSort>({
+    field: "updated",
+    order: "desc",
+  });
   useEffect(() => {
     async function loadProducts() {
       try {
@@ -63,8 +66,8 @@ export default function ProductsPage() {
           category,
           search: debouncedSearch,
           priceRange,
-          sort,
-          order,
+          sort: sort.field,
+          order: sort.order,
         });
         setProducts(response.products);
         setProductCount(response.total);
@@ -84,8 +87,8 @@ export default function ProductsPage() {
     debouncedSearch,
     priceRange,
     refreshKey,
-    sort,
-    order,
+    sort.field,
+    sort.order,
   ]);
 
   useEffect(() => {
@@ -113,23 +116,26 @@ export default function ProductsPage() {
     setPage(1);
   }
 
-  function updateSort(
-    nextSort: "price" | "updated",
-    nextOrder: "asc" | "desc",
-  ) {
-    setSort(nextSort);
-    setOrder(nextOrder);
-    setPage(1);
-  }
-
   function resetFilters() {
     setCategory("All");
     setStatus("All");
     setPriceRange("all");
-    setSort("updated");
-    setOrder("desc");
+    setSort({
+      field: "updated",
+      order: "desc",
+    });
     setPage(1);
   }
+
+  const handleSort = (field: ProductSortField) => {
+    setSort((current) => ({
+      field,
+      order:
+        current.field === field && current.order === "asc" ? "desc" : "asc",
+    }));
+
+    setPage(1);
+  };
 
   async function handleDeleteProduct(id: string) {
     try {
@@ -190,18 +196,17 @@ export default function ProductsPage() {
         status={status}
         priceRange={priceRange}
         productCount={productCount}
-        sort={sort}
-        order={order}
         onCategoryChange={updateCategory}
         onStatusChange={updateStatus}
         onPriceChange={updatePrice}
-        onSortChange={updateSort}
         onReset={resetFilters}
       />
       <ProductTable
         products={products}
         archiveId={archiveId}
         deleteId={deleteId}
+        sort={sort}
+        onSort={handleSort}
         onView={handleViewProduct}
         onArchive={setArchiveId}
         onCancelArchive={() => setArchiveId(null)}

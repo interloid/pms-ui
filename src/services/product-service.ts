@@ -9,8 +9,8 @@ import type {
 export async function getProducts({
   page,
   pageSize,
-  status,
-  category,
+  status = "All",
+  category = "All",
   search = "",
   priceRange = "all",
   sort = "updated",
@@ -26,9 +26,11 @@ export async function getProducts({
   if (status !== "All") {
     params.set("status", status);
   }
+
   if (category !== "All") {
     params.set("category_name", category);
   }
+
   const trimmedSearch = search.trim();
 
   if (trimmedSearch) {
@@ -42,6 +44,7 @@ export async function getProducts({
   const response = await apiRequest<GetProductsResponse>(
     `/api/v1/products?${params.toString()}`,
   );
+
   return {
     products: response.data,
     total: response.pagination.total,

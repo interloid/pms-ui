@@ -58,14 +58,13 @@ export type ProductsResult = {
 export type GetProductsParams = {
   page: number;
   pageSize: number;
-  status: ProductStatusFilter;
-  category: ProductCategory;
+  status?: ProductStatusFilter;
+  category?: ProductCategory;
   search?: string;
   priceRange?: string;
-  sort?: "price" | "updated";
-  order?: "asc" | "desc";
+  sort?: ProductSortField;
+  order?: SortOrder;
 };
-
 export type ProductCategory =
   | "All"
   | "Lighting"
@@ -131,10 +130,12 @@ export interface ProductTableRowProps {
   onConfirmDelete: () => void;
 }
 
-export interface ProductTableProps {
+export type ProductTableProps = {
   products: ApiProduct[];
   archiveId: string | null;
   deleteId: string | null;
+  sort: ProductSort;
+  onSort: (field: ProductSortField) => void;
   onView: (product: ApiProduct) => void;
   onArchive: (id: string) => void;
   onCancelArchive: () => void;
@@ -142,26 +143,20 @@ export interface ProductTableProps {
   onDelete: (id: string) => void;
   onCancelDelete: () => void;
   onConfirmDelete: (id: string) => void;
-}
+};
 
 export type ProductStatusFilter = "All" | ProductStatus;
 
-export interface ProductFiltersProps {
+export type ProductFiltersProps = {
   category: ProductCategory;
   status: ProductStatusFilter;
   priceRange: string;
   productCount: number;
-  sort: "price" | "updated";
-  order: "asc" | "desc";
   onCategoryChange: (value: ProductCategory) => void;
   onStatusChange: (value: ProductStatusFilter) => void;
   onPriceChange: (value: string) => void;
-  onSortChange: (
-    sort: "price" | "updated",
-    order: "asc" | "desc",
-  ) => void;
   onReset: () => void;
-}
+};
 
 export type ProductViewProps = {
   product: ApiProduct | null;
@@ -207,7 +202,6 @@ export type HeaderProps = {
   productCount?: number;
 };
 
-
 export type InputInlineProps = {
   user: AuthUser | null;
 };
@@ -230,4 +224,33 @@ export type JsonBody = Record<string, unknown>;
 
 export type ApiRequestOptions = Omit<RequestInit, "body"> & {
   body?: BodyInit | JsonBody;
+};
+
+export type ProductSortField =
+  | "sku"
+  | "name"
+  | "category"
+  | "price"
+  | "stock"
+  | "status"
+  | "updated";
+
+export type SortOrder = "asc" | "desc";
+
+export type ProductSort = {
+  field: ProductSortField;
+  order: SortOrder;
+};
+
+export type Props = ProductTableProps & {
+  sort: ProductSort;
+  onSort: (field: ProductSortField) => void;
+};
+
+export type SortableTableHeadProps = {
+  label: string;
+  field: ProductSortField;
+  sort: ProductSort;
+  onSort: (field: ProductSortField) => void;
+  className?: string;
 };
