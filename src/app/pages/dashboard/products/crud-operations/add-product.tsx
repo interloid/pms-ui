@@ -238,6 +238,17 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
     );
   };
 
+function FieldError({ message }: { message?: string }) {
+    return (
+      <p
+        className="h-4 text-xs leading-4 font-medium text-destructive"
+        aria-live="polite"
+      >
+        {message || "\u00A0"}
+      </p>
+    );
+  }
+
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
@@ -254,7 +265,7 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
           className="flex min-h-0 flex-1 flex-col"
           noValidate
         >
-          <div className="grid flex-1 auto-rows-min gap-6 overflow-y-auto px-4">
+          <div className="grid flex-1 auto-rows-min gap-4 overflow-y-auto px-4">
             <div className="grid gap-3">
               <Label htmlFor="product-name" className="text-xs">
                 Product Name
@@ -283,11 +294,7 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
                 }`}
               />
 
-              {errors.name && (
-                <span className="text-xs font-medium text-destructive">
-                  {errors.name}
-                </span>
-              )}
+              <FieldError message={errors.name} />
             </div>
 
             <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
@@ -319,11 +326,7 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
                   }`}
                 />
 
-                {errors.sku && (
-                  <span className="text-[11px] font-normal text-destructive">
-                    {errors.sku}
-                  </span>
-                )}
+                <FieldError message={errors.sku} />
               </div>
               <div className="grid w-full gap-2">
                 <Label htmlFor="product-category" className="text-xs">
@@ -371,11 +374,7 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
                   </SelectContent>
                 </Select>
 
-                {errors.category && (
-                  <span className="text-[11px] font-normal text-destructive">
-                    {errors.category}
-                  </span>
-                )}
+                <FieldError message={errors.category} />
               </div>
             </div>
 
@@ -411,11 +410,7 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
                   }`}
                 />
 
-                {errors.price && (
-                  <span className="text-xs text-destructive">
-                    {errors.price}
-                  </span>
-                )}
+                <FieldError message={errors.price} />
               </div>
               <div className="grid w-full gap-2">
                 <Label htmlFor="product-stock" className="text-xs">
@@ -431,6 +426,8 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
                   min={0}
                   className="h-10 w-full placeholder:text-xs focus-visible:border-primary focus-visible:ring-primary/20"
                 />
+
+                <FieldError />
               </div>
 
               <div className="grid w-full gap-2">
@@ -461,6 +458,8 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
                     ))}
                   </SelectContent>
                 </Select>
+
+                <FieldError />
               </div>
             </div>
 

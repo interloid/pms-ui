@@ -122,8 +122,7 @@ export function ProductFilters({
               <ResetForwardIcon />
             </Button>
           </TooltipTrigger>
-
-          <TooltipContent side="left">
+          <TooltipContent side="right">
             <p>Reset filters</p>
           </TooltipContent>
         </Tooltip>

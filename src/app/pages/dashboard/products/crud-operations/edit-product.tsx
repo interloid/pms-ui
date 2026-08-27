@@ -544,6 +544,17 @@ export function ProductEdit({
     return null;
   }
 
+  function FieldError({ message }: { message?: string }) {
+    return (
+      <p
+        className="h-4 text-xs leading-4 font-medium text-destructive"
+        aria-live="polite"
+      >
+        {message || "\u00A0"}
+      </p>
+    );
+  }
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="gap-0 p-0 sm:max-w-xl!">
@@ -579,7 +590,7 @@ export function ProductEdit({
         )}
 
         <form onSubmit={handleSubmit} className="contents" noValidate>
-          <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-5">
+          <div className="flex flex-1 flex-col gap-3 overflow-y-auto p-5">
             <div className="grid gap-1.5">
               <Label
                 htmlFor="edit-product-name"
@@ -600,12 +611,7 @@ export function ProductEdit({
                     : "focus-visible:border-primary"
                 }`}
               />
-
-              {errors.name && (
-                <span className="text-[11px] font-normal text-destructive">
-                  {errors.name}
-                </span>
-              )}
+              <FieldError message={errors.name} />
             </div>
             <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="grid gap-1.5">
@@ -628,11 +634,7 @@ export function ProductEdit({
                   }`}
                 />
 
-                {errors.sku && (
-                  <span className="text-[11px] font-normal text-destructive">
-                    {errors.sku}
-                  </span>
-                )}
+                <FieldError message={errors.sku} />
               </div>
               <div className="grid gap-1.5">
                 <Label
@@ -675,11 +677,7 @@ export function ProductEdit({
                   </SelectContent>
                 </Select>
 
-                {errors.category && (
-                  <span className="text-[11px] font-normal text-destructive">
-                    {errors.category}
-                  </span>
-                )}
+                <FieldError message={errors.category} />
               </div>
             </div>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
@@ -706,11 +704,7 @@ export function ProductEdit({
                   }`}
                 />
 
-                {errors.price && (
-                  <span className="text-[11px] font-normal text-destructive">
-                    {errors.price}
-                  </span>
-                )}
+                <FieldError message={errors.price} />
               </div>
               <div className="grid gap-1.5">
                 <Label
@@ -734,12 +728,7 @@ export function ProductEdit({
                       : "focus-visible:border-primary"
                   }`}
                 />
-
-                {errors.stock && (
-                  <span className="text-[11px] font-normal text-destructive">
-                    {errors.stock}
-                  </span>
-                )}
+                <FieldError />
               </div>
               <div className="grid gap-1.5">
                 <Label
@@ -775,6 +764,7 @@ export function ProductEdit({
                       </SelectItem>
                     ))}
                   </SelectContent>
+                  <FieldError />
                 </Select>
               </div>
             </div>
