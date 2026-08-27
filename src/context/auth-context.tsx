@@ -11,7 +11,7 @@ import {
   login as loginService,
   loginWithPasscode as loginWithPasscodeService,
   logout as logoutService,
-} from "@/services/auth.service";
+} from "@/services/auth-service";
 
 import type {
   AuthContextValue,
@@ -69,9 +69,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const loginWithPasscode = useCallback(
     async (email: string, passcode: string) => {
       await loginWithPasscodeService(email, passcode);
-      setStatus("authenticated");
+      await checkAuth();
     },
-    [],
+    [checkAuth],
   );
 
   const logout = useCallback(async () => {

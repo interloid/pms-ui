@@ -1,5 +1,5 @@
 import logo from "@/assets/interloid-logo.png";
-import { CustomSidebarTrigger } from "./customized-sidetrigger";
+import { CustomSidebarTrigger } from "./custom-sidebar-trigger";
 
 export default function SidebarTitle() {
   return (
@@ -12,7 +12,7 @@ export default function SidebarTitle() {
         group-data-[collapsible=icon]:items-center
       "
     >
-      <a href="/dashboard" className="flex items-center gap-2">
+      <a href="/products" className="flex items-center gap-2">
         <img
           src={logo}
           alt="Interloid"

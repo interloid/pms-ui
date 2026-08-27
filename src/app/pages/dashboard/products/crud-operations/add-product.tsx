@@ -68,6 +68,7 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
     setDescription("");
     setImages([]);
     setImageError(null);
+    setErrors({});
   }
 
   const validateForm = (): boolean => {
@@ -81,11 +82,11 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
     if (!category) {
       newErrors.category = "Please select a category.";
     }
-    if (!price) {
+    if (price.trim() === "") {
       newErrors.price = "This price is required.";
     }
-    if (!stock) {
-      newErrors.price = "This stock is required.";
+    if (stock.trim() === "") {
+      newErrors.stock = "This stock is required.";
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;

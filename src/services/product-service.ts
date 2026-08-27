@@ -82,6 +82,20 @@ export async function updateProduct(
   return response.data;
 }
 
+export async function archiveProduct(id: string): Promise<ApiProduct> {
+  const formData = new FormData();
+  formData.append("status", "archived");
+  const response = await apiRequest<{
+    success: boolean;
+    message: string;
+    data: ApiProduct;
+  }>(`/api/v1/products/${id}`, {
+    method: "PATCH",
+    body: formData,
+  });
+  return response.data;
+}
+
 export async function deleteProduct(id: string): Promise<void> {
   await apiRequest(`/api/v1/products/${id}`, {
     method: "DELETE",

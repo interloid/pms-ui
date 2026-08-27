@@ -1,7 +1,7 @@
 import { PackageOpen } from "lucide-react";
 import { TableCell, TableRow } from "@/components/ui/table";
 
-export  function EmptyProducts() {
+export default function  EmptyProductTableRow() {
   return (
     <TableRow>
       <TableCell colSpan={8} className="h-100 p-5">

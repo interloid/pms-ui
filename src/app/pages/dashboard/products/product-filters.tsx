@@ -133,12 +133,11 @@ export function ProductFilters({
           {sort === "updated"
             ? order === "desc"
               ? "Updated"
-              : "Oldest"
+              : ""
             : order === "desc"
               ? "Price(High to Low)"
               : "Price(Low to High)"}
         </span>
-
         <Button
           type="button"
           variant="ghost"

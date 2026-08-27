@@ -6,6 +6,7 @@ import { ProtectedRoute } from "@/app/auth/protected-route";
 import { PublicRoute } from "@/app/auth/public-route";
 import { Toaster } from "sonner";
 import LoadingScreen from "@/components/shad/loading-screen";
+import { LoginPage } from "./pages/login";
 
 const LoginForm = lazy(() => import("./pages/login"));
 const Callback = lazy(() => import("./pages/callback"));
@@ -28,7 +29,7 @@ export default function App() {
             <Suspense fallback={<LoadingScreen />}>
               <Routes>
                 <Route element={<PublicRoute />}>
-                  <Route path="/login" element={<LoginForm />} />
+                  <Route path="/login" element={<LoginPage />} />
                   <Route path="/passcode" element={<PasscodeRequestPage />} />
                   <Route
                     path="/passcode/verify"

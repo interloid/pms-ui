@@ -1,11 +1,5 @@
+import type { SearchContextValue } from "@/types/data-type";
 import { createContext, useContext } from "react";
-
-type SearchContextValue = {
-  searchQuery: string;
-  setSearchQuery: (query: string) => void;
-  refreshKey: number;
-  refresh: () => void;
-};
 
 export const SearchContext = createContext<SearchContextValue>({
   searchQuery: "",

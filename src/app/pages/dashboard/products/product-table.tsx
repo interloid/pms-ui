@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/table";
 import { ProductTableRow } from "./product-table-row";
 import type { ProductTableProps } from "@/types/data-type";
-import { EmptyProducts } from "@/components/shad/emptyProducts";
+import EmptyProductTableRow from "@/components/shad/empty-products";
 
 export function ProductTable({
   products,
@@ -49,7 +49,7 @@ export function ProductTable({
                 />
               ))
             ) : (
-              <EmptyProducts />
+              <EmptyProductTableRow />
             )}
           </TableBody>
         </Table>

@@ -219,8 +219,20 @@ export type User = {
   avatar?: string;
 };
 
+export type HeaderProps = {
+  user: AuthUser | null;
+  productCount?: number;
+};
+
+
 export type InputInlineProps = {
   user: AuthUser | null;
+};
+export type SearchContextValue = {
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
+  refreshKey: number;
+  refresh: () => void;
 };
 
 export type FormErrors = {
@@ -228,4 +240,11 @@ export type FormErrors = {
   sku?: string;
   category?: string;
   price?: string;
+  stock?: string;
+};
+
+export type JsonBody = Record<string, unknown>;
+
+export type ApiRequestOptions = Omit<RequestInit, "body"> & {
+  body?: BodyInit | JsonBody;
 };

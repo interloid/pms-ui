@@ -535,9 +535,10 @@ export function ProductEdit({
     if (open) {
       return;
     }
-
-    revokeImageUrls(newImages);
-  }, [open]);
+    return () => {
+      revokeImageUrls(newImages);
+    };
+  }, [open, newImages]);
 
   if (!product || !form) {
     return null;

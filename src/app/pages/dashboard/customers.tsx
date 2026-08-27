@@ -10,7 +10,7 @@ export default function Customers() {
     <EmptyPage
       icon={PersonOffIcon}
       title="Nothing here yet"
-      description="Categories isn’t part of this build. The nav item routes to this placeholder so the shell feels complete."
+      description="Customers isn’t part of this build. The nav item routes to this placeholder so the shell feels complete."
     >
       <Button variant="secondary" onClick={() => navigate("/products")}>
         Go to Products

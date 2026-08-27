@@ -3,7 +3,7 @@ import EmptyPage from "@/components/shad/empty-page";
 import { Button } from "@/components/ui/button";
 import SettingsIcon from "@mui/icons-material/Settings";
 
-export default function Setting() {
+export default function Settings() {
   const navigate = useNavigate();
 
   return (

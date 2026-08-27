@@ -19,13 +19,13 @@ import { useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Spinner } from "@/components/ui/spinner";
-import { loginWithProvider } from "@/services/auth.service";
+import { loginWithProvider } from "@/services/auth-service";
 import { useAuth } from "@/hooks/useAuth";
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa";
-import MicrosoftLogo from "@/components/icons/logos-microsoft-icon";
+import MicrosoftLogo from "@/components/icons/microsoft-logo";
 
-export default function LoginForm({
+export function LoginPage({
   className,
   ...props
 }: React.ComponentProps<"div">) {

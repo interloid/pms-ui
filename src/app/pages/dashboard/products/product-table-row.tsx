@@ -51,7 +51,7 @@ export function ProductTableRow({
         <TableCell colSpan={8} className="border-l-2 border-l-red-500 py-4">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <ProductImage src={primaryImage} alt={product.name}/>
+              <ProductImage src={primaryImage} alt={product.name} />
               <div>
                 <p className="text-sm font-medium">
                   Archive &quot;{product.name}&quot;?
@@ -79,7 +79,10 @@ export function ProductTableRow({
     );
   }
   return (
-    <TableRow className="cursor-pointer" onClick={onView}>
+    <TableRow
+      className="cursor-pointer hover:bg-primary-hover"
+      onClick={onView}
+    >
       <TableCell>
         <div className="flex items-center gap-3">
           <ProductImage src={primaryImage} alt={product.name} />

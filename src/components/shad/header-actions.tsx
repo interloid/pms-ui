@@ -7,7 +7,7 @@ import { useSearch } from "@/context/search-context";
 import { useAuth } from "@/hooks/useAuth";
 import type { InputInlineProps } from "@/types/data-type";
 
-export function InputInline({ user }: InputInlineProps) {
+export function HeaderActions({ user }: InputInlineProps) {
   const { searchQuery, setSearchQuery, refresh } = useSearch();
   const { logout } = useAuth();
   return (

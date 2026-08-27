@@ -1,9 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-
-import { requestPasscode } from "@/services/auth.service";
-
+import { requestPasscode } from "@/services/auth-service";
 import {
   Card,
   CardDescription,
@@ -11,11 +9,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
-
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";

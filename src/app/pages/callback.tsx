@@ -17,17 +17,37 @@ export default function Callback() {
   const [error, setError] = useState("");
 
   useEffect(() => {
+    let isMounted = true;
     const authenticate = async () => {
-      const isAuthenticated = await checkAuth();
-      if (isAuthenticated) {
-        navigate("/products", {
-          replace: true,
-        });
-      } else {
+      try {
+        const isAuthenticated = await checkAuth();
+        if (!isMounted) {
+          return;
+        }
+
+        if (isAuthenticated) {
+          navigate("/products", {
+            replace: true,
+          });
+          return;
+        }
+
+        setError("We couldn't complete your sign-in.");
+      } catch (error) {
+        if (!isMounted) {
+          return;
+        }
+
+        console.error("Authentication callback failed:", error);
         setError("We couldn't complete your sign-in.");
       }
     };
-    authenticate();
+
+    void authenticate();
+
+    return () => {
+      isMounted = false;
+    };
   }, [checkAuth, navigate]);
 
   return (
@@ -56,7 +76,9 @@ export default function Callback() {
                 Authentication error
               </AlertTitle>
 
-              <AlertDescription className="text-xs">{error}</AlertDescription>
+              <AlertDescription className="text-xs">
+                {error}
+              </AlertDescription>
             </Alert>
           )}
         </Empty>

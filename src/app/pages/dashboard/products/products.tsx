@@ -27,11 +27,12 @@ import { ProductEdit } from "./crud-operations/edit-product";
 import {
   getProducts,
   deleteProduct as deleteProductApi,
+  archiveProduct as archiveProductApi,
 } from "@/services/product-service";
 import { ProductListSkeleton } from "@/components/shad/product-list-skeleton";
 
-export default function Products() {
-  const { searchQuery, refreshKey } = useSearch();
+export default function ProductsPage() {
+  const { searchQuery, refreshKey, refresh } = useSearch();
   const [products, setProducts] = useState<ApiProduct[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [category, setCategory] = useState<ProductCategory>("All");
@@ -128,19 +129,19 @@ export default function Products() {
     setPage(1);
   }
 
-  function archiveProduct(id: string) {
-    setProducts((current) =>
-      current.map((product) =>
-        product.id === id
-          ? {
-              ...product,
-              status: "archived",
-            }
-          : product,
-      ),
-    );
-    setArchiveId(null);
-    toast.success("Product archived successfully");
+  async function archiveProduct(id: string) {
+    try {
+      await archiveProductApi(id);
+
+      setArchiveId(null);
+
+      toast.success("Product archived successfully");
+      refresh();
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to archive product",
+      );
+    }
   }
 
   function resetFilters() {
@@ -194,7 +195,6 @@ export default function Products() {
 
   return (
     <div className="w-full space-y-4">
-      <div className="px-4 lg:px-6">
         <ProductFilters
           category={category}
           status={status}
@@ -210,7 +210,6 @@ export default function Products() {
           onSortChange={updateSort}
           onReset={resetFilters}
         />
-      </div>
       <ProductTable
         products={products}
         archiveId={archiveId}
@@ -242,7 +241,7 @@ export default function Products() {
               setPage(1);
             }}
           >
-            <SelectTrigger className="h-8 w-16.25 hover:bg-primary-hover hover:border-primary">
+            <SelectTrigger className="h-8 w-16.25 hover:bg-primary-hover hover:border-primary focus-visible:border-primary! focus-visible:primary-3! focus-visible:ring-primary/20!">
               <SelectValue />
             </SelectTrigger>
 
@@ -251,7 +250,7 @@ export default function Products() {
                 <SelectItem
                   key={size}
                   value={String(size)}
-                  className="hover:bg-primary-hover! "
+                  className="hover:bg-primary-hover!"
                 >
                   {size}
                 </SelectItem>

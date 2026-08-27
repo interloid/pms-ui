@@ -1,16 +1,11 @@
-import type { AuthUser } from "@/types/auth";
 import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbList,
   BreadcrumbPage,
 } from "../ui/breadcrumb";
-import { InputInline } from "@/components/shad/input-inline";
-
-type HeaderProps = {
-  user: AuthUser | null;
-  productCount?: number;
-};
+import { HeaderActions } from "./header-actions";
+import type { HeaderProps } from "@/types/data-type";
 
 export default function Header({ user, productCount = 0 }: HeaderProps) {
   return (
@@ -28,7 +23,7 @@ export default function Header({ user, productCount = 0 }: HeaderProps) {
           </BreadcrumbList>
         </Breadcrumb>
       </div>
-      <InputInline user={user} />
+      <HeaderActions user={user} />
     </header>
   );
 }

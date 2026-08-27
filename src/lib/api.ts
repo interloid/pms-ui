@@ -1,43 +1,83 @@
-import type { OAuthProvider } from "@/types/auth";
+import type { ApiRequestOptions, JsonBody } from "@/types/data-type";
 
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const API_TIMEOUT = 15_000;
 
-export const OAuthCallbackEndpoints: Record<OAuthProvider, string> = {
-  google: "/api/v1/auth/google/callback",
-  github: "/api/v1/auth/github/callback",
-  microsoft: "/api/v1/auth/microsoft/callback",
-};
+if (!API_BASE_URL) {
+  throw new Error("VITE_API_BASE_URL is not configured.");
+}
 
-type ApiRequestOptions = Omit<RequestInit, "body"> & {
-  body?: unknown;
-};
+function prepareRequestBody(body?: BodyInit | JsonBody): BodyInit | undefined {
+  if (body === undefined) {
+    return undefined;
+  }
+  if (body instanceof FormData) {
+    return body;
+  }
+  if (typeof body === "string") {
+    return body;
+  }
+  return JSON.stringify(body);
+}
 
 export async function apiRequest<T>(
-  url: string,
+  endpoint: string,
   options: ApiRequestOptions = {},
 ): Promise<T> {
-  const { body, headers, ...rest } = options;
-  const isFormData = body instanceof FormData;
-  const response = await fetch(`${API_BASE_URL}${url}`, {
-    ...rest,
-    headers: {
-      ...(isFormData ? {} : { "Content-Type": "application/json" }),
-      ...headers,
-    },
-    credentials: "include",
-    body: isFormData
-      ? body
-      : body !== undefined
-        ? JSON.stringify(body)
-        : undefined,
-  });
-  const text = await response.text();
-  const data: unknown = text ? JSON.parse(text) : null;
-  if (!response.ok) {
-    throw new Error(
-      (data as { message?: string } | null)?.message ||
-        `Request failed with status ${response.status}`,
-    );
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => {
+    controller.abort();
+  }, API_TIMEOUT);
+
+  try {
+    const requestBody = prepareRequestBody(options.body);
+    const isFormData = options.body instanceof FormData;
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      ...options,
+      body: requestBody,
+      signal: controller.signal,
+      credentials: "include",
+      headers: {
+        ...(isFormData
+          ? {}
+          : {
+              "Content-Type": "application/json",
+            }),
+        ...options.headers,
+      },
+    });
+
+    const contentType = response.headers.get("content-type") ?? "";
+    let data: unknown = null;
+
+    if (contentType.includes("application/json")) {
+      data = await response.json();
+    } else {
+      data = await response.text();
+    }
+    if (!response.ok) {
+      let message = `Request failed with status ${response.status}`;
+      if (typeof data === "string" && data.trim()) {
+        message = data;
+      } else if (
+        typeof data === "object" &&
+        data !== null &&
+        "message" in data &&
+        typeof data.message === "string"
+      ) {
+        message = data.message;
+      }
+      throw new Error(message);
+    }
+    return data as T;
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") {
+      throw new Error(
+        "The request timed out. Please check your connection and try again.",
+      );
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeoutId);
   }
-  return data as T;
 }
