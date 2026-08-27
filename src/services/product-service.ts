@@ -13,7 +13,6 @@ export async function getProducts({
   category,
   search = "",
   priceRange = "all",
-  inStockOnly = false,
   sort = "updated",
   order = "desc",
 }: GetProductsParams): Promise<ProductsResult> {
@@ -40,9 +39,6 @@ export async function getProducts({
     params.set("price_range", priceRange);
   }
 
-  if (inStockOnly) {
-    params.set("in_stock", "true");
-  }
   const response = await apiRequest<GetProductsResponse>(
     `/api/v1/products?${params.toString()}`,
   );
@@ -85,6 +81,7 @@ export async function updateProduct(
 export async function archiveProduct(id: string): Promise<ApiProduct> {
   const formData = new FormData();
   formData.append("status", "archived");
+  formData.append("removed_image_ids", JSON.stringify([]));
   const response = await apiRequest<{
     success: boolean;
     message: string;
@@ -93,6 +90,7 @@ export async function archiveProduct(id: string): Promise<ApiProduct> {
     method: "PATCH",
     body: formData,
   });
+
   return response.data;
 }
 

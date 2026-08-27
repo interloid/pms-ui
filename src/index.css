@@ -144,7 +144,6 @@
   [role="button"]:not(:disabled) {
     cursor: pointer;
   }
-
   html {
     @apply font-sans;
     width: 100%;

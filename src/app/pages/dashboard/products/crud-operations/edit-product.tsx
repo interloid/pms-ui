@@ -32,6 +32,7 @@ import {
   type ProductImage,
   type ProductStatus,
 } from "@/types/data-type";
+import { revokeImageUrls } from "@/lib/utils";
 
 const MAX_IMAGES = 6;
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
@@ -57,11 +58,11 @@ function getInitialForm(product: ApiProduct): ProductForm {
   };
 }
 
-function revokeImageUrls(images: ProductImage[]) {
-  images.forEach((image) => {
-    URL.revokeObjectURL(image.previewUrl);
-  });
-}
+// function revokeImageUrls(images: ProductImage[]) {
+//   images.forEach((image) => {
+//     URL.revokeObjectURL(image.previewUrl);
+//   });
+// }
 
 function validateImage(file: File): ImageError | null {
   if (
@@ -255,7 +256,6 @@ export function ProductEdit({
     }
 
     revokeImageUrls(newImages);
-
     const initialForm = getInitialForm(product);
     const images = product.images ?? [];
     const primaryImage = images.find((image) => image.is_primary);
@@ -578,7 +578,7 @@ export function ProductEdit({
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="contents">
+        <form onSubmit={handleSubmit} className="contents" noValidate>
           <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-5">
             <div className="grid gap-1.5">
               <Label
@@ -607,7 +607,7 @@ export function ProductEdit({
                 </span>
               )}
             </div>
-            <div className="grid w-full grid-cols-2 gap-3">
+            <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="grid gap-1.5">
                 <Label
                   htmlFor="edit-product-sku"
@@ -682,7 +682,7 @@ export function ProductEdit({
                 )}
               </div>
             </div>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
               <div className="grid gap-1.5">
                 <Label
                   htmlFor="edit-product-price"
@@ -787,7 +787,7 @@ export function ProductEdit({
                 </span>
               </div>
 
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
                 {activeExistingImages.map((image) => (
                   <div
                     key={image.id}

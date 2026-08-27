@@ -36,20 +36,6 @@ export type ApiProduct = {
   images: ApiProductImage[];
 };
 
-export type Product = {
-  id: string;
-  sku: string;
-  name: string;
-  category: ProductCategory;
-  price: number;
-  stock: number;
-  status: ProductStatus;
-  description?: string | null;
-  images: ProductImageResponse[];
-  createdAt: string;
-  updatedAt: string;
-};
-
 export type Pagination = {
   page: number;
   page_size: number;
@@ -76,7 +62,6 @@ export type GetProductsParams = {
   category: ProductCategory;
   search?: string;
   priceRange?: string;
-  inStockOnly?: boolean;
   sort?: "price" | "updated";
   order?: "asc" | "desc";
 };
@@ -133,30 +118,30 @@ export interface ProductImageProps {
   className?: string;
 }
 
-export interface ProductImageResponse {
-  id: string;
-  url: string;
-  isPrimary: boolean;
-}
-
 export interface ProductTableRowProps {
   product: ApiProduct;
   isArchiving: boolean;
+  isDeleting: boolean;
   onView: () => void;
   onArchive: () => void;
   onCancelArchive: () => void;
   onConfirmArchive: () => void;
   onDelete: () => void;
+  onCancelDelete: () => void;
+  onConfirmDelete: () => void;
 }
 
 export interface ProductTableProps {
   products: ApiProduct[];
   archiveId: string | null;
+  deleteId: string | null;
   onView: (product: ApiProduct) => void;
   onArchive: (id: string) => void;
   onCancelArchive: () => void;
   onConfirmArchive: (id: string) => void;
   onDelete: (id: string) => void;
+  onCancelDelete: () => void;
+  onConfirmDelete: (id: string) => void;
 }
 
 export type ProductStatusFilter = "All" | ProductStatus;
@@ -165,14 +150,12 @@ export interface ProductFiltersProps {
   category: ProductCategory;
   status: ProductStatusFilter;
   priceRange: string;
-  inStockOnly: boolean;
   productCount: number;
   sort: "price" | "updated";
   order: "asc" | "desc";
   onCategoryChange: (value: ProductCategory) => void;
   onStatusChange: (value: ProductStatusFilter) => void;
   onPriceChange: (value: string) => void;
-  onStockChange: (value: boolean) => void;
   onSortChange: (
     sort: "price" | "updated",
     order: "asc" | "desc",

@@ -75,7 +75,7 @@ export default function PasscodeRequestPage() {
               </TabsTrigger>
             </TabsList>
           </Tabs>
-          <form onSubmit={handleSubmit} className="w-full">
+          <form onSubmit={handleSubmit} className="w-full" noValidate>
             <CardHeader className="px-1">
               <CardTitle className="text-lg font-bold">
                 Get your passcode

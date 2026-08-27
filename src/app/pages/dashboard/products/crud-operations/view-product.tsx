@@ -73,7 +73,7 @@ export function ProductView({
                 )}
               </div>
               {product.images && product.images.length > 0 && (
-                <div className="grid grid-cols-4 gap-2">
+                <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
                   {product.images.map((image) => (
                     <div
                       key={image.id}

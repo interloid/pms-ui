@@ -11,18 +11,18 @@ export function HeaderActions({ user }: InputInlineProps) {
   const { searchQuery, setSearchQuery, refresh } = useSearch();
   const { logout } = useAuth();
   return (
-    <div className="ml-auto flex items-center gap-3">
-      <Field orientation="horizontal">
+    <div className="ml-auto flex items-center gap-2 sm:gap-3">
+      <Field orientation="horizontal" className="gap-2 sm:gap-3">
         <Input
           type="search"
           placeholder="Search name or SKU..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-81 focus-visible:border-primary focus-visible:ring-primary/20 cursor-pointer"
+          className="w-40 sm:w-56 md:w-72 lg:w-81 focus-visible:border-primary focus-visible:ring-primary/20 cursor-pointer"
         />
         <AddProducts onProductCreated={refresh} />
       </Field>
-      <Avatar className="size-9">
+      <Avatar className="hidden size-9 sm:flex">
         <AvatarImage
           src={user?.avatar ?? undefined}
           alt={user?.name ?? "User"}
@@ -40,7 +40,7 @@ export function HeaderActions({ user }: InputInlineProps) {
       <Button
         variant="destructive"
         onClick={logout}
-        className="hover:bg-destructive! text-secondary bg-red-500 cursor-pointer"
+        className="px-2.5 text-sm sm:px-4 hover:bg-destructive! text-secondary bg-red-500 cursor-pointer"
       >
         Log out
       </Button>

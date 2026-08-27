@@ -38,12 +38,12 @@ export default function ProductsPage() {
   const [category, setCategory] = useState<ProductCategory>("All");
   const [status, setStatus] = useState<ProductStatusFilter>("All");
   const [priceRange, setPriceRange] = useState("all");
-  const [inStockOnly, setInStockOnly] = useState(false);
   const [productCount, setProductCount] = useState<number>(0);
   const [totalPages, setTotalPages] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [page, setPage] = useState(1);
   const [archiveId, setArchiveId] = useState<string | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const [viewProduct, setViewProduct] = useState<ApiProduct | null>(null);
   const [viewOpen, setViewOpen] = useState(false);
   const [editProduct, setEditProduct] = useState<ApiProduct | null>(null);
@@ -63,7 +63,6 @@ export default function ProductsPage() {
           category,
           search: debouncedSearch,
           priceRange,
-          inStockOnly,
           sort,
           order,
         });
@@ -84,7 +83,6 @@ export default function ProductsPage() {
     category,
     debouncedSearch,
     priceRange,
-    inStockOnly,
     refreshKey,
     sort,
     order,
@@ -115,11 +113,6 @@ export default function ProductsPage() {
     setPage(1);
   }
 
-  function updateStock(value: boolean) {
-    setInStockOnly(value);
-    setPage(1);
-  }
-
   function updateSort(
     nextSort: "price" | "updated",
     nextOrder: "asc" | "desc",
@@ -129,26 +122,10 @@ export default function ProductsPage() {
     setPage(1);
   }
 
-  async function archiveProduct(id: string) {
-    try {
-      await archiveProductApi(id);
-
-      setArchiveId(null);
-
-      toast.success("Product archived successfully");
-      refresh();
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Failed to archive product",
-      );
-    }
-  }
-
   function resetFilters() {
     setCategory("All");
     setStatus("All");
     setPriceRange("all");
-    setInStockOnly(false);
     setSort("updated");
     setOrder("desc");
     setPage(1);
@@ -157,11 +134,25 @@ export default function ProductsPage() {
   async function handleDeleteProduct(id: string) {
     try {
       await deleteProductApi(id);
+      setDeleteId(null);
       setProducts((current) => current.filter((product) => product.id !== id));
       toast.success("Product deleted successfully");
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Failed to delete product",
+      );
+    }
+  }
+
+  async function handleArchiveProduct(id: string) {
+    try {
+      await archiveProductApi(id);
+      setArchiveId(null);
+      toast.success("Product archived successfully");
+      refresh();
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to archive product",
       );
     }
   }
@@ -192,32 +183,32 @@ export default function ProductsPage() {
   if (isLoading) {
     return <ProductListSkeleton />;
   }
-
   return (
     <div className="w-full space-y-4">
-        <ProductFilters
-          category={category}
-          status={status}
-          priceRange={priceRange}
-          inStockOnly={inStockOnly}
-          productCount={productCount}
-          sort={sort}
-          order={order}
-          onCategoryChange={updateCategory}
-          onStatusChange={updateStatus}
-          onPriceChange={updatePrice}
-          onStockChange={updateStock}
-          onSortChange={updateSort}
-          onReset={resetFilters}
-        />
+      <ProductFilters
+        category={category}
+        status={status}
+        priceRange={priceRange}
+        productCount={productCount}
+        sort={sort}
+        order={order}
+        onCategoryChange={updateCategory}
+        onStatusChange={updateStatus}
+        onPriceChange={updatePrice}
+        onSortChange={updateSort}
+        onReset={resetFilters}
+      />
       <ProductTable
         products={products}
         archiveId={archiveId}
+        deleteId={deleteId}
         onView={handleViewProduct}
         onArchive={setArchiveId}
         onCancelArchive={() => setArchiveId(null)}
-        onConfirmArchive={archiveProduct}
-        onDelete={handleDeleteProduct}
+        onConfirmArchive={handleArchiveProduct}
+        onDelete={setDeleteId}
+        onCancelDelete={() => setDeleteId(null)}
+        onConfirmDelete={handleDeleteProduct}
       />
       <ProductView
         product={viewProduct}
@@ -231,7 +222,7 @@ export default function ProductsPage() {
         onOpenChange={setEditOpen}
         onUpdated={handleProductUpdated}
       />
-      <div className="flex items-center justify-between px-4 pb-4 lg:px-6">
+      <div className="flex flex-col gap-3 px-3 pb-4 sm:flex-row sm:items-center sm:justify-between lg:px-6">
         <div className="flex items-center gap-2">
           <span className="text-sm text-muted-foreground">Rows per page</span>
           <Select
@@ -259,7 +250,7 @@ export default function ProductsPage() {
           </Select>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center justify-between gap-4 sm:justify-end">
           <span className="text-sm text-muted-foreground">
             {productCount === 0 ? 0 : (page - 1) * pageSize + 1}-
             {Math.min(page * pageSize, productCount)} of {productCount}

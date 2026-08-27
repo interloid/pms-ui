@@ -12,11 +12,14 @@ import EmptyProductTableRow from "@/components/shad/empty-products";
 export function ProductTable({
   products,
   archiveId,
+  deleteId,
   onView,
   onArchive,
   onCancelArchive,
   onConfirmArchive,
   onDelete,
+  onCancelDelete,
+  onConfirmDelete,
 }: ProductTableProps) {
   return (
     <div className="overflow-hidden rounded-lg border">
@@ -41,11 +44,14 @@ export function ProductTable({
                   key={product.id}
                   product={product}
                   isArchiving={archiveId === product.id}
+                  isDeleting={deleteId === product.id}
                   onView={() => onView(product)}
                   onArchive={() => onArchive(product.id)}
                   onCancelArchive={onCancelArchive}
                   onConfirmArchive={() => onConfirmArchive(product.id)}
                   onDelete={() => onDelete(product.id)}
+                  onCancelDelete={onCancelDelete}
+                  onConfirmDelete={() => onConfirmDelete(product.id)}
                 />
               ))
             ) : (

@@ -1,6 +1,4 @@
-import { ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -8,10 +6,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import type { ProductCategory, ProductFiltersProps } from "@/types/data-type";
 import { categories, statusFilters } from "@/types/data-type";
-import { RxReset } from "react-icons/rx";
+import { ResetForwardIcon } from "@/components/icons/reset-forward";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const priceRanges = [
   { value: "all", label: "All" },
@@ -26,15 +28,9 @@ export function ProductFilters({
   category,
   status,
   priceRange,
-  inStockOnly,
-  productCount,
-  sort,
-  order,
   onCategoryChange,
   onStatusChange,
   onPriceChange,
-  onStockChange,
-  onSortChange,
   onReset,
 }: ProductFiltersProps) {
   return (
@@ -112,66 +108,25 @@ export function ProductFilters({
           ))}
         </SelectContent>
       </Select>
+      <div className="flex items-center gap-1 text-xs text-muted-foreground">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-9 px-3 hover:border-primary hover:bg-primary-hover!"
+              onClick={onReset}
+              aria-label="Reset filters"
+            >
+              <ResetForwardIcon />
+            </Button>
+          </TooltipTrigger>
 
-      <div className="flex h-9 items-center gap-2 rounded-md border px-3 hover:bg-primary-hover! hover:border-primary">
-        <Switch
-          id="in-stock-only"
-          checked={inStockOnly}
-          onCheckedChange={onStockChange}
-        />
-        <Label
-          htmlFor="in-stock-only"
-          className="cursor-pointer text-xs font-normal"
-        >
-          In stock only
-        </Label>
-      </div>
-
-      <div className="ml-auto flex items-center gap-1 text-xs text-muted-foreground">
-        <span>
-          {productCount} products ·{" "}
-          {sort === "updated"
-            ? order === "desc"
-              ? "Updated"
-              : ""
-            : order === "desc"
-              ? "Price(High to Low)"
-              : "Price(Low to High)"}
-        </span>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          className="size-7 hover:bg-primary-hover! hover:border-primary!"
-          onClick={() =>
-            onSortChange(
-              "price",
-              sort === "price" && order === "asc" ? "desc" : "asc",
-            )
-          }
-          aria-label={
-            sort === "price" && order === "asc"
-              ? "Sort price high to low"
-              : "Sort price low to high"
-          }
-        >
-          <ChevronDown
-            className={`size-4 transition-transform ${
-              sort === "price" && order === "desc" ? "rotate-180" : ""
-            }`}
-          />
-        </Button>
-
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="h-9 px-3 hover:border-primary hover:bg-primary-hover!"
-          onClick={onReset}
-          aria-label="Reset sorting"
-        >
-          <RxReset />
-        </Button>
+          <TooltipContent side="left">
+            <p>Reset filters</p>
+          </TooltipContent>
+        </Tooltip>
       </div>
     </div>
   );

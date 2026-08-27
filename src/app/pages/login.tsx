@@ -24,8 +24,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa";
 import MicrosoftLogo from "@/components/icons/microsoft-logo";
+import { EyeOffIcon } from "lucide-react";
 
-export function LoginPage({
+export default function LoginPage({
   className,
   ...props
 }: React.ComponentProps<"div">) {
@@ -91,7 +92,7 @@ export function LoginPage({
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit}>
+              <form onSubmit={handleSubmit} noValidate>
                 <FieldGroup className="gap-4">
                   <Field className="flex-col h-fit py-1 gap-2">
                     <Button
@@ -161,12 +162,6 @@ export function LoginPage({
                       >
                         Password
                       </FieldLabel>
-                      <a
-                        href="#"
-                        className="ml-auto text-xs underline-offset-4 hover:underline text-primary"
-                      >
-                        Forgot?
-                      </a>
                     </div>
                     <div className="relative">
                       <Input
@@ -187,7 +182,7 @@ export function LoginPage({
                         }
                       >
                         <span className="text-xs font-medium">
-                          {showPassword ? "Hide" : "Show"}
+                          {showPassword ? <EyeOffIcon /> : "Show"}
                         </span>
                       </button>
                     </div>

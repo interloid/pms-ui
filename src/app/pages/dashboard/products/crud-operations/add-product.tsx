@@ -252,6 +252,7 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
           id="add-product-form"
           onSubmit={handleSubmit}
           className="flex min-h-0 flex-1 flex-col"
+          noValidate
         >
           <div className="grid flex-1 auto-rows-min gap-6 overflow-y-auto px-4">
             <div className="grid gap-3">
@@ -289,7 +290,7 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
               )}
             </div>
 
-            <div className="grid w-full grid-cols-2 gap-4">
+            <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="grid w-full gap-2">
                 <Label htmlFor="product-sku" className="text-xs">
                   SKU
@@ -378,7 +379,7 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
               </div>
             </div>
 
-            <div className="grid w-full grid-cols-3 gap-4">
+            <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-3">
               <div className="grid w-full gap-2">
                 <Label htmlFor="product-price" className="text-xs">
                   Price
