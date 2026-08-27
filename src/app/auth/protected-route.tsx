@@ -12,7 +12,7 @@ export function ProtectedRoute() {
       <div className="h-full">
         <div className="flex min-h-full items-center justify-center gap-2">
           <Spinner />
-          Checking authentication...
+          loading...
         </div>
       </div>
     );

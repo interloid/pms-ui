@@ -69,3 +69,13 @@ export interface AuthProviderProps {
 export interface PasscodeLocationState {
   email?: string;
 }
+
+export type AuthErrorCode =
+  | "INVALID_CREDENTIALS"
+  | "NETWORK_ERROR"
+  | "SERVER_ERROR"
+  | "UNKNOWN_ERROR";
+
+export type AuthError = {
+  code: AuthErrorCode;
+};

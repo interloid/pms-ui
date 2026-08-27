@@ -42,7 +42,6 @@ export async function getProducts({
   const response = await apiRequest<GetProductsResponse>(
     `/api/v1/products?${params.toString()}`,
   );
-
   return {
     products: response.data,
     total: response.pagination.total,

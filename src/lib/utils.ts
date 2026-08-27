@@ -1,3 +1,4 @@
+import type { AuthErrorCode } from "@/types/auth";
 import type { ProductImage } from "@/types/data-type";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -19,4 +20,12 @@ export function revokeImageUrls(images: ProductImage[]) {
   for (const image of images) {
     URL.revokeObjectURL(image.previewUrl);
   }
+}
+
+export function getAuthErrorCode(error: unknown): AuthErrorCode {
+  if (error instanceof TypeError) {
+    return "NETWORK_ERROR";
+  }
+
+  return "UNKNOWN_ERROR";
 }

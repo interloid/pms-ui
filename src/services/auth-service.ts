@@ -1,6 +1,7 @@
 import { API_BASE_URL, apiRequest } from "@/lib/api";
 
 import type {
+  AuthError,
   LoginCredentials,
   LoginResponse,
   OAuthProvider,
@@ -12,25 +13,52 @@ async function parseResponse<T>(response: Response): Promise<T> {
   const data = await response.json().catch(() => null);
 
   if (!response.ok) {
-    throw new Error(
-      data?.message ?? `Request failed with status ${response.status}`,
-    );
+    if (response.status === 401) {
+      throw {
+        code: "INVALID_CREDENTIALS",
+      } satisfies AuthError;
+    }
+
+    if (response.status >= 500) {
+      throw {
+        code: "SERVER_ERROR",
+      } satisfies AuthError;
+    }
+
+    throw {
+      code: "UNKNOWN_ERROR",
+    } satisfies AuthError;
   }
+
   return data;
 }
 
 export async function login(
   credentials: LoginCredentials,
 ): Promise<LoginResponse> {
-  const response = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    credentials: "include",
-    body: JSON.stringify(credentials),
-  });
-  return parseResponse<LoginResponse>(response);
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify(credentials),
+    });
+    return await parseResponse<LoginResponse>(response);
+  } catch (error) {
+    if (typeof error === "object" && error !== null && "code" in error) {
+      throw error;
+    }
+    if (error instanceof TypeError) {
+      throw {
+        code: "NETWORK_ERROR",
+      } satisfies AuthError;
+    }
+    throw {
+      code: "UNKNOWN_ERROR",
+    } satisfies AuthError;
+  }
 }
 
 export function loginWithProvider(provider: OAuthProvider): void {
@@ -42,6 +70,7 @@ export async function getCurrentSession(): Promise<LoginResponse> {
     method: "GET",
     credentials: "include",
   });
+
   return parseResponse<LoginResponse>(response);
 }
 

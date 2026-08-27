@@ -24,7 +24,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa";
 import MicrosoftLogo from "@/components/icons/microsoft-logo";
-import { EyeOffIcon } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
+import type { AuthError } from "@/types/auth";
 
 export default function LoginPage({
   className,
@@ -41,16 +42,36 @@ export default function LoginPage({
   const [error, setError] = useState("");
   const [providerLoading, setProviderLoading] = useState<string | null>(null);
 
+  const validateForm = () => {
+    if (!email.trim()) {
+      return "Username or email is required.";
+    }
+    if (!password) {
+      return "Password is required.";
+    }
+    if (password.length < 6) {
+      return "Password must be at least 6 characters.";
+    }
+    return null;
+  };
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError("");
+    const validationError = validateForm();
+
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
     setLoading(true);
     try {
       await login({
-        email,
+        email: email.trim(),
         password,
         remember_me: rememberMe,
       });
+
       const from =
         (location.state as { from?: { pathname?: string } } | null)?.from
           ?.pathname ?? "/products";
@@ -59,7 +80,21 @@ export default function LoginPage({
         replace: true,
       });
     } catch (error) {
-      setError(error instanceof Error ? error.message : "Login failed");
+      const authError = error as AuthError;
+      switch (authError.code) {
+        case "INVALID_CREDENTIALS":
+          setError("Invalid username or password.");
+          break;
+        case "NETWORK_ERROR":
+          setError("Unable to connect to the server. Please try again.");
+          break;
+
+        case "SERVER_ERROR":
+          setError("Something went wrong. Please try again later.");
+          break;
+        default:
+          setError("Unable to log in. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
@@ -182,7 +217,11 @@ export default function LoginPage({
                         }
                       >
                         <span className="text-xs font-medium">
-                          {showPassword ? <EyeOffIcon /> : "Show"}
+                          {showPassword ? (
+                            <EyeOff className="h-4 w-4 text-muted-foreground" />
+                          ) : (
+                            <Eye className="h-4 w-4 text-muted-foreground" />
+                          )}
                         </span>
                       </button>
                     </div>
@@ -204,7 +243,7 @@ export default function LoginPage({
                   </div>
                   <Field>
                     {error && (
-                      <p className="text-sm text-destructive">{error}</p>
+                      <p className="text-sm text-destructive font-medium">{error}</p>
                     )}
 
                     <Button
