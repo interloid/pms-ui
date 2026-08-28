@@ -20,7 +20,7 @@ export function SortableHeader({
       <button
         type="button"
         onClick={() => onSort(field)}
-        className="flex w-full items-center gap-1 text-xs font-medium hover:text-foreground"
+        className="flex w-full items-center justify-center gap-1 text-xs font-medium hover:text-foreground"
       >
         <span>{label}</span>
 

@@ -17,6 +17,7 @@ export function ProductTable({
   sort,
   onSort,
   onView,
+  onEdit,
   onArchive,
   onCancelArchive,
   onConfirmArchive,
@@ -27,23 +28,11 @@ export function ProductTable({
   return (
     <div className="overflow-hidden rounded-lg border">
       <div className="overflow-x-auto">
-        <Table>
+        <Table className="text-center">
           <TableHeader>
             <TableRow className="bg-muted/50 text-xs text-muted-text hover:bg-muted/50">
-              <SortableHeader
-                label="SKU"
-                field="sku"
-                sort={sort}
-                onSort={onSort}
-              />
-
-              <SortableHeader
-                label="PRODUCT NAME"
-                field="name"
-                sort={sort}
-                onSort={onSort}
-              />
-
+              <TableHead className="text-center"> SKU </TableHead>
+              <TableHead className="text-center"> PRODUCT NAME </TableHead>
               <SortableHeader
                 label="CATEGORY"
                 field="category"
@@ -79,7 +68,7 @@ export function ProductTable({
                 onSort={onSort}
               />
 
-              <TableHead>ACTIONS</TableHead>
+              <TableHead className="text-center">ACTIONS</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -92,6 +81,7 @@ export function ProductTable({
                   isDeleting={deleteId === product.id}
                   onView={() => onView(product)}
                   onArchive={() => onArchive(product.id)}
+                  onEdit={() => onEdit(product)}
                   onCancelArchive={onCancelArchive}
                   onConfirmArchive={() => onConfirmArchive(product.id)}
                   onDelete={() => onDelete(product.id)}

@@ -768,9 +768,9 @@ export function ProductEdit({
                 </Select>
               </div>
             </div>
-            <div className="grid gap-1.5">
+            <div className="grid gap-3">
               <div className="flex items-center justify-between">
-                <Label className="text-[12px] font-medium">Images</Label>
+                <Label className="text-[12px] gap-1 font-medium">Images<span className="text-destructive">(JPG, PNG, WEBP formats only allowed)</span></Label>
 
                 <span className="text-[11px] text-muted-foreground">
                   {activeImageCount}/{MAX_IMAGES}

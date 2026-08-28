@@ -4,8 +4,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/context/auth-context";
 import { ProtectedRoute } from "@/app/auth/protected-route";
 import { PublicRoute } from "@/app/auth/public-route";
-import { Toaster } from "sonner";
 import LoadingScreen from "@/components/shad/loading-screen";
+import { ToasterMessage } from "@/components/shad/toaster";
 
 const LoginForm = lazy(() => import("@/app/pages/login"));
 const Callback = lazy(() => import("./pages/callback"));
@@ -53,7 +53,7 @@ export default function App() {
           </TooltipProvider>
         </AuthProvider>
       </BrowserRouter>
-      <Toaster />
+      <ToasterMessage />
     </>
   );
 }

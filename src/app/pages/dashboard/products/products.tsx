@@ -1,20 +1,6 @@
-import {
-  ChevronLeft,
-  ChevronRight,
-  ChevronsLeft,
-  ChevronsRight,
-} from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { ProductFilters } from "@/app/pages/dashboard/products/product-filters";
-import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useSearch } from "@/context/search-context";
 import type {
   ApiProduct,
@@ -32,6 +18,7 @@ import {
   archiveProduct as archiveProductApi,
 } from "@/services/product-service";
 import { ProductListSkeleton } from "@/components/shad/product-list-skeleton";
+import { TablePagination } from "@/components/shad/table-pagination";
 
 export default function ProductsPage() {
   const { searchQuery, refreshKey, refresh } = useSearch();
@@ -189,118 +176,54 @@ export default function ProductsPage() {
     return <ProductListSkeleton />;
   }
   return (
-    <div className="w-full space-y-4">
-      <ProductFilters
-        category={category}
-        status={status}
-        priceRange={priceRange}
-        productCount={productCount}
-        onCategoryChange={updateCategory}
-        onStatusChange={updateStatus}
-        onPriceChange={updatePrice}
-        onReset={resetFilters}
-      />
-      <ProductTable
-        products={products}
-        archiveId={archiveId}
-        deleteId={deleteId}
-        sort={sort}
-        onSort={handleSort}
-        onView={handleViewProduct}
-        onArchive={setArchiveId}
-        onCancelArchive={() => setArchiveId(null)}
-        onConfirmArchive={handleArchiveProduct}
-        onDelete={setDeleteId}
-        onCancelDelete={() => setDeleteId(null)}
-        onConfirmDelete={handleDeleteProduct}
-      />
-      <ProductView
-        product={viewProduct}
-        open={viewOpen}
-        onOpenChange={setViewOpen}
-        onEdit={handleEditProduct}
-      />
-      <ProductEdit
-        product={editProduct}
-        open={editOpen}
-        onOpenChange={setEditOpen}
-        onUpdated={handleProductUpdated}
-      />
-      <div className="flex flex-col gap-3 px-3 pb-4 sm:flex-row sm:items-center sm:justify-between lg:px-6">
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">Rows per page</span>
-          <Select
-            value={String(pageSize)}
-            onValueChange={(value) => {
-              setPageSize(Number(value));
-              setPage(1);
-            }}
-          >
-            <SelectTrigger className="h-8 w-16.25 hover:bg-primary-hover hover:border-primary focus-visible:border-primary! focus-visible:primary-3! focus-visible:ring-primary/20!">
-              <SelectValue />
-            </SelectTrigger>
-
-            <SelectContent>
-              {[10, 20, 30, 40, 50].map((size) => (
-                <SelectItem
-                  key={size}
-                  value={String(size)}
-                  className="hover:bg-primary-hover!"
-                >
-                  {size}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="flex items-center justify-between gap-4 sm:justify-end">
-          <span className="text-sm text-muted-foreground">
-            {productCount === 0 ? 0 : (page - 1) * pageSize + 1}-
-            {Math.min(page * pageSize, productCount)} of {productCount}
-          </span>
-          <div className="flex items-center gap-1">
-            <Button
-              variant="outline"
-              size="icon"
-              className="size-8 hover:bg-primary-hover! hover:border-primary"
-              disabled={page === 1}
-              onClick={() => setPage(1)}
-            >
-              <ChevronsLeft className="size-4" />
-            </Button>
-
-            <Button
-              variant="outline"
-              size="icon"
-              className="size-8 hover:bg-primary-hover! hover:border-primary"
-              disabled={page === 1}
-              onClick={() => setPage((current) => current - 1)}
-            >
-              <ChevronLeft className="size-4" />
-            </Button>
-
-            <Button
-              variant="outline"
-              size="icon"
-              className="size-8 hover:bg-primary-hover! hover:border-primary"
-              disabled={page === totalPages}
-              onClick={() => setPage((current) => current + 1)}
-            >
-              <ChevronRight className="size-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              className="size-8 hover:bg-primary-hover! hover:border-primary"
-              disabled={page === totalPages}
-              onClick={() => setPage(totalPages)}
-            >
-              <ChevronsRight className="size-4" />
-            </Button>
-          </div>
-        </div>
+    <>
+      <div className="w-full space-y-4">
+        <ProductFilters
+          category={category}
+          status={status}
+          priceRange={priceRange}
+          productCount={productCount}
+          onCategoryChange={updateCategory}
+          onStatusChange={updateStatus}
+          onPriceChange={updatePrice}
+          onReset={resetFilters}
+        />
+        <ProductTable
+          products={products}
+          archiveId={archiveId}
+          deleteId={deleteId}
+          sort={sort}
+          onSort={handleSort}
+          onView={handleViewProduct}
+          onEdit={handleEditProduct}
+          onArchive={setArchiveId}
+          onCancelArchive={() => setArchiveId(null)}
+          onConfirmArchive={handleArchiveProduct}
+          onDelete={setDeleteId}
+          onCancelDelete={() => setDeleteId(null)}
+          onConfirmDelete={handleDeleteProduct}
+        />
+        <ProductView
+          product={viewProduct}
+          open={viewOpen}
+          onOpenChange={setViewOpen}
+          onEdit={handleEditProduct}
+        />
+        <ProductEdit
+          product={editProduct}
+          open={editOpen}
+          onOpenChange={setEditOpen}
+          onUpdated={handleProductUpdated}
+        />
       </div>
-    </div>
+      <TablePagination
+        page={page}
+        pageSize={pageSize}
+        productCount={productCount}
+        totalPages={totalPages}
+        setPage={setPage}
+        setPageSize={setPageSize}
+      />
+    </>
   );
 }

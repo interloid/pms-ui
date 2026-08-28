@@ -122,6 +122,7 @@ export interface ProductTableRowProps {
   isArchiving: boolean;
   isDeleting: boolean;
   onView: () => void;
+  onEdit: () => void;
   onArchive: () => void;
   onCancelArchive: () => void;
   onConfirmArchive: () => void;
@@ -143,6 +144,7 @@ export type ProductTableProps = {
   onDelete: (id: string) => void;
   onCancelDelete: () => void;
   onConfirmDelete: (id: string) => void;
+  onEdit: (product: ApiProduct) => void;
 };
 
 export type ProductStatusFilter = "All" | ProductStatus;
@@ -253,4 +255,14 @@ export type SortableTableHeadProps = {
   sort: ProductSort;
   onSort: (field: ProductSortField) => void;
   className?: string;
+};
+
+
+export type PaginationProps = {
+  page: number;
+  pageSize: number;
+  productCount: number;
+  totalPages: number;
+  setPage: React.Dispatch<React.SetStateAction<number>>;
+  setPageSize: React.Dispatch<React.SetStateAction<number>>;
 };

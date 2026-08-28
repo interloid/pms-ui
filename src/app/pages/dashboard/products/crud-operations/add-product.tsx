@@ -238,7 +238,7 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
     );
   };
 
-function FieldError({ message }: { message?: string }) {
+  function FieldError({ message }: { message?: string }) {
     return (
       <p
         className="h-4 text-xs leading-4 font-medium text-destructive"
@@ -482,51 +482,36 @@ function FieldError({ message }: { message?: string }) {
                 <Label htmlFor="product-images" className="text-xs">
                   Images
                 </Label>
-
                 <span className="text-xs text-muted-foreground">
                   {images.length} of {MAX_IMAGES}
                 </span>
               </div>
 
-              {images.length > 0 && (
-                <div className="grid grid-cols-3 gap-3">
-                  {images.map((image) => (
-                    <div
-                      key={image.id}
-                      className="relative aspect-square overflow-hidden rounded-lg border bg-muted"
-                    >
-                      <img
-                        src={image.previewUrl}
-                        alt={image.file.name}
-                        className="h-full w-full object-cover"
-                      />
+              {images.length === 0 && (
+                <label
+                  htmlFor="product-images"
+                  className="flex min-h-25 w-full cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-hover-text bg-primary-hover px-4 py-4 text-center transition-colors hover:bg-primary-hover/50"
+                >
+                  <span className="text-xs font-bold text-hover-text">
+                    Drop images here, or click to browse
+                  </span>
 
-                      <button
-                        type="button"
-                        onClick={() => removeImage(image.id)}
-                        className="absolute right-2 top-2 flex size-6 items-center justify-center rounded-full border bg-background/90 text-muted-foreground shadow-sm hover:text-destructive"
-                        aria-label={`Remove ${image.file.name}`}
-                      >
-                        ×
-                      </button>
-
-                      {image.isPrimary ? (
-                        <span className="absolute bottom-2 left-2 rounded-full bg-primary px-2 py-0.5 text-[10px] font-medium text-primary-foreground">
-                          Primary
-                        </span>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => setPrimaryImage(image.id)}
-                          className="absolute bottom-2 left-2 rounded-full border bg-background/90 px-2 py-0.5 text-[10px] text-muted-foreground hover:bg-background"
-                        >
-                          Set primary
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                </div>
+                  <span className="text-[11px] text-muted-foreground">
+                    Accepted formats:{" "}
+                    <span className="font-medium text-foreground">
+                      JPG, PNG, WEBP
+                    </span>
+                    {" · "}
+                    Max size:{" "}
+                    <span className="font-medium text-foreground">
+                      5 MB per image
+                    </span>
+                    {" · "}
+                    {MAX_IMAGES} images remaining
+                  </span>
+                </label>
               )}
+
               {imageError && (
                 <div className="rounded-lg border border-red-300 bg-red-50 px-3 py-2">
                   <p className="text-xs font-semibold text-red-600">
@@ -545,18 +530,22 @@ function FieldError({ message }: { message?: string }) {
                   )}
                 </div>
               )}
-              {images.length === 0 && (
+              {images.length > 0 && images.length < MAX_IMAGES && (
                 <label
                   htmlFor="product-images"
-                  className="flex min-h-25 w-full cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-hover-text bg-primary-hover px-4 py-4 text-center transition-colors hover:bg-primary-hover/50"
+                  className="flex min-h-25 w-full cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-hover-text px-4 py-4 text-center transition-colors hover:bg-primary-hover/50"
                 >
-                  <span className="text-xs font-bold text-hover-text">
-                    Drop images here, or click to browse
+                  <span className="text-xs font-medium text-hover-text">
+                    Drop more images or click to browse
                   </span>
 
                   <span className="text-[11px] text-muted-foreground">
-                    JPG, PNG or WEBP · maximum 5 MB each · {MAX_IMAGES} images
+                    {remainingImages} {remainingImages === 1 ? "slot" : "slots"}{" "}
                     remaining
+                    {" · "}
+                    JPG, PNG, WEBP
+                    {" · "}
+                    Max 5 MB per image
                   </span>
                 </label>
               )}

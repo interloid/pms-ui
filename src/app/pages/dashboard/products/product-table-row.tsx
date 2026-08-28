@@ -38,6 +38,7 @@ export function ProductTableRow({
   product,
   isArchiving,
   isDeleting,
+  onEdit,
   onView,
   onArchive,
   onCancelArchive,
@@ -45,6 +46,7 @@ export function ProductTableRow({
   onDelete,
   onCancelDelete,
   onConfirmDelete,
+  
 }: ProductTableRowProps) {
   const primaryImage = getPrimaryImage(product);
 
@@ -131,7 +133,7 @@ export function ProductTableRow({
         <button
           type="button"
           onClick={onView}
-          className="text-left text-sm font-semibold hover:underline"
+          className="text-center text-sm font-semibold hover:underline"
         >
           {product.name}
         </button>
@@ -139,16 +141,16 @@ export function ProductTableRow({
       <TableCell className="text-sm text-muted-foreground">
         {product.category_name}
       </TableCell>
-      <TableCell className="text-right font-mono text-sm">
+      <TableCell className="text-center font-mono text-sm">
         ${Number(product.price).toFixed(2)}
       </TableCell>
-      <TableCell className="text-right text-sm">{product.stock}</TableCell>
+      <TableCell className="text-center text-sm">{product.stock}</TableCell>
       <TableCell>
         <Badge variant="outline" className={getStatusClassName(product.status)}>
           {getStatusLabel(product.status)}
         </Badge>
       </TableCell>
-      <TableCell className="text-xs text-muted-foreground">
+      <TableCell className="text-xs text-center text-muted-foreground">
         {formatDateTime(product.updated_at)}
       </TableCell>
       <TableCell
@@ -197,7 +199,14 @@ export function ProductTableRow({
                   Archive
                 </DropdownMenuItem>
               )}
-
+                <DropdownMenuItem 
+                onSelect={(event) => {
+                    event.preventDefault();
+                    onEdit();
+                  }}
+                >
+                  Edit
+                </DropdownMenuItem>
               <DropdownMenuItem
                 className="text-destructive"
                 onSelect={(event) => {
