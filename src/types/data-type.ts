@@ -262,7 +262,6 @@ export type PaginationProps = {
   setPageSize: React.Dispatch<React.SetStateAction<number>>;
 };
 
-
 export type ImagePreviewDialogProps = {
   image: {
     src: string;
@@ -270,4 +269,10 @@ export type ImagePreviewDialogProps = {
   } | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+};
+
+export type ProductImagePreviewProps = {
+  src: string;
+  alt: string;
+  className?: string;
 };

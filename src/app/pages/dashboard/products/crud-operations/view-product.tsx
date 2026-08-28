@@ -90,20 +90,9 @@ export function ProductView({
                             : "border-border"
                         }`}
                       >
-                        <img
-                          src={image.url}
-                          alt={`${product.name} image`}
-                          className="h-full w-full object-cover"
-                          onClick={() =>
-                            setPreviewImage({
-                              src: image.url,
-                              alt: product.name,
-                            })
-                          }
-                        />
                         <ProductImagePreview
                           src={image.url}
-                          alt={product.name}
+                          alt={`${product.name} image`}
                           className="aspect-square rounded-md border bg-muted"
                         />
                       </div>

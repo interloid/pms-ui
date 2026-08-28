@@ -1,5 +1,12 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { AlertTriangle, Eye, RotateCcw, X } from "lucide-react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type DragEvent,
+} from "react";
+import { AlertTriangle, RotateCcw, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -44,7 +51,7 @@ import {
 } from "@/types/data-type";
 import { revokeImageUrls } from "@/lib/utils";
 import { getUserFriendlyErrorMessage } from "@/lib/error-messsege";
-import { ImagePreviewDialog } from "../preview-image/image-preview-dialog";
+import { ProductImagePreview } from "../preview-image/product-image-preview";
 
 const MAX_IMAGES = 6;
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
@@ -120,12 +127,11 @@ export function ProductEdit({
   const [imageError, setImageError] = useState<ImageError | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showDiscardDialog, setShowDiscardDialog] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+
   const originalForm = useRef<ProductForm | null>(null);
   const originalPrimaryImageId = useRef<string | null>(null);
-  const [previewImage, setPreviewImage] = useState<{
-    src: string;
-    alt: string;
-  } | null>(null);
+
   useEffect(() => {
     if (!product || !open) {
       return;
@@ -142,6 +148,7 @@ export function ProductEdit({
     setNewImages([]);
     setImageError(null);
     setShowDiscardDialog(false);
+    setIsDragging(false);
 
     originalForm.current = initialForm;
     originalPrimaryImageId.current = primaryImage?.id ?? null;
@@ -292,6 +299,7 @@ export function ProductEdit({
     setRemovedImageIds(new Set());
     setNewImages([]);
     setImageError(null);
+    setIsDragging(false);
 
     originalForm.current = initialForm;
     originalPrimaryImageId.current = primaryImage?.id ?? null;
@@ -304,6 +312,8 @@ export function ProductEdit({
     }
 
     if (!isDirty) {
+      revokeImageUrls(newImages);
+      setNewImages([]);
       onOpenChange(false);
       return;
     }
@@ -374,21 +384,19 @@ export function ProductEdit({
 
     const isRemoving = !removedImageIds.has(id);
 
-    setRemovedImageIds((previous) => {
-      const next = new Set(previous);
+    const nextRemovedIds = new Set(removedImageIds);
 
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
+    if (isRemoving) {
+      nextRemovedIds.add(id);
+    } else {
+      nextRemovedIds.delete(id);
+    }
 
-      return next;
-    });
+    setRemovedImageIds(nextRemovedIds);
 
     if (isRemoving && image.is_primary) {
       const fallbackExisting = existingImages.find(
-        (item) => item.id !== id && !removedImageIds.has(item.id),
+        (item) => item.id !== id && !nextRemovedIds.has(item.id),
       );
 
       if (fallbackExisting) {
@@ -404,10 +412,10 @@ export function ProductEdit({
     }
   }
 
-  function handleNewImageChange(event: React.ChangeEvent<HTMLInputElement>) {
-    const files = Array.from(event.target.files ?? []);
+  function processFiles(fileList: FileList | File[]) {
+    const files = Array.from(fileList);
 
-    if (!files.length) {
+    if (files.length === 0) {
       return;
     }
 
@@ -417,36 +425,28 @@ export function ProductEdit({
       setImageError({
         message: `You can upload a maximum of ${MAX_IMAGES} images.`,
       });
-
-      event.target.value = "";
       return;
+    }
+
+    let firstError: ImageError | null = null;
+
+    if (files.length > remainingSlots) {
+      firstError = {
+        message: `You can only add ${remainingSlots} more image${
+          remainingSlots === 1 ? "" : "s"
+        }.`,
+      };
     }
 
     const filesToProcess = files.slice(0, remainingSlots);
 
     const addedImages: ProductImage[] = [];
-    let firstError: ImageError | null = null;
 
     for (const file of filesToProcess) {
       const validationError = validateImage(file);
 
       if (validationError) {
         firstError ??= validationError;
-        continue;
-      }
-
-      const alreadyExists = newImages.some(
-        (image) =>
-          image.file.name === file.name &&
-          image.file.size === file.size &&
-          image.file.lastModified === file.lastModified,
-      );
-
-      if (alreadyExists) {
-        firstError ??= {
-          fileName: file.name,
-          message: "has already been selected.",
-        };
         continue;
       }
 
@@ -468,7 +468,58 @@ export function ProductEdit({
     }
 
     setImageError(firstError);
+  }
+
+  function handleNewImageChange(event: ChangeEvent<HTMLInputElement>) {
+    processFiles(event.target.files ?? []);
     event.target.value = "";
+  }
+
+  function handleDragEnter(event: DragEvent<HTMLLabelElement>) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (isSubmitting || remainingSlots <= 0) {
+      return;
+    }
+
+    setIsDragging(true);
+  }
+
+  function handleDragOver(event: DragEvent<HTMLLabelElement>) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (isSubmitting || remainingSlots <= 0) {
+      return;
+    }
+
+    event.dataTransfer.dropEffect = "copy";
+    setIsDragging(true);
+  }
+
+  function handleDragLeave(event: DragEvent<HTMLLabelElement>) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (event.currentTarget.contains(event.relatedTarget as Node)) {
+      return;
+    }
+
+    setIsDragging(false);
+  }
+
+  function handleDrop(event: DragEvent<HTMLLabelElement>) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    setIsDragging(false);
+
+    if (isSubmitting || remainingSlots <= 0) {
+      return;
+    }
+
+    processFiles(event.dataTransfer.files);
   }
 
   function removeNewImage(id: string) {
@@ -483,9 +534,9 @@ export function ProductEdit({
     const remainingImages = newImages.filter((item) => item.id !== id);
 
     if (image.isPrimary) {
-      if (remainingImages.length > 0) {
-        const nextPrimaryId = remainingImages[0].id;
+      const fallbackNew = remainingImages[0];
 
+      if (fallbackNew) {
         setExistingImages((images) =>
           images.map((item) => ({
             ...item,
@@ -496,7 +547,7 @@ export function ProductEdit({
         setNewImages(
           remainingImages.map((item) => ({
             ...item,
-            isPrimary: item.id === nextPrimaryId,
+            isPrimary: item.id === fallbackNew.id,
           })),
         );
 
@@ -507,6 +558,8 @@ export function ProductEdit({
 
       if (fallbackExisting) {
         setExistingImagePrimary(fallbackExisting.id);
+        setNewImages(remainingImages);
+        return;
       }
     }
 
@@ -592,25 +645,17 @@ export function ProductEdit({
         }));
         return;
       }
+
       toast.error(
         getUserFriendlyErrorMessage(
           error,
-          "Unable to update the product. Please try again.",
+          "Unable to update the product due to Duplicate Images. Please try again.",
         ),
       );
     } finally {
       setIsSubmitting(false);
     }
   }
-  useEffect(() => {
-    if (open) {
-      return;
-    }
-
-    return () => {
-      revokeImageUrls(newImages);
-    };
-  }, [open, newImages]);
 
   if (!product || !form) {
     return null;
@@ -838,10 +883,10 @@ export function ProductEdit({
 
               <div className="grid gap-3">
                 <div className="flex items-center justify-between">
-                  <Label className="text-[12px] font-medium">
-                    Images{" "}
-                    <span className="text-[10px] font-normal text-muted-foreground">
-                      (JPG, PNG, WEBP)
+                  <Label className="gap-1 text-[12px] font-medium">
+                    Images
+                    <span className="text-[11px] font-normal text-destructive">
+                      (Only JPG, PNG, and WEBP image formats are allowed.)
                     </span>
                   </Label>
 
@@ -854,57 +899,43 @@ export function ProductEdit({
                   {activeExistingImages.map((image) => (
                     <div
                       key={image.id}
-                      className="group relative aspect-square overflow-hidden rounded-md border bg-muted"
+                      className={`relative aspect-square overflow-hidden rounded-md border ${
+                        image.is_primary
+                          ? "border-2 border-primary"
+                          : "border-border"
+                      }`}
                     >
-                      <img
+                      <ProductImagePreview
                         src={image.url}
-                        alt={product.name}
-                        className="h-full w-full object-cover"
-                        onClick={() =>
-                          setPreviewImage({
-                            src: image.url,
-                            alt: product.name,
-                          })
-                        }
+                        alt={`${product.name} image`}
+                        className="h-full w-full"
                       />
 
                       <button
                         type="button"
                         onClick={() => toggleRemoveExistingImage(image.id)}
                         aria-label={`Remove ${product.name} image`}
-                        className="absolute right-1.5 top-1.5 flex size-4 items-center justify-center rounded-full border bg-background/90 text-muted-foreground shadow-sm backdrop-blur transition-colors hover:bg-background hover:text-destructive"
+                        className="absolute right-1.5 top-1.5 z-20 flex size-4 items-center justify-center rounded-full border bg-background/90 text-muted-foreground shadow-sm backdrop-blur transition-colors hover:bg-background hover:text-destructive"
                       >
                         <X className="size-2" />
                       </button>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setPreviewImage({
-                            src: image.url,
-                            alt: product.name,
-                          })
-                        }
-                        aria-label={`Preview ${product.name} image`}
-                        className="absolute inset-0 m-auto flex size-9 items-center justify-center rounded-full border border-white/20 bg-black/60 text-white opacity-0 shadow-lg backdrop-blur-sm transition-opacity group-hover:opacity-100"
-                      >
-                        <Eye className="size-4" />
-                      </button>
 
                       {image.is_primary ? (
-                        <span className="absolute bottom-1.5 left-1.5 rounded-full bg-primary px-2 py-0.5 text-[10px] font-medium text-primary-foreground shadow-sm">
+                        <span className="absolute bottom-1.5 left-1.5 z-20 rounded-full bg-primary px-2 py-0.5 text-[10px] font-medium text-primary-foreground shadow-sm">
                           Primary
                         </span>
                       ) : (
                         <button
                           type="button"
                           onClick={() => setExistingImagePrimary(image.id)}
-                          className="absolute bottom-1.5 left-1.5 rounded-full border bg-background/90 px-2 py-0.5 text-[10px] font-medium text-muted-foreground shadow-sm backdrop-blur transition-colors hover:bg-background hover:text-foreground"
+                          className="absolute bottom-1.5 left-1.5 z-20 rounded-full border bg-background/90 px-2 py-0.5 text-[10px] font-medium text-muted-foreground shadow-sm backdrop-blur transition-colors hover:bg-background hover:text-foreground"
                         >
                           Set primary
                         </button>
                       )}
                     </div>
                   ))}
+
                   {removedExistingImages.map((image) => (
                     <div
                       key={`removed-${image.id}`}
@@ -924,34 +955,40 @@ export function ProductEdit({
                       </button>
                     </div>
                   ))}
+
                   {newImages.map((image) => (
                     <div
                       key={image.id}
-                      className="group relative aspect-square overflow-hidden rounded-md border bg-muted"
+                      className={`relative aspect-square overflow-hidden rounded-md border ${
+                        image.isPrimary
+                          ? "border-2 border-primary"
+                          : "border-border"
+                      }`}
                     >
-                      <img
+                      <ProductImagePreview
                         src={image.previewUrl}
                         alt={image.file.name}
-                        className="h-full w-full object-cover"
+                        className="h-full w-full"
                       />
+
                       <button
                         type="button"
                         onClick={() => removeNewImage(image.id)}
                         aria-label={`Remove ${image.file.name}`}
-                        className="absolute right-1.5 top-1.5 flex size-4 items-center justify-center rounded-full border bg-background/90 text-muted-foreground shadow-sm backdrop-blur transition-colors hover:bg-background hover:text-destructive"
+                        className="absolute right-1.5 top-1.5 z-20 flex size-4 items-center justify-center rounded-full border bg-background/90 text-muted-foreground shadow-sm backdrop-blur transition-colors hover:bg-background hover:text-destructive"
                       >
                         <X className="size-2" />
                       </button>
 
                       {image.isPrimary ? (
-                        <span className="absolute bottom-1.5 left-1.5 rounded-full bg-primary px-2 py-0.5 text-[10px] font-medium text-primary-foreground shadow-sm">
+                        <span className="absolute bottom-1.5 left-1.5 z-20 rounded-full bg-primary px-2 py-0.5 text-[10px] font-medium text-primary-foreground shadow-sm">
                           Primary
                         </span>
                       ) : (
                         <button
                           type="button"
                           onClick={() => setNewImagePrimary(image.id)}
-                          className="absolute bottom-1.5 left-1.5 rounded-full border bg-background/90 px-2 py-0.5 text-[10px] font-medium text-muted-foreground shadow-sm backdrop-blur transition-colors hover:bg-background hover:text-foreground"
+                          className="absolute bottom-1.5 left-1.5 z-20 rounded-full border bg-background/90 px-2 py-0.5 text-[10px] font-medium text-muted-foreground shadow-sm backdrop-blur transition-colors hover:bg-background hover:text-foreground"
                         >
                           Set primary
                         </button>
@@ -962,9 +999,30 @@ export function ProductEdit({
                   {remainingSlots > 0 && (
                     <label
                       htmlFor="edit-product-images"
-                      className="flex aspect-square cursor-pointer items-center justify-center rounded-md border border-dashed text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                      onDragEnter={handleDragEnter}
+                      onDragOver={handleDragOver}
+                      onDragLeave={handleDragLeave}
+                      onDrop={handleDrop}
+                      className={`flex aspect-square cursor-pointer flex-col items-center justify-center rounded-md border border-dashed transition-colors ${
+                        isDragging
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border text-muted-foreground hover:bg-muted hover:text-foreground"
+                      } ${
+                        isSubmitting ? "pointer-events-none opacity-60" : ""
+                      }`}
                     >
-                      <span className="text-xl font-light">+</span>
+                      <span className="text-2xl font-light leading-none">
+                        +
+                      </span>
+
+                      <span className="mt-1 px-2 text-center text-[10px] font-medium">
+                        {isDragging ? "Drop images here" : "Add images"}
+                      </span>
+
+                      <span className="mt-0.5 px-2 text-center text-[9px] text-muted-foreground">
+                        {remainingSlots}{" "}
+                        {remainingSlots === 1 ? "slot" : "slots"} left
+                      </span>
                     </label>
                   )}
 
@@ -974,6 +1032,7 @@ export function ProductEdit({
                     accept="image/jpeg,image/png,image/webp"
                     multiple
                     onChange={handleNewImageChange}
+                    disabled={isSubmitting || remainingSlots <= 0}
                     className="hidden"
                   />
                 </div>
@@ -986,6 +1045,7 @@ export function ProductEdit({
                           {imageError.fileName}{" "}
                         </span>
                       )}
+
                       {imageError.message}
                     </p>
 
@@ -1048,13 +1108,16 @@ export function ProductEdit({
           </form>
         </SheetContent>
       </Sheet>
+
       <Dialog open={showDiscardDialog} onOpenChange={setShowDiscardDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <div className="mb-1 flex size-10 items-center justify-center rounded-full bg-amber-100">
               <AlertTriangle className="size-5 text-amber-600" />
             </div>
+
             <DialogTitle className="text-base">Unsaved changes</DialogTitle>
+
             <DialogDescription className="text-sm leading-5">
               You have unsaved changes to this product. If you leave now, your
               changes will be lost.
@@ -1066,7 +1129,7 @@ export function ProductEdit({
               type="button"
               variant="outline"
               onClick={handleKeepEditing}
-              className="hover:bg-primary-hover hover:border-primary focus-visible:border-primary focus-visible:ring-primary/20"
+              className="hover:border-primary hover:bg-primary-hover focus-visible:border-primary focus-visible:ring-primary/20"
             >
               Keep editing
             </Button>
@@ -1082,15 +1145,6 @@ export function ProductEdit({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      <ImagePreviewDialog
-        image={previewImage}
-        open={Boolean(previewImage)}
-        onOpenChange={(open) => {
-          if (!open) {
-            setPreviewImage(null);
-          }
-        }}
-      />
     </>
   );
 }

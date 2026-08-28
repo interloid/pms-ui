@@ -171,7 +171,7 @@ export function ProductTableRow({
           <Button
             variant="outline"
             size="sm"
-            className="h-8 hover:bg-primary-hover hover:border-primary"
+            className="h-8 hover:bg-primary-hover hover:border-primary focus-visible:primary-3 focus-visible:ring-primary/20"
             onClick={(event) => {
               event.stopPropagation();
               onView();
@@ -184,7 +184,7 @@ export function ProductTableRow({
               <Button
                 variant="outline"
                 size="icon"
-                className="size-8 hover:bg-primary-hover hover:border-primary"
+                className="size-8 hover:bg-primary-hover hover:border-primary focus-visible:primary-3 focus-visible:ring-primary/20"
                 onClick={(event) => {
                   event.stopPropagation();
                 }}
