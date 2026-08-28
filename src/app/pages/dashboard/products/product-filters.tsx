@@ -85,7 +85,7 @@ export function ProductFilters({
       </div>
       <div className="mx-1 hidden h-6 w-px bg-border md:block" />
       <Select value={priceRange} onValueChange={onPriceChange}>
-        <SelectTrigger className="h-9 w-32 hover:bg-primary-hover! hover:border-primary">
+        <SelectTrigger className="h-9 w-fit hover:bg-primary-hover! hover:border-primary">
           <span className="text-xs">Price</span>
           <SelectValue />
         </SelectTrigger>
@@ -95,7 +95,7 @@ export function ProductFilters({
           align="start"
           sideOffset={4}
           avoidCollisions={false}
-          className="w-36"
+          className="w-fit"
         >
           {priceRanges.map((range) => (
             <SelectItem

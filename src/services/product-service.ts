@@ -38,9 +38,10 @@ export async function getProducts({
   }
 
   if (priceRange !== "all") {
-    params.set("price_range", priceRange);
+    const [minPrice, maxPrice] = priceRange.split("-");
+    params.set("min_price", minPrice);
+    params.set("max_price", maxPrice);
   }
-
   const response = await apiRequest<GetProductsResponse>(
     `/api/v1/products?${params.toString()}`,
   );

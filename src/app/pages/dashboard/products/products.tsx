@@ -133,7 +133,6 @@ export default function ProductsPage() {
       order:
         current.field === field && current.order === "asc" ? "desc" : "asc",
     }));
-
     setPage(1);
   };
 
@@ -260,7 +259,6 @@ export default function ProductsPage() {
             {productCount === 0 ? 0 : (page - 1) * pageSize + 1}-
             {Math.min(page * pageSize, productCount)} of {productCount}
           </span>
-
           <div className="flex items-center gap-1">
             <Button
               variant="outline"
