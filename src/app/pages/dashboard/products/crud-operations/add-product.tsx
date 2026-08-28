@@ -30,7 +30,7 @@ import {
 import { createProduct } from "@/services/product-service";
 import { Spinner } from "@/components/ui/spinner";
 import { Eye, X } from "lucide-react";
-import { ImagePreviewDialog } from "../image-preview";
+import { ImagePreviewDialog } from "../preview-image/image-preview-dialog";
 
 const MAX_IMAGES = 6;
 const MAX_FILE_SIZE = 5 * 1024 * 1024;

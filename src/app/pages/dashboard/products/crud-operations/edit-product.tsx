@@ -43,7 +43,8 @@ import {
   type ProductStatus,
 } from "@/types/data-type";
 import { revokeImageUrls } from "@/lib/utils";
-import { ImagePreviewDialog } from "../image-preview";
+import { getUserFriendlyErrorMessage } from "@/lib/error-messsege";
+import { ImagePreviewDialog } from "../preview-image/image-preview-dialog";
 
 const MAX_IMAGES = 6;
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
@@ -582,23 +583,25 @@ export function ProductEdit({
       onOpenChange(false);
       onUpdated?.(updated);
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Failed to update product";
+      const message = error instanceof Error ? error.message.toLowerCase() : "";
 
-      if (message.toLowerCase().includes("sku")) {
+      if (message.includes("sku")) {
         setErrors((previous) => ({
           ...previous,
           sku: "This SKU already exists.",
         }));
         return;
       }
-
-      toast.error(message);
+      toast.error(
+        getUserFriendlyErrorMessage(
+          error,
+          "Unable to update the product. Please try again.",
+        ),
+      );
     } finally {
       setIsSubmitting(false);
     }
   }
-
   useEffect(() => {
     if (open) {
       return;
@@ -857,7 +860,7 @@ export function ProductEdit({
                         src={image.url}
                         alt={product.name}
                         className="h-full w-full object-cover"
-                         onClick={() =>
+                        onClick={() =>
                           setPreviewImage({
                             src: image.url,
                             alt: product.name,

@@ -11,9 +11,9 @@ import { Badge } from "@/components/ui/badge";
 import { getStatusLabel } from "@/lib/converters";
 import type { ProductViewProps } from "@/types/data-type";
 import { DetailLabel, DetailValue } from "@/components/shad/detail-label";
-import { Eye } from "lucide-react";
-import { ImagePreviewDialog } from "../image-preview";
 import { useState } from "react";
+import { ProductImagePreview } from "../preview-image/product-image-preview";
+import { ImagePreviewDialog } from "../preview-image/image-preview-dialog";
 
 function getStatusClassName(status: string) {
   switch (status) {
@@ -101,20 +101,11 @@ export function ProductView({
                             })
                           }
                         />
-
-                        <button
-                          type="button"
-                           onClick={() =>
-                            setPreviewImage({
-                              src: image.url,
-                              alt: product.name,
-                            })
-                          }
-                          aria-label={`Preview ${product.name} image`}
-                          className="absolute inset-0 m-auto flex size-9 items-center justify-center rounded-full border border-white/20 bg-black/60 text-white opacity-0 shadow-lg backdrop-blur-sm transition-opacity group-hover:opacity-100"
-                        >
-                          <Eye className="size-4" />
-                        </button>
+                        <ProductImagePreview
+                          src={image.url}
+                          alt={product.name}
+                          className="aspect-square rounded-md border bg-muted"
+                        />
                       </div>
                     ))}
                   </div>
