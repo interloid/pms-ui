@@ -29,6 +29,8 @@ import {
 } from "@/types/data-type";
 import { createProduct } from "@/services/product-service";
 import { Spinner } from "@/components/ui/spinner";
+import { Eye, X } from "lucide-react";
+import { ImagePreviewDialog } from "../image-preview";
 
 const MAX_IMAGES = 6;
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
@@ -57,6 +59,10 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const remainingImages = MAX_IMAGES - images.length;
   const [errors, setErrors] = useState<FormErrors>({});
+  const [previewImage, setPreviewImage] = useState<{
+    src: string;
+    alt: string;
+  } | null>(null);
 
   function resetForm() {
     setName("");
@@ -250,6 +256,7 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
   }
 
   return (
+    <>
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         <Button>+ Add Product</Button>
@@ -512,6 +519,64 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
                 </label>
               )}
 
+              {images.length > 0 && (
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                  {images.map((image) => (
+                    <div
+                      key={image.id}
+                      className="relative overflow-hidden rounded-lg border bg-muted"
+                    >
+                      <img
+                        src={image.previewUrl}
+                        alt={image.file.name}
+                        className="aspect-square w-full object-cover"
+                        onClick={() =>
+                          setPreviewImage({
+                            src: image.previewUrl,
+                            alt: image.file.name,
+                          })
+                        }
+                      />
+                      {image.isPrimary ? (
+                        <span className="absolute left-2 top-2 rounded-md bg-primary px-2 py-1 text-[10px] font-medium text-primary-foreground shadow-sm">
+                          Primary
+                        </span>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setPrimaryImage(image.id)}
+                          className="absolute bottom-2 left-2 rounded-md bg-background/90 px-2 py-1 text-[10px] font-medium text-foreground shadow-sm backdrop-blur-sm transition-colors hover:bg-background"
+                        >
+                          Set primary
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setPreviewImage({
+                            src: image.previewUrl,
+                            alt: image.file.name,
+                          })
+                        }
+                        aria-label={`Preview ${image.file.name}`}
+                        className="absolute inset-0 m-auto flex size-9 items-center justify-center rounded-full border border-white/20 bg-black/60 text-white opacity-0 shadow-lg backdrop-blur-sm transition-opacity group-hover:opacity-100"
+                      >
+                        <Eye className="size-4" />
+                      </button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-2 top-2 z-10 size-4 rounded-full bg-background/90 text-muted-foreground shadow-sm backdrop-blur-sm hover:bg-background hover:text-destructive"
+                        onClick={() => removeImage(image.id)}
+                        aria-label={`Remove ${image.file.name}`}
+                      >
+                        <X className="size-2" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
               {imageError && (
                 <div className="rounded-lg border border-red-300 bg-red-50 px-3 py-2">
                   <p className="text-xs font-semibold text-red-600">
@@ -540,8 +605,8 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
                   </span>
 
                   <span className="text-[11px] text-muted-foreground">
-                    {remainingImages} {remainingImages === 1 ? "slot" : "slots"}{" "}
-                    remaining
+                    <span className="font-bold">{remainingImages} </span>{" "}
+                    {remainingImages === 1 ? "slot" : "slots"} remaining
                     {" · "}
                     JPG, PNG, WEBP
                     {" · "}
@@ -549,19 +614,6 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
                   </span>
                 </label>
               )}
-              {images.length > 0 && images.length < MAX_IMAGES && (
-                <label
-                  htmlFor="product-images"
-                  className="flex min-h-25 w-full cursor-pointer items-center justify-center rounded-lg border border-dashed border-hover-text px-4 py-4 text-center transition-colors hover:bg-primary-hover/50"
-                >
-                  <span className="text-xs text-hover-text">
-                    Drop {remainingImages === 1 ? "more image" : "more images"}{" "}
-                    or click to browse · {remainingImages}{" "}
-                    {remainingImages === 1 ? "slot" : "slots"} left
-                  </span>
-                </label>
-              )}
-
               <Input
                 id="product-images"
                 type="file"
@@ -599,5 +651,15 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
         </SheetFooter>
       </SheetContent>
     </Sheet>
+    <ImagePreviewDialog
+  image={previewImage}
+  open={Boolean(previewImage)}
+  onOpenChange={(open) => {
+    if (!open) {
+      setPreviewImage(null);
+    }
+  }}
+/>
+</>
   );
 }

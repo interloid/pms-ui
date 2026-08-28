@@ -222,6 +222,8 @@ export type FormErrors = {
   stock?: string;
 };
 
+export type FormError = Partial<Record<keyof ProductForm, string>>;
+
 export type JsonBody = Record<string, unknown>;
 
 export type ApiRequestOptions = Omit<RequestInit, "body"> & {
@@ -229,13 +231,7 @@ export type ApiRequestOptions = Omit<RequestInit, "body"> & {
 };
 
 export type ProductSortField =
-  | "sku"
-  | "name"
-  | "category"
-  | "price"
-  | "stock"
-  | "status"
-  | "updated";
+  "sku" | "name" | "category" | "price" | "stock" | "status" | "updated";
 
 export type SortOrder = "asc" | "desc";
 
@@ -257,7 +253,6 @@ export type SortableTableHeadProps = {
   className?: string;
 };
 
-
 export type PaginationProps = {
   page: number;
   pageSize: number;
@@ -265,4 +260,14 @@ export type PaginationProps = {
   totalPages: number;
   setPage: React.Dispatch<React.SetStateAction<number>>;
   setPageSize: React.Dispatch<React.SetStateAction<number>>;
+};
+
+
+export type ImagePreviewDialogProps = {
+  image: {
+    src: string;
+    alt: string;
+  } | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 };

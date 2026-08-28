@@ -55,7 +55,7 @@ export function HeaderActions({ user }: InputInlineProps) {
         <DialogTrigger asChild>
           <Button
             variant="destructive"
-            className="cursor-pointer bg-red-500! text-secondary hover:bg-destructive! px-2.5 text-sm sm:px-4"
+            className="cursor-pointer bg-cancel-button-background! text-secondary hover:bg-destructive! px-2.5 text-sm sm:px-4"
           >
             Log out
           </Button>
@@ -80,7 +80,7 @@ export function HeaderActions({ user }: InputInlineProps) {
             <Button
               variant="destructive"
               onClick={logout}
-              className="cursor-pointer bg-red-500 text-secondary hover:bg-destructive"
+              className="cursor-pointer bg-cancel-button-background text-secondary hover:bg-destructive"
             >
               Log out
             </Button>

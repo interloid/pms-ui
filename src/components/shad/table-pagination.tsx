@@ -23,16 +23,13 @@ export function TablePagination({
   setPage,
   setPageSize,
 }: PaginationProps) {
-  const startItem =
-    productCount === 0 ? 0 : (page - 1) * pageSize + 1;
+  const startItem = productCount === 0 ? 0 : (page - 1) * pageSize + 1;
   const endItem = Math.min(page * pageSize, productCount);
 
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between lg:px-4">
       <div className="flex items-center gap-2">
-        <span className="text-sm text-muted-foreground">
-          Rows per page
-        </span>
+        <span className="text-sm text-muted-foreground">Rows per page</span>
         <Select
           value={String(pageSize)}
           onValueChange={(value) => {

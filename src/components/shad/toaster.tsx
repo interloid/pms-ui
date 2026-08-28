@@ -1,43 +1,39 @@
-import {
-  CheckCircle2,
-  CircleAlert,
-  Info,
-  TriangleAlert,
-} from "lucide-react";
+import { CheckCircle2, CircleAlert, Info, TriangleAlert } from "lucide-react";
 import { Toaster as Sonner } from "sonner";
 
-export function ToasterMessage(
-  props: React.ComponentProps<typeof Sonner>,
-) {
+export function ToasterMessage(props: React.ComponentProps<typeof Sonner>) {
   return (
     <Sonner
       {...props}
       position="bottom-right"
       duration={4000}
+      closeButton
       icons={{
-        success: <CheckCircle2 className="size-5 text-emerald-600" />,
-        error: <CircleAlert className="size-5 text-red-600" />,
-        warning: <TriangleAlert className="size-5 text-amber-600" />,
-        info: <Info className="size-5 text-blue-600" />,
+        success: <CheckCircle2 className="size-4.5" />,
+        error: <CircleAlert className="size-4.5" />,
+        warning: <TriangleAlert className="size-4.5" />,
+        info: <Info className="size-4.5" />,
       }}
       toastOptions={{
         classNames: {
           toast:
-            "!w-90 !bottom-30 !rounded-lg !border !px-4 !py-3 !shadow-lg !backdrop-blur-sm",
+            "!relative !w-[360px] !overflow-hidden !rounded-xl !border !border-border/70 !bg-background !px-4 !py-3.5 !pr-10 !shadow-[0_8px_30px_rgb(0,0,0,0.08)]",
+
           title:
-            "!text-sm !font-semibold !leading-5",
-          description:
-            "!mt-1 !text-xs !leading-4 !opacity-80",
+            "!text-sm !font-semibold !leading-5 !tracking-[-0.01em] !text-foreground",
+
+          description: "!mt-1 !text-xs !leading-4 !text-muted-foreground",
+
           closeButton:
-            "!left-auto !right-2 !top-2 !border-0 !bg-transparent !opacity-50 hover:!opacity-100",
-          success:
-            "!border-emerald-200 !bg-emerald-50 !text-emerald-800",
-          error:
-            "!border-red-200 !bg-red-50 !text-red-800",
-          warning:
-            "!border-amber-200 !bg-amber-50 !text-amber-800",
-          info:
-            "!border-blue-200 !bg-blue-50 !text-blue-800",
+            "!absolute !right-3 !top-3 !left-auto !flex !size-6 !items-center !justify-center !rounded-md !border-0 !bg-transparent !p-0 !text-muted-foreground !opacity-70 !transition-all hover:!bg-muted hover:!text-foreground hover:!opacity-100",
+
+          success: "!border-emerald-200/80 [&_[data-icon]]:!text-emerald-600",
+
+          error: "!border-red-200/80 [&_[data-icon]]:!text-red-600",
+
+          warning: "!border-amber-200/80 [&_[data-icon]]:!text-amber-600",
+
+          info: "!border-blue-200/80 [&_[data-icon]]:!text-blue-600",
         },
       }}
     />

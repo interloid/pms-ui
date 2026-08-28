@@ -243,7 +243,9 @@ export default function LoginPage({
                   </div>
                   <Field>
                     {error && (
-                      <p className="text-sm text-destructive font-medium">{error}</p>
+                      <p className="text-sm text-destructive font-medium">
+                        {error}
+                      </p>
                     )}
 
                     <Button

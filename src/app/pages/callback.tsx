@@ -76,9 +76,7 @@ export default function Callback() {
                 Authentication error
               </AlertTitle>
 
-              <AlertDescription className="text-xs">
-                {error}
-              </AlertDescription>
+              <AlertDescription className="text-xs">{error}</AlertDescription>
             </Alert>
           )}
         </Empty>

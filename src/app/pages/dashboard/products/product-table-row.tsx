@@ -46,14 +46,16 @@ export function ProductTableRow({
   onDelete,
   onCancelDelete,
   onConfirmDelete,
-  
 }: ProductTableRowProps) {
   const primaryImage = getPrimaryImage(product);
 
   if (isArchiving) {
     return (
       <TableRow className="bg-red-50 hover:bg-red-50">
-        <TableCell colSpan={8} className="border-l-2 border-l-red-500 py-4">
+        <TableCell
+          colSpan={8}
+          className="border-l-2 border-l-cancel-button-background py-4"
+        >
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <ProductImage src={primaryImage} alt={product.name} />
@@ -67,7 +69,12 @@ export function ProductTableRow({
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={onCancelArchive}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onCancelArchive}
+                className="hover:bg-primary-hover hover:border-primary"
+              >
                 Cancel
               </Button>
               <Button
@@ -86,7 +93,10 @@ export function ProductTableRow({
   if (isDeleting) {
     return (
       <TableRow className="bg-red-50 hover:bg-red-50">
-        <TableCell colSpan={8} className="border-l-2 border-l-red-500 py-4">
+        <TableCell
+          colSpan={8}
+          className="border-l-2 border-l-cancel-button-background py-4"
+        >
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <ProductImage src={primaryImage} alt={product.name} />
@@ -191,6 +201,7 @@ export function ProductTableRow({
             >
               {product.status !== "archived" && (
                 <DropdownMenuItem
+                  className="hover:"
                   onSelect={(event) => {
                     event.preventDefault();
                     onArchive();
@@ -199,14 +210,14 @@ export function ProductTableRow({
                   Archive
                 </DropdownMenuItem>
               )}
-                <DropdownMenuItem 
+              <DropdownMenuItem
                 onSelect={(event) => {
-                    event.preventDefault();
-                    onEdit();
-                  }}
-                >
-                  Edit
-                </DropdownMenuItem>
+                  event.preventDefault();
+                  onEdit();
+                }}
+              >
+                Edit
+              </DropdownMenuItem>
               <DropdownMenuItem
                 className="text-destructive"
                 onSelect={(event) => {

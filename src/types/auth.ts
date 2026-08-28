@@ -71,10 +71,7 @@ export interface PasscodeLocationState {
 }
 
 export type AuthErrorCode =
-  | "INVALID_CREDENTIALS"
-  | "NETWORK_ERROR"
-  | "SERVER_ERROR"
-  | "UNKNOWN_ERROR";
+  "INVALID_CREDENTIALS" | "NETWORK_ERROR" | "SERVER_ERROR" | "UNKNOWN_ERROR";
 
 export type AuthError = {
   code: AuthErrorCode;

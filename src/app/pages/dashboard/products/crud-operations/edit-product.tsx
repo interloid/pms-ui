@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { AlertTriangle, Eye, RotateCcw, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   Sheet,
   SheetContent,
   SheetHeader,
@@ -25,6 +34,7 @@ import {
   statuses,
   type ApiProduct,
   type ApiProductImage,
+  type FormError,
   type ImageError,
   type ProductCategory,
   type ProductEditProps,
@@ -33,18 +43,19 @@ import {
   type ProductStatus,
 } from "@/types/data-type";
 import { revokeImageUrls } from "@/lib/utils";
+import { ImagePreviewDialog } from "../image-preview";
 
 const MAX_IMAGES = 6;
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
+
 const ALLOWED_FILE_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;
+
 const FORM_DATA_FIELDS = {
   images: "images",
   removedImageIds: "removed_image_ids",
   primaryImageId: "primary_image_id",
   primaryNewImageIndex: "primary_new_image_index",
 } as const;
-
-type FormErrors = Partial<Record<keyof ProductForm, string>>;
 
 function getInitialForm(product: ApiProduct): ProductForm {
   return {
@@ -57,12 +68,6 @@ function getInitialForm(product: ApiProduct): ProductForm {
     description: product.description,
   };
 }
-
-// function revokeImageUrls(images: ProductImage[]) {
-//   images.forEach((image) => {
-//     URL.revokeObjectURL(image.previewUrl);
-//   });
-// }
 
 function validateImage(file: File): ImageError | null {
   if (
@@ -80,9 +85,7 @@ function validateImage(file: File): ImageError | null {
     return {
       fileName: file.name,
       message: "wasn't added",
-      details: `${(file.size / 1024 / 1024).toFixed(
-        1,
-      )} MB exceeds the 5 MB limit.`,
+      details: `${(file.size / 1024 / 1024).toFixed(1)} MB exceeds the 5 MB limit.`,
     };
   }
 
@@ -107,7 +110,7 @@ export function ProductEdit({
   onUpdated,
 }: ProductEditProps) {
   const [form, setForm] = useState<ProductForm | null>(null);
-  const [errors, setErrors] = useState<FormErrors>({});
+  const [errors, setErrors] = useState<FormError>({});
   const [existingImages, setExistingImages] = useState<ApiProductImage[]>([]);
   const [newImages, setNewImages] = useState<ProductImage[]>([]);
   const [removedImageIds, setRemovedImageIds] = useState<Set<string>>(
@@ -115,9 +118,13 @@ export function ProductEdit({
   );
   const [imageError, setImageError] = useState<ImageError | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showDiscardDialog, setShowDiscardDialog] = useState(false);
   const originalForm = useRef<ProductForm | null>(null);
   const originalPrimaryImageId = useRef<string | null>(null);
-
+  const [previewImage, setPreviewImage] = useState<{
+    src: string;
+    alt: string;
+  } | null>(null);
   useEffect(() => {
     if (!product || !open) {
       return;
@@ -133,6 +140,8 @@ export function ProductEdit({
     setRemovedImageIds(new Set());
     setNewImages([]);
     setImageError(null);
+    setShowDiscardDialog(false);
+
     originalForm.current = initialForm;
     originalPrimaryImageId.current = primaryImage?.id ?? null;
   }, [product, open]);
@@ -141,31 +150,39 @@ export function ProductEdit({
     () => existingImages.filter((image) => !removedImageIds.has(image.id)),
     [existingImages, removedImageIds],
   );
+
   const removedExistingImages = useMemo(
     () => existingImages.filter((image) => removedImageIds.has(image.id)),
     [existingImages, removedImageIds],
   );
 
   const activeImageCount = activeExistingImages.length + newImages.length;
+
   const remainingSlots = Math.max(MAX_IMAGES - activeImageCount, 0);
+
   const primaryExistingImage = useMemo(
     () => getPrimaryExistingImage(existingImages, removedImageIds),
     [existingImages, removedImageIds],
   );
+
   const primaryNewImage = useMemo(
     () => getPrimaryNewImage(newImages),
     [newImages],
   );
 
   const currentPrimaryImageId = primaryExistingImage?.id ?? null;
+
   const currentPrimaryNewImageIndex = primaryNewImage
     ? newImages.findIndex((image) => image.id === primaryNewImage.id)
     : -1;
+
   const isDirty = useMemo(() => {
     if (!form || !originalForm.current) {
       return false;
     }
+
     const original = originalForm.current;
+
     const formChanged =
       form.name !== original.name ||
       form.sku !== original.sku ||
@@ -176,9 +193,11 @@ export function ProductEdit({
       form.description !== original.description;
 
     const imagesChanged = removedImageIds.size > 0 || newImages.length > 0;
+
     const primaryImageChanged =
       currentPrimaryImageId !== originalPrimaryImageId.current ||
       currentPrimaryNewImageIndex >= 0;
+
     return formChanged || imagesChanged || primaryImageChanged;
   }, [
     form,
@@ -220,14 +239,16 @@ export function ProductEdit({
       return false;
     }
 
-    const newErrors: FormErrors = {};
+    const newErrors: FormError = {};
 
     if (!form.name.trim()) {
       newErrors.name = "This Name is required.";
     }
+
     if (!form.sku.trim()) {
       newErrors.sku = "This SKU is required.";
     }
+
     if (!form.category) {
       newErrors.category = "This category is required.";
     }
@@ -239,6 +260,7 @@ export function ProductEdit({
     } else if (Number(form.price) < 0) {
       newErrors.price = "Price cannot be negative.";
     }
+
     if (!form.stock.trim()) {
       newErrors.stock = "This stock is required.";
     } else if (!Number.isFinite(Number(form.stock))) {
@@ -246,7 +268,9 @@ export function ProductEdit({
     } else if (Number(form.stock) < 0) {
       newErrors.stock = "Stock cannot be negative.";
     }
+
     setErrors(newErrors);
+
     return Object.keys(newErrors).length === 0;
   }
 
@@ -256,6 +280,7 @@ export function ProductEdit({
     }
 
     revokeImageUrls(newImages);
+
     const initialForm = getInitialForm(product);
     const images = product.images ?? [];
     const primaryImage = images.find((image) => image.is_primary);
@@ -269,6 +294,30 @@ export function ProductEdit({
 
     originalForm.current = initialForm;
     originalPrimaryImageId.current = primaryImage?.id ?? null;
+  }
+
+  function handleSheetOpenChange(nextOpen: boolean) {
+    if (nextOpen) {
+      onOpenChange(true);
+      return;
+    }
+
+    if (!isDirty) {
+      onOpenChange(false);
+      return;
+    }
+
+    setShowDiscardDialog(true);
+  }
+
+  function handleKeepEditing() {
+    setShowDiscardDialog(false);
+  }
+
+  function handleDiscardAndClose() {
+    discardChanges();
+    setShowDiscardDialog(false);
+    onOpenChange(false);
   }
 
   function setExistingImagePrimary(id: string) {
@@ -292,6 +341,7 @@ export function ProductEdit({
       })),
     );
   }
+
   function setNewImagePrimary(id: string) {
     const imageExists = newImages.some((image) => image.id === id);
 
@@ -372,6 +422,7 @@ export function ProductEdit({
     }
 
     const filesToProcess = files.slice(0, remainingSlots);
+
     const addedImages: ProductImage[] = [];
     let firstError: ImageError | null = null;
 
@@ -380,6 +431,21 @@ export function ProductEdit({
 
       if (validationError) {
         firstError ??= validationError;
+        continue;
+      }
+
+      const alreadyExists = newImages.some(
+        (image) =>
+          image.file.name === file.name &&
+          image.file.size === file.size &&
+          image.file.lastModified === file.lastModified,
+      );
+
+      if (alreadyExists) {
+        firstError ??= {
+          fileName: file.name,
+          message: "has already been selected.",
+        };
         continue;
       }
 
@@ -510,6 +576,9 @@ export function ProductEdit({
 
       toast.success("Product updated successfully");
 
+      revokeImageUrls(newImages);
+      setNewImages([]);
+
       onOpenChange(false);
       onUpdated?.(updated);
     } catch (error) {
@@ -521,7 +590,6 @@ export function ProductEdit({
           ...previous,
           sku: "This SKU already exists.",
         }));
-
         return;
       }
 
@@ -535,6 +603,7 @@ export function ProductEdit({
     if (open) {
       return;
     }
+
     return () => {
       revokeImageUrls(newImages);
     };
@@ -556,404 +625,469 @@ export function ProductEdit({
   }
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="gap-0 p-0 sm:max-w-xl!">
-        <SheetHeader className="flex flex-row items-center gap-3 border-b px-5 py-4">
-          <div className="min-w-0 flex-1">
-            <SheetTitle className="text-[15px] font-semibold">
-              {product.name}
-            </SheetTitle>
-          </div>
-        </SheetHeader>
-
-        {isDirty && (
-          <div className="flex items-center gap-2.5 border-b bg-accent px-5 py-3">
-            <span className="text-[12px] font-medium text-accent-foreground">
-              Unsaved changes
-            </span>
-
-            <div className="flex-1" />
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="h-7 px-2.5 text-xs font-medium"
-              onClick={discardChanges}
-            >
-              Discard
-            </Button>
-
-            <span className="inline-flex h-7 items-center rounded-sm bg-primary px-2.5 text-xs font-medium text-primary-foreground">
-              Keep editing
-            </span>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="contents" noValidate>
-          <div className="flex flex-1 flex-col gap-3 overflow-y-auto p-5">
-            <div className="grid gap-1.5">
-              <Label
-                htmlFor="edit-product-name"
-                className="text-[12px] font-medium"
-              >
-                Product Name <span className="text-destructive">*</span>
-              </Label>
-
-              <Input
-                id="edit-product-name"
-                placeholder="e.g. Meridian Desk Lamp"
-                value={form.name}
-                onChange={(event) => updateField("name", event.target.value)}
-                aria-invalid={Boolean(errors.name)}
-                className={`h-10 placeholder:text-xs focus-visible:ring-primary/20 ${
-                  errors.name
-                    ? "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20"
-                    : "focus-visible:border-primary"
-                }`}
-              />
-              <FieldError message={errors.name} />
+    <>
+      <Sheet open={open} onOpenChange={handleSheetOpenChange}>
+        <SheetContent className="gap-0 p-0 sm:max-w-xl!">
+          <SheetHeader className="flex flex-row items-center gap-3 border-b px-5 py-4">
+            <div className="min-w-0 flex-1">
+              <SheetTitle className="text-[15px] font-semibold">
+                {product.name}
+              </SheetTitle>
             </div>
-            <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-2">
+          </SheetHeader>
+
+          <form onSubmit={handleSubmit} className="contents" noValidate>
+            <div className="flex flex-1 flex-col gap-3 overflow-y-auto p-5">
               <div className="grid gap-1.5">
                 <Label
-                  htmlFor="edit-product-sku"
+                  htmlFor="edit-product-name"
                   className="text-[12px] font-medium"
                 >
-                  SKU <span className="text-destructive">*</span>
+                  Product Name <span className="text-destructive">*</span>
                 </Label>
 
                 <Input
-                  id="edit-product-sku"
-                  value={form.sku}
-                  onChange={(event) => updateField("sku", event.target.value)}
-                  aria-invalid={Boolean(errors.sku)}
-                  className={`h-10 font-mono placeholder:text-xs focus-visible:ring-primary/20 ${
-                    errors.sku
+                  id="edit-product-name"
+                  placeholder="e.g. Meridian Desk Lamp"
+                  value={form.name}
+                  onChange={(event) => updateField("name", event.target.value)}
+                  aria-invalid={Boolean(errors.name)}
+                  className={`h-10 placeholder:text-xs focus-visible:ring-primary/20 ${
+                    errors.name
                       ? "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20"
                       : "focus-visible:border-primary"
                   }`}
                 />
 
-                <FieldError message={errors.sku} />
+                <FieldError message={errors.name} />
               </div>
-              <div className="grid gap-1.5">
-                <Label
-                  htmlFor="edit-product-category"
-                  className="text-[12px] font-medium"
-                >
-                  Category <span className="text-destructive">*</span>
-                </Label>
 
-                <Select
-                  value={form.category}
-                  onValueChange={(value) =>
-                    updateField("category", value as ProductCategory)
-                  }
-                >
-                  <SelectTrigger
-                    id="edit-product-category"
-                    aria-invalid={Boolean(errors.category)}
-                    className={`h-9 w-full focus-visible:ring-primary/20 ${
-                      errors.category
+              <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-2">
+                <div className="grid gap-1.5">
+                  <Label
+                    htmlFor="edit-product-sku"
+                    className="text-[12px] font-medium"
+                  >
+                    SKU <span className="text-destructive">*</span>
+                  </Label>
+
+                  <Input
+                    id="edit-product-sku"
+                    value={form.sku}
+                    onChange={(event) => updateField("sku", event.target.value)}
+                    aria-invalid={Boolean(errors.sku)}
+                    className={`h-10 font-mono placeholder:text-xs focus-visible:ring-primary/20 ${
+                      errors.sku
                         ? "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20"
                         : "focus-visible:border-primary"
                     }`}
-                  >
-                    <SelectValue placeholder="Select..." />
-                  </SelectTrigger>
+                  />
 
-                  <SelectContent
-                    position="popper"
-                    side="bottom"
-                    align="start"
-                    sideOffset={4}
-                    avoidCollisions={false}
-                  >
-                    {categories.map((category) => (
-                      <SelectItem key={category.value} value={category.value}>
-                        {category.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
-                <FieldError message={errors.category} />
-              </div>
-            </div>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-              <div className="grid gap-1.5">
-                <Label
-                  htmlFor="edit-product-price"
-                  className="text-[12px] font-medium"
-                >
-                  Price <span className="text-destructive">*</span>
-                </Label>
-
-                <Input
-                  id="edit-product-price"
-                  type="number"
-                  min={0}
-                  step="0.01"
-                  value={form.price}
-                  onChange={(event) => updateField("price", event.target.value)}
-                  aria-invalid={Boolean(errors.price)}
-                  className={`h-10 font-mono focus-visible:ring-primary/20 ${
-                    errors.price
-                      ? "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20"
-                      : "focus-visible:border-primary"
-                  }`}
-                />
-
-                <FieldError message={errors.price} />
-              </div>
-              <div className="grid gap-1.5">
-                <Label
-                  htmlFor="edit-product-stock"
-                  className="text-[12px] font-medium"
-                >
-                  Stock
-                </Label>
-
-                <Input
-                  id="edit-product-stock"
-                  type="number"
-                  min={0}
-                  step="1"
-                  value={form.stock}
-                  onChange={(event) => updateField("stock", event.target.value)}
-                  aria-invalid={Boolean(errors.stock)}
-                  className={`h-10 font-mono focus-visible:ring-primary/20 ${
-                    errors.stock
-                      ? "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20"
-                      : "focus-visible:border-primary"
-                  }`}
-                />
-                <FieldError />
-              </div>
-              <div className="grid gap-1.5">
-                <Label
-                  htmlFor="edit-product-status"
-                  className="text-[12px] font-medium"
-                >
-                  Status
-                </Label>
-
-                <Select
-                  value={form.status}
-                  onValueChange={(value) =>
-                    updateField("status", value as ProductStatus)
-                  }
-                >
-                  <SelectTrigger
-                    id="edit-product-status"
-                    className="h-9 w-full"
-                  >
-                    <SelectValue placeholder="Select..." />
-                  </SelectTrigger>
-
-                  <SelectContent
-                    position="popper"
-                    side="bottom"
-                    align="start"
-                    sideOffset={4}
-                    avoidCollisions={false}
-                  >
-                    {statuses.map((status) => (
-                      <SelectItem key={status.value} value={status.value}>
-                        {status.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                  <FieldError />
-                </Select>
-              </div>
-            </div>
-            <div className="grid gap-3">
-              <div className="flex items-center justify-between">
-                <Label className="text-[12px] gap-1 font-medium">Images<span className="text-destructive">(JPG, PNG, WEBP formats only allowed)</span></Label>
-
-                <span className="text-[11px] text-muted-foreground">
-                  {activeImageCount}/{MAX_IMAGES}
-                </span>
-              </div>
-
-              <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-                {activeExistingImages.map((image) => (
-                  <div
-                    key={image.id}
-                    className="relative aspect-square overflow-hidden rounded-md border bg-muted"
-                  >
-                    <img
-                      src={image.url}
-                      alt={product.name}
-                      className="h-full w-full object-cover"
-                    />
-
-                    <button
-                      type="button"
-                      onClick={() => toggleRemoveExistingImage(image.id)}
-                      className="absolute right-1.5 top-1.5 flex size-4.5 items-center justify-center rounded-full border bg-background text-[10px] hover:text-destructive"
-                    >
-                      ×
-                    </button>
-
-                    {image.is_primary ? (
-                      <span className="absolute bottom-1.5 left-1.5 rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-medium text-primary-foreground">
-                        Primary
-                      </span>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => setExistingImagePrimary(image.id)}
-                        className="absolute bottom-1.5 left-1.5 rounded-full border bg-background/90 px-1.5 py-0.5 text-[10px] text-muted-foreground"
-                      >
-                        Set primary
-                      </button>
-                    )}
-                  </div>
-                ))}
-
-                {removedExistingImages.map((image) => (
-                  <div
-                    key={`removed-${image.id}`}
-                    className="relative flex aspect-square items-center justify-center rounded-md border border-dashed border-destructive bg-destructive/5"
-                  >
-                    <span className="px-2 text-center text-[10px] font-medium text-destructive">
-                      Removed on save
-                    </span>
-
-                    <button
-                      type="button"
-                      onClick={() => toggleRemoveExistingImage(image.id)}
-                      className="absolute right-1.5 top-1.5 flex size-4.5 items-center justify-center rounded-full border bg-background text-[10px]"
-                    >
-                      ↩
-                    </button>
-                  </div>
-                ))}
-
-                {newImages.map((image) => (
-                  <div
-                    key={image.id}
-                    className="relative aspect-square overflow-hidden rounded-md border bg-muted"
-                  >
-                    <img
-                      src={image.previewUrl}
-                      alt={image.file.name}
-                      className="h-full w-full object-cover"
-                    />
-
-                    <button
-                      type="button"
-                      onClick={() => removeNewImage(image.id)}
-                      className="absolute right-1.5 top-1.5 flex size-4.5 items-center justify-center rounded-full border bg-background text-[10px] hover:text-destructive"
-                    >
-                      ×
-                    </button>
-
-                    {image.isPrimary ? (
-                      <span className="absolute bottom-1.5 left-1.5 rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-medium text-primary-foreground">
-                        Primary
-                      </span>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => setNewImagePrimary(image.id)}
-                        className="absolute bottom-1.5 left-1.5 rounded-full border bg-background/90 px-1.5 py-0.5 text-[10px] text-muted-foreground"
-                      >
-                        Set primary
-                      </button>
-                    )}
-                  </div>
-                ))}
-                {remainingSlots > 0 && (
-                  <label
-                    htmlFor="edit-product-images"
-                    className="flex aspect-square cursor-pointer items-center justify-center rounded-md border border-dashed text-[18px] text-muted-foreground hover:bg-muted"
-                  >
-                    +
-                  </label>
-                )}
-                <Input
-                  id="edit-product-images"
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  multiple
-                  onChange={handleNewImageChange}
-                  className="hidden"
-                />
-              </div>
-
-              {imageError && (
-                <div className="rounded-lg border border-red-300 bg-red-50 px-3 py-2">
-                  <p className="text-xs font-semibold text-red-600">
-                    {imageError.fileName && (
-                      <span className="font-medium">
-                        {imageError.fileName}{" "}
-                      </span>
-                    )}
-
-                    {imageError.message}
-                  </p>
-
-                  {imageError.details && (
-                    <p className="text-xs text-muted-foreground">
-                      {imageError.details}
-                    </p>
-                  )}
+                  <FieldError message={errors.sku} />
                 </div>
-              )}
+
+                <div className="grid gap-1.5">
+                  <Label
+                    htmlFor="edit-product-category"
+                    className="text-[12px] font-medium"
+                  >
+                    Category <span className="text-destructive">*</span>
+                  </Label>
+
+                  <Select
+                    value={form.category}
+                    onValueChange={(value) =>
+                      updateField("category", value as ProductCategory)
+                    }
+                  >
+                    <SelectTrigger
+                      id="edit-product-category"
+                      aria-invalid={Boolean(errors.category)}
+                      className={`h-9 w-full focus-visible:ring-primary/20 ${
+                        errors.category
+                          ? "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20"
+                          : "focus-visible:border-primary"
+                      }`}
+                    >
+                      <SelectValue placeholder="Select..." />
+                    </SelectTrigger>
+
+                    <SelectContent
+                      position="popper"
+                      side="bottom"
+                      align="start"
+                      sideOffset={4}
+                      avoidCollisions={false}
+                    >
+                      {categories
+                        .filter((category) => category.value !== "All")
+                        .map((category) => (
+                          <SelectItem
+                            key={category.value}
+                            value={category.value}
+                          >
+                            {category.label}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+
+                  <FieldError message={errors.category} />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <div className="grid gap-1.5">
+                  <Label
+                    htmlFor="edit-product-price"
+                    className="text-[12px] font-medium"
+                  >
+                    Price <span className="text-destructive">*</span>
+                  </Label>
+
+                  <Input
+                    id="edit-product-price"
+                    type="number"
+                    min={0}
+                    step="0.01"
+                    value={form.price}
+                    onChange={(event) =>
+                      updateField("price", event.target.value)
+                    }
+                    aria-invalid={Boolean(errors.price)}
+                    className={`h-10 font-mono focus-visible:ring-primary/20 ${
+                      errors.price
+                        ? "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20"
+                        : "focus-visible:border-primary"
+                    }`}
+                  />
+
+                  <FieldError message={errors.price} />
+                </div>
+
+                <div className="grid gap-1.5">
+                  <Label
+                    htmlFor="edit-product-stock"
+                    className="text-[12px] font-medium"
+                  >
+                    Stock
+                  </Label>
+
+                  <Input
+                    id="edit-product-stock"
+                    type="number"
+                    min={0}
+                    step="1"
+                    value={form.stock}
+                    onChange={(event) =>
+                      updateField("stock", event.target.value)
+                    }
+                    aria-invalid={Boolean(errors.stock)}
+                    className={`h-10 font-mono focus-visible:ring-primary/20 ${
+                      errors.stock
+                        ? "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20"
+                        : ""
+                    }`}
+                  />
+
+                  <FieldError message={errors.stock} />
+                </div>
+
+                <div className="grid gap-1.5">
+                  <Label
+                    htmlFor="edit-product-status"
+                    className="text-[12px] font-medium"
+                  >
+                    Status
+                  </Label>
+
+                  <Select
+                    value={form.status}
+                    onValueChange={(value) =>
+                      updateField("status", value as ProductStatus)
+                    }
+                  >
+                    <SelectTrigger
+                      id="edit-product-status"
+                      className="h-9 w-full"
+                    >
+                      <SelectValue placeholder="Select..." />
+                    </SelectTrigger>
+
+                    <SelectContent
+                      position="popper"
+                      side="bottom"
+                      align="start"
+                      sideOffset={4}
+                      avoidCollisions={false}
+                    >
+                      {statuses.map((status) => (
+                        <SelectItem key={status.value} value={status.value}>
+                          {status.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  <FieldError />
+                </div>
+              </div>
+
+              <div className="grid gap-3">
+                <div className="flex items-center justify-between">
+                  <Label className="text-[12px] font-medium">
+                    Images{" "}
+                    <span className="text-[10px] font-normal text-muted-foreground">
+                      (JPG, PNG, WEBP)
+                    </span>
+                  </Label>
+
+                  <span className="text-[11px] text-muted-foreground">
+                    {activeImageCount}/{MAX_IMAGES}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                  {activeExistingImages.map((image) => (
+                    <div
+                      key={image.id}
+                      className="group relative aspect-square overflow-hidden rounded-md border bg-muted"
+                    >
+                      <img
+                        src={image.url}
+                        alt={product.name}
+                        className="h-full w-full object-cover"
+                         onClick={() =>
+                          setPreviewImage({
+                            src: image.url,
+                            alt: product.name,
+                          })
+                        }
+                      />
+
+                      <button
+                        type="button"
+                        onClick={() => toggleRemoveExistingImage(image.id)}
+                        aria-label={`Remove ${product.name} image`}
+                        className="absolute right-1.5 top-1.5 flex size-4 items-center justify-center rounded-full border bg-background/90 text-muted-foreground shadow-sm backdrop-blur transition-colors hover:bg-background hover:text-destructive"
+                      >
+                        <X className="size-2" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setPreviewImage({
+                            src: image.url,
+                            alt: product.name,
+                          })
+                        }
+                        aria-label={`Preview ${product.name} image`}
+                        className="absolute inset-0 m-auto flex size-9 items-center justify-center rounded-full border border-white/20 bg-black/60 text-white opacity-0 shadow-lg backdrop-blur-sm transition-opacity group-hover:opacity-100"
+                      >
+                        <Eye className="size-4" />
+                      </button>
+
+                      {image.is_primary ? (
+                        <span className="absolute bottom-1.5 left-1.5 rounded-full bg-primary px-2 py-0.5 text-[10px] font-medium text-primary-foreground shadow-sm">
+                          Primary
+                        </span>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setExistingImagePrimary(image.id)}
+                          className="absolute bottom-1.5 left-1.5 rounded-full border bg-background/90 px-2 py-0.5 text-[10px] font-medium text-muted-foreground shadow-sm backdrop-blur transition-colors hover:bg-background hover:text-foreground"
+                        >
+                          Set primary
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                  {removedExistingImages.map((image) => (
+                    <div
+                      key={`removed-${image.id}`}
+                      className="relative flex aspect-square items-center justify-center rounded-md border border-dashed border-destructive bg-destructive/5"
+                    >
+                      <span className="px-2 text-center text-[10px] font-medium text-destructive">
+                        Removed on save
+                      </span>
+
+                      <button
+                        type="button"
+                        onClick={() => toggleRemoveExistingImage(image.id)}
+                        aria-label="Restore image"
+                        className="absolute right-1.5 top-1.5 flex size-5 items-center justify-center rounded-full border bg-background text-muted-foreground shadow-sm transition-colors hover:text-foreground"
+                      >
+                        <RotateCcw className="size-3" />
+                      </button>
+                    </div>
+                  ))}
+                  {newImages.map((image) => (
+                    <div
+                      key={image.id}
+                      className="group relative aspect-square overflow-hidden rounded-md border bg-muted"
+                    >
+                      <img
+                        src={image.previewUrl}
+                        alt={image.file.name}
+                        className="h-full w-full object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeNewImage(image.id)}
+                        aria-label={`Remove ${image.file.name}`}
+                        className="absolute right-1.5 top-1.5 flex size-4 items-center justify-center rounded-full border bg-background/90 text-muted-foreground shadow-sm backdrop-blur transition-colors hover:bg-background hover:text-destructive"
+                      >
+                        <X className="size-2" />
+                      </button>
+
+                      {image.isPrimary ? (
+                        <span className="absolute bottom-1.5 left-1.5 rounded-full bg-primary px-2 py-0.5 text-[10px] font-medium text-primary-foreground shadow-sm">
+                          Primary
+                        </span>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setNewImagePrimary(image.id)}
+                          className="absolute bottom-1.5 left-1.5 rounded-full border bg-background/90 px-2 py-0.5 text-[10px] font-medium text-muted-foreground shadow-sm backdrop-blur transition-colors hover:bg-background hover:text-foreground"
+                        >
+                          Set primary
+                        </button>
+                      )}
+                    </div>
+                  ))}
+
+                  {remainingSlots > 0 && (
+                    <label
+                      htmlFor="edit-product-images"
+                      className="flex aspect-square cursor-pointer items-center justify-center rounded-md border border-dashed text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                    >
+                      <span className="text-xl font-light">+</span>
+                    </label>
+                  )}
+
+                  <Input
+                    id="edit-product-images"
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    multiple
+                    onChange={handleNewImageChange}
+                    className="hidden"
+                  />
+                </div>
+
+                {imageError && (
+                  <div className="rounded-lg border border-red-300 bg-red-50 px-3 py-2">
+                    <p className="text-xs font-semibold text-red-600">
+                      {imageError.fileName && (
+                        <span className="font-medium">
+                          {imageError.fileName}{" "}
+                        </span>
+                      )}
+                      {imageError.message}
+                    </p>
+
+                    {imageError.details && (
+                      <p className="text-xs text-muted-foreground">
+                        {imageError.details}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="grid gap-1.5">
+                <Label
+                  htmlFor="edit-product-description"
+                  className="text-[12px] font-medium"
+                >
+                  Description
+                </Label>
+
+                <Textarea
+                  id="edit-product-description"
+                  value={form.description}
+                  onChange={(event) =>
+                    updateField("description", event.target.value)
+                  }
+                  className="h-20 resize-none leading-relaxed focus-visible:border-primary focus-visible:ring-primary/20"
+                />
+              </div>
             </div>
 
-            <div className="grid gap-1.5">
-              <Label
-                htmlFor="edit-product-description"
-                className="text-[12px] font-medium"
+            <div className="flex h-16 shrink-0 items-center gap-2 border-t px-5">
+              <div className="flex-1" />
+
+              <Button
+                type="button"
+                variant="secondary"
+                className="h-9 px-3.5 text-[13px] font-medium"
+                onClick={() => handleSheetOpenChange(false)}
+                disabled={isSubmitting}
               >
-                Description
-              </Label>
+                Cancel
+              </Button>
 
-              <Textarea
-                id="edit-product-description"
-                value={form.description}
-                onChange={(event) =>
-                  updateField("description", event.target.value)
-                }
-                className="h-20 resize-none leading-relaxed focus-visible:ring-primary/20 focus-visible:border-primary"
-              />
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="h-9 px-4 text-[13px] font-medium"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Spinner className="size-3.5" />
+                    Saving…
+                  </>
+                ) : (
+                  "Save changes"
+                )}
+              </Button>
             </div>
-          </div>
+          </form>
+        </SheetContent>
+      </Sheet>
+      <Dialog open={showDiscardDialog} onOpenChange={setShowDiscardDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <div className="mb-1 flex size-10 items-center justify-center rounded-full bg-amber-100">
+              <AlertTriangle className="size-5 text-amber-600" />
+            </div>
+            <DialogTitle className="text-base">Unsaved changes</DialogTitle>
+            <DialogDescription className="text-sm leading-5">
+              You have unsaved changes to this product. If you leave now, your
+              changes will be lost.
+            </DialogDescription>
+          </DialogHeader>
 
-          <div className="flex h-16 shrink-0 items-center gap-2 border-t px-5">
-            <div className="flex-1" />
+          <DialogFooter className="mt-2 flex-row justify-end gap-2 sm:space-x-0">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleKeepEditing}
+              className="hover:bg-primary-hover hover:border-primary focus-visible:border-primary focus-visible:ring-primary/20"
+            >
+              Keep editing
+            </Button>
 
             <Button
               type="button"
-              variant="secondary"
-              className="h-9 px-3.5 text-[13px] font-medium"
-              onClick={() => onOpenChange(false)}
-              disabled={isSubmitting}
+              variant="destructive"
+              onClick={handleDiscardAndClose}
+              className="bg-cancel-button-background text-background hover:bg-red-400 focus-visible:border-destructive! focus-visible:ring-destructive/20!"
             >
-              Cancel
+              Discard changes
             </Button>
-
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="h-9 px-4 text-[13px] font-medium"
-            >
-              {isSubmitting ? (
-                <>
-                  <Spinner className="size-3.5" />
-                  Saving…
-                </>
-              ) : (
-                "Save changes"
-              )}
-            </Button>
-          </div>
-        </form>
-      </SheetContent>
-    </Sheet>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <ImagePreviewDialog
+        image={previewImage}
+        open={Boolean(previewImage)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setPreviewImage(null);
+          }
+        }}
+      />
+    </>
   );
 }

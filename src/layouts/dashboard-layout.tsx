@@ -48,7 +48,7 @@ export default function DashboardLayout() {
           <main className="flex flex-1 flex-col p-3 sm:p-4 justify-between">
             <Outlet />
           </main>
-          <AppFooter/>
+          <AppFooter />
         </SidebarInset>
       </SidebarProvider>
     </SearchContext.Provider>

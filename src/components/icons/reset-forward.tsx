@@ -25,7 +25,8 @@ export function ResetForwardIcon({
       className={className}
       {...props}
     >
-      <path d="M6.5 3.5c-2.414 1.377-4 4.022-4 7a8 8 0 1 0 8-8"/><path d="M6.5 7.5v-4h-4"/>
+      <path d="M6.5 3.5c-2.414 1.377-4 4.022-4 7a8 8 0 1 0 8-8" />
+      <path d="M6.5 7.5v-4h-4" />
     </svg>
   );
 }
