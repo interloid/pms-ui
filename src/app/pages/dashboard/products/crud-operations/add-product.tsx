@@ -70,9 +70,7 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
   const [imageError, setImageError] = useState<ImageError | null>(null);
   const [errors, setErrors] = useState<FormErrors>({});
   const [isDragging, setIsDragging] = useState(false);
-
   const remainingImages = MAX_IMAGES - images.length;
-
   function revokeImageUrls(imageList: ProductImage[]) {
     imageList.forEach((image) => {
       URL.revokeObjectURL(image.previewUrl);
