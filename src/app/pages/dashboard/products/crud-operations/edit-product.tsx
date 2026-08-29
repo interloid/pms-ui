@@ -6,7 +6,7 @@ import {
   type ChangeEvent,
   type DragEvent,
 } from "react";
-import { AlertTriangle, RotateCcw, X } from "lucide-react";
+import { RotateCcw, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -21,14 +21,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import {
   Sheet,
   SheetContent,
@@ -52,6 +44,7 @@ import {
 import { revokeImageUrls } from "@/lib/utils";
 import { getUserFriendlyErrorMessage } from "@/lib/error-messsege";
 import { ProductImagePreview } from "../preview-image/product-image-preview";
+import { UnsavedChangesDialog } from "@/components/shad/unsaved-changes-dialog";
 
 const MAX_IMAGES = 6;
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
@@ -132,6 +125,9 @@ export function ProductEdit({
   const originalForm = useRef<ProductForm | null>(null);
   const originalPrimaryImageId = useRef<string | null>(null);
 
+  const newImagesRef = useRef<ProductImage[]>([]);
+  newImagesRef.current = newImages;
+
   useEffect(() => {
     if (!product || !open) {
       return;
@@ -153,6 +149,21 @@ export function ProductEdit({
     originalForm.current = initialForm;
     originalPrimaryImageId.current = primaryImage?.id ?? null;
   }, [product, open]);
+
+  useEffect(() => {
+    if (open) {
+      return;
+    }
+
+    revokeImageUrls(newImagesRef.current);
+    setNewImages([]);
+  }, [open]);
+
+  useEffect(() => {
+    return () => {
+      revokeImageUrls(newImagesRef.current);
+    };
+  }, []);
 
   const activeExistingImages = useMemo(
     () => existingImages.filter((image) => !removedImageIds.has(image.id)),
@@ -1103,42 +1114,12 @@ export function ProductEdit({
         </SheetContent>
       </Sheet>
 
-      <Dialog open={showDiscardDialog} onOpenChange={setShowDiscardDialog}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <div className="mb-1 flex size-10 items-center justify-center rounded-full bg-amber-100">
-              <AlertTriangle className="size-5 text-amber-600" />
-            </div>
-
-            <DialogTitle className="text-base">Unsaved changes</DialogTitle>
-
-            <DialogDescription className="text-sm leading-5">
-              You have unsaved changes to this product. If you leave now, your
-              changes will be lost.
-            </DialogDescription>
-          </DialogHeader>
-
-          <DialogFooter className="mt-2 flex-row justify-end gap-2 sm:space-x-0">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleKeepEditing}
-              className="hover:border-primary hover:bg-primary-hover focus-visible:border-primary focus-visible:ring-primary/20"
-            >
-              Keep editing
-            </Button>
-
-            <Button
-              type="button"
-              variant="destructive"
-              onClick={handleDiscardAndClose}
-              className="bg-cancel-button-background text-background hover:bg-red-400 focus-visible:border-destructive! focus-visible:ring-destructive/20!"
-            >
-              Discard changes
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <UnsavedChangesDialog
+        open={showDiscardDialog}
+        onOpenChange={setShowDiscardDialog}
+        onKeepEditing={handleKeepEditing}
+        onDiscard={handleDiscardAndClose}
+      />
     </>
   );
 }

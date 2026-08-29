@@ -6,7 +6,6 @@ import {
 } from "react";
 import { toast } from "sonner";
 import { X } from "lucide-react";
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,7 +19,6 @@ import {
 } from "@/components/ui/select";
 import {
   Sheet,
-  SheetClose,
   SheetContent,
   SheetFooter,
   SheetHeader,
@@ -38,6 +36,7 @@ import {
 } from "@/types/data-type";
 import { createProduct } from "@/services/product-service";
 import { ProductImagePreview } from "../preview-image/product-image-preview";
+import { UnsavedChangesDialog } from "@/components/shad/unsaved-changes-dialog";
 
 const MAX_IMAGES = 6;
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
@@ -58,7 +57,19 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
   const [imageError, setImageError] = useState<ImageError | null>(null);
   const [errors, setErrors] = useState<FormErrors>({});
   const [isDragging, setIsDragging] = useState(false);
+  const [showDiscardDialog, setShowDiscardDialog] = useState(false);
+
   const remainingImages = MAX_IMAGES - images.length;
+  const isDirty =
+    name.trim() !== "" ||
+    sku.trim() !== "" ||
+    category !== "" ||
+    price.trim() !== "" ||
+    stock !== "0" ||
+    status !== "draft" ||
+    description.trim() !== "" ||
+    images.length > 0;
+
   function revokeImageUrls(imageList: ProductImage[]) {
     imageList.forEach((image) => {
       URL.revokeObjectURL(image.previewUrl);
@@ -85,10 +96,29 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
     if (isSubmitting) {
       return;
     }
-    if (!nextOpen) {
-      resetForm();
+
+    if (nextOpen) {
+      setOpen(true);
+      return;
     }
-    setOpen(nextOpen);
+
+    if (!isDirty) {
+      resetForm();
+      setOpen(false);
+      return;
+    }
+
+    setShowDiscardDialog(true);
+  }
+
+  function handleKeepEditing() {
+    setShowDiscardDialog(false);
+  }
+
+  function handleDiscardAndClose() {
+    resetForm();
+    setShowDiscardDialog(false);
+    setOpen(false);
   }
 
   function validateForm(): boolean {
@@ -162,7 +192,7 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
       onProductCreated?.();
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message: "Failed to create product",
+        error instanceof Error ? error.message : "Failed to create product",
       );
     } finally {
       setIsSubmitting(false);
@@ -256,7 +286,6 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
     if (newImages.length > 0) {
       setImages((previousImages) => [...previousImages, ...newImages]);
     }
-
     setImageError(error);
   }
 
@@ -381,376 +410,386 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
   }
 
   return (
-    <Sheet open={open} onOpenChange={handleSheetChange}>
-      <SheetTrigger asChild>
-        <Button>+ Add Product</Button>
-      </SheetTrigger>
+    <>
+      <Sheet open={open} onOpenChange={handleSheetChange}>
+        <SheetTrigger asChild>
+          <Button>+ Add Product</Button>
+        </SheetTrigger>
 
-      <SheetContent className="gap-8 sm:max-w-xl!">
-        <SheetHeader className="border-b">
-          <SheetTitle className="font-bold">Add Product</SheetTitle>
-        </SheetHeader>
+        <SheetContent className="gap-8 sm:max-w-xl!">
+          <SheetHeader className="border-b">
+            <SheetTitle className="font-bold">Add Product</SheetTitle>
+          </SheetHeader>
 
-        <form
-          id="add-product-form"
-          onSubmit={handleSubmit}
-          className="flex min-h-0 flex-1 flex-col"
-          noValidate
-        >
-          <div className="grid flex-1 auto-rows-min gap-4 overflow-y-auto px-4">
-            <div className="grid gap-3">
-              <Label htmlFor="product-name" className="text-xs">
-                Product Name
-                <span className="text-destructive"> *</span>
-              </Label>
-
-              <Input
-                id="product-name"
-                placeholder="e.g. Meridian Desk Lamp"
-                value={name}
-                onChange={(event) => {
-                  setName(event.target.value);
-
-                  if (errors.name) {
-                    setErrors((previous) => ({
-                      ...previous,
-                      name: undefined,
-                    }));
-                  }
-                }}
-                aria-invalid={Boolean(errors.name)}
-                className={`h-10 w-full placeholder:text-xs focus-visible:ring-primary/20 ${
-                  errors.name
-                    ? "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20"
-                    : "focus-visible:border-primary"
-                }`}
-              />
-
-              <FieldError message={errors.name} />
-            </div>
-
-            <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="grid w-full gap-2">
-                <Label htmlFor="product-sku" className="text-xs">
-                  SKU
+          <form
+            id="add-product-form"
+            onSubmit={handleSubmit}
+            className="flex min-h-0 flex-1 flex-col"
+            noValidate
+          >
+            <div className="grid flex-1 auto-rows-min gap-4 overflow-y-auto px-4">
+              <div className="grid gap-3">
+                <Label htmlFor="product-name" className="text-xs">
+                  Product Name
                   <span className="text-destructive"> *</span>
                 </Label>
 
                 <Input
-                  id="product-sku"
-                  placeholder="ABC-ITEM-000"
-                  value={sku}
+                  id="product-name"
+                  placeholder="e.g. Meridian Desk Lamp"
+                  value={name}
                   onChange={(event) => {
-                    setSku(event.target.value);
+                    setName(event.target.value);
 
-                    if (errors.sku) {
+                    if (errors.name) {
                       setErrors((previous) => ({
                         ...previous,
-                        sku: undefined,
+                        name: undefined,
                       }));
                     }
                   }}
-                  aria-invalid={Boolean(errors.sku)}
+                  aria-invalid={Boolean(errors.name)}
                   className={`h-10 w-full placeholder:text-xs focus-visible:ring-primary/20 ${
-                    errors.sku
+                    errors.name
                       ? "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20"
                       : "focus-visible:border-primary"
                   }`}
                 />
 
-                <FieldError message={errors.sku} />
+                <FieldError message={errors.name} />
               </div>
 
-              <div className="grid w-full gap-2">
-                <Label htmlFor="product-category" className="text-xs">
-                  Category
-                  <span className="text-destructive"> *</span>
-                </Label>
+              <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="grid w-full gap-2">
+                  <Label htmlFor="product-sku" className="text-xs">
+                    SKU
+                    <span className="text-destructive"> *</span>
+                  </Label>
 
-                <Select
-                  value={category}
-                  onValueChange={(value) => {
-                    setCategory(value);
+                  <Input
+                    id="product-sku"
+                    placeholder="ABC-ITEM-000"
+                    value={sku}
+                    onChange={(event) => {
+                      setSku(event.target.value);
 
-                    if (errors.category) {
-                      setErrors((previous) => ({
-                        ...previous,
-                        category: undefined,
-                      }));
-                    }
-                  }}
-                >
-                  <SelectTrigger
-                    id="product-category"
-                    aria-invalid={Boolean(errors.category)}
-                    className={`h-10 w-full focus-visible:ring-primary/20 ${
-                      errors.category
+                      if (errors.sku) {
+                        setErrors((previous) => ({
+                          ...previous,
+                          sku: undefined,
+                        }));
+                      }
+                    }}
+                    aria-invalid={Boolean(errors.sku)}
+                    className={`h-10 w-full placeholder:text-xs focus-visible:ring-primary/20 ${
+                      errors.sku
                         ? "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20"
                         : "focus-visible:border-primary"
                     }`}
+                  />
+
+                  <FieldError message={errors.sku} />
+                </div>
+
+                <div className="grid w-full gap-2">
+                  <Label htmlFor="product-category" className="text-xs">
+                    Category
+                    <span className="text-destructive"> *</span>
+                  </Label>
+
+                  <Select
+                    value={category}
+                    onValueChange={(value) => {
+                      setCategory(value);
+
+                      if (errors.category) {
+                        setErrors((previous) => ({
+                          ...previous,
+                          category: undefined,
+                        }));
+                      }
+                    }}
                   >
-                    <SelectValue placeholder="Select..." />
-                  </SelectTrigger>
-
-                  <SelectContent
-                    position="popper"
-                    side="bottom"
-                    align="start"
-                    sideOffset={4}
-                    avoidCollisions={false}
-                  >
-                    {productCategories.map((item) => (
-                      <SelectItem key={item.value} value={item.value}>
-                        {item.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
-                <FieldError message={errors.category} />
-              </div>
-            </div>
-
-            <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-3">
-              <div className="grid w-full gap-2">
-                <Label htmlFor="product-price" className="text-xs">
-                  Price
-                  <span className="text-destructive"> *</span>
-                </Label>
-
-                <Input
-                  id="product-price"
-                  type="number"
-                  value={price}
-                  onChange={(event) => {
-                    setPrice(event.target.value);
-
-                    if (errors.price) {
-                      setErrors((previous) => ({
-                        ...previous,
-                        price: undefined,
-                      }));
-                    }
-                  }}
-                  placeholder="0.00"
-                  min={0}
-                  step="0.01"
-                  aria-invalid={Boolean(errors.price)}
-                  className={`h-10 w-full placeholder:text-xs focus-visible:ring-primary/20 ${
-                    errors.price
-                      ? "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20"
-                      : "focus-visible:border-primary"
-                  }`}
-                />
-
-                <FieldError message={errors.price} />
-              </div>
-
-              <div className="grid w-full gap-2">
-                <Label htmlFor="product-stock" className="text-xs">
-                  Stock
-                </Label>
-
-                <Input
-                  id="product-stock"
-                  type="number"
-                  value={stock}
-                  onChange={(event) => setStock(event.target.value)}
-                  placeholder="0"
-                  min={0}
-                  className="h-10 w-full placeholder:text-xs focus-visible:border-primary focus-visible:ring-primary/20"
-                />
-                <FieldError message={errors.stock} />
-              </div>
-
-              <div className="grid w-full gap-2">
-                <Label htmlFor="product-status" className="text-xs">
-                  Status
-                </Label>
-
-                <Select value={status} onValueChange={setStatus}>
-                  <SelectTrigger
-                    id="product-status"
-                    className="h-10 w-full focus-visible:border-primary focus-visible:ring-primary/20"
-                  >
-                    <SelectValue placeholder="Select..." />
-                  </SelectTrigger>
-
-                  <SelectContent
-                    position="popper"
-                    side="bottom"
-                    align="start"
-                    sideOffset={4}
-                    avoidCollisions={false}
-                    className="w-36"
-                  >
-                    {statuses.map((item) => (
-                      <SelectItem key={item.value} value={item.value}>
-                        {item.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
-                <FieldError />
-              </div>
-            </div>
-
-            <div className="grid w-full gap-2">
-              <Label htmlFor="product-description" className="text-xs">
-                Description
-              </Label>
-
-              <Textarea
-                id="product-description"
-                placeholder="Optional"
-                value={description}
-                onChange={(event) => setDescription(event.target.value)}
-                className="h-25 min-h-25 w-full resize-none placeholder:text-xs focus-visible:border-primary focus-visible:ring-primary/20"
-              />
-            </div>
-
-            <div className="grid w-full gap-2">
-              <div className="flex items-center gap-1">
-                <Label htmlFor="product-images" className="text-xs">
-                  Images
-                </Label>
-
-                <span className="text-xs text-muted-foreground">
-                  {images.length} of {MAX_IMAGES}
-                </span>
-              </div>
-
-              {images.length > 0 && (
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                  {images.map((image) => (
-                    <div
-                      key={image.id}
-                      className="group relative overflow-hidden rounded-lg border bg-muted"
+                    <SelectTrigger
+                      id="product-category"
+                      aria-invalid={Boolean(errors.category)}
+                      className={`h-10 w-full focus-visible:ring-primary/20 ${
+                        errors.category
+                          ? "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20"
+                          : "focus-visible:border-primary"
+                      }`}
                     >
-                      <ProductImagePreview
-                        src={image.previewUrl}
-                        alt={image.file.name}
-                        className="aspect-square cursor-pointer transition-transform duration-200 group-hover:scale-[1.02]"
-                      />
+                      <SelectValue placeholder="Select..." />
+                    </SelectTrigger>
 
-                      {image.isPrimary ? (
-                        <span className="pointer-events-none absolute left-2 top-2 rounded-md bg-primary px-2 py-1 text-[10px] font-medium text-primary-foreground shadow-sm">
-                          Primary
-                        </span>
-                      ) : (
-                        <button
+                    <SelectContent
+                      position="popper"
+                      side="bottom"
+                      align="start"
+                      sideOffset={4}
+                      avoidCollisions={false}
+                    >
+                      {productCategories.map((item) => (
+                        <SelectItem key={item.value} value={item.value}>
+                          {item.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  <FieldError message={errors.category} />
+                </div>
+              </div>
+
+              <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-3">
+                <div className="grid w-full gap-2">
+                  <Label htmlFor="product-price" className="text-xs">
+                    Price
+                    <span className="text-destructive"> *</span>
+                  </Label>
+
+                  <Input
+                    id="product-price"
+                    type="number"
+                    value={price}
+                    onChange={(event) => {
+                      setPrice(event.target.value);
+
+                      if (errors.price) {
+                        setErrors((previous) => ({
+                          ...previous,
+                          price: undefined,
+                        }));
+                      }
+                    }}
+                    placeholder="0.00"
+                    min={0}
+                    step="0.01"
+                    aria-invalid={Boolean(errors.price)}
+                    className={`h-10 w-full placeholder:text-xs focus-visible:ring-primary/20 ${
+                      errors.price
+                        ? "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20"
+                        : "focus-visible:border-primary"
+                    }`}
+                  />
+
+                  <FieldError message={errors.price} />
+                </div>
+
+                <div className="grid w-full gap-2">
+                  <Label htmlFor="product-stock" className="text-xs">
+                    Stock
+                  </Label>
+
+                  <Input
+                    id="product-stock"
+                    type="number"
+                    value={stock}
+                    onChange={(event) => setStock(event.target.value)}
+                    placeholder="0"
+                    min={0}
+                    className="h-10 w-full placeholder:text-xs focus-visible:border-primary focus-visible:ring-primary/20"
+                  />
+                  <FieldError message={errors.stock} />
+                </div>
+
+                <div className="grid w-full gap-2">
+                  <Label htmlFor="product-status" className="text-xs">
+                    Status
+                  </Label>
+
+                  <Select value={status} onValueChange={setStatus}>
+                    <SelectTrigger
+                      id="product-status"
+                      className="h-10 w-full focus-visible:border-primary focus-visible:ring-primary/20"
+                    >
+                      <SelectValue placeholder="Select..." />
+                    </SelectTrigger>
+
+                    <SelectContent
+                      position="popper"
+                      side="bottom"
+                      align="start"
+                      sideOffset={4}
+                      avoidCollisions={false}
+                      className="w-36"
+                    >
+                      {statuses.map((item) => (
+                        <SelectItem key={item.value} value={item.value}>
+                          {item.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  <FieldError />
+                </div>
+              </div>
+
+              <div className="grid w-full gap-2">
+                <Label htmlFor="product-description" className="text-xs">
+                  Description
+                </Label>
+
+                <Textarea
+                  id="product-description"
+                  placeholder="Optional"
+                  value={description}
+                  onChange={(event) => setDescription(event.target.value)}
+                  className="h-25 min-h-25 w-full resize-none placeholder:text-xs focus-visible:border-primary focus-visible:ring-primary/20"
+                />
+              </div>
+
+              <div className="grid w-full gap-2">
+                <div className="flex items-center gap-1">
+                  <Label htmlFor="product-images" className="text-xs">
+                    Images
+                  </Label>
+
+                  <span className="text-xs text-muted-foreground">
+                    {images.length} of {MAX_IMAGES}
+                  </span>
+                </div>
+
+                {images.length > 0 && (
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                    {images.map((image) => (
+                      <div
+                        key={image.id}
+                        className="group relative overflow-hidden rounded-lg border bg-muted"
+                      >
+                        <ProductImagePreview
+                          src={image.previewUrl}
+                          alt={image.file.name}
+                          className="aspect-square cursor-pointer transition-transform duration-200 group-hover:scale-[1.02]"
+                        />
+
+                        {image.isPrimary ? (
+                          <span className="pointer-events-none absolute left-2 top-2 rounded-md bg-primary px-2 py-1 text-[10px] font-medium text-primary-foreground shadow-sm">
+                            Primary
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setPrimaryImage(image.id)}
+                            className="absolute bottom-2 left-2 z-10 rounded-md bg-background/90 px-2 py-1 text-[10px] font-medium text-foreground shadow-sm backdrop-blur-sm transition-colors hover:bg-background"
+                          >
+                            Set primary
+                          </button>
+                        )}
+
+                        <Button
                           type="button"
-                          onClick={() => setPrimaryImage(image.id)}
-                          className="absolute bottom-2 left-2 z-10 rounded-md bg-background/90 px-2 py-1 text-[10px] font-medium text-foreground shadow-sm backdrop-blur-sm transition-colors hover:bg-background"
+                          variant="ghost"
+                          size="icon"
+                          className="absolute right-2 top-2 z-10 size-5 rounded-full bg-background/90 text-muted-foreground shadow-sm backdrop-blur-sm hover:bg-background hover:text-destructive"
+                          onClick={() => removeImage(image.id)}
+                          aria-label={`Remove ${image.file.name}`}
                         >
-                          Set primary
-                        </button>
+                          <X className="size-3" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {images.length < MAX_IMAGES && (
+                  <ImageDropzone>
+                    <span
+                      className={`text-xs font-medium ${
+                        isDragging ? "text-primary" : "text-hover-text"
+                      }`}
+                    >
+                      {isDragging
+                        ? "Drop images here"
+                        : images.length === 0
+                          ? "Drop images here, or click to browse"
+                          : "Drop more images or click to browse"}
+                    </span>
+
+                    <span className="text-[11px] text-muted-foreground">
+                      Accepted formats:{" "}
+                      <span className="font-medium text-foreground">
+                        JPG, PNG, WEBP
+                      </span>
+                      {" · "}
+                      Max size:{" "}
+                      <span className="font-medium text-foreground">
+                        5 MB per image
+                      </span>
+                      {" · "}
+                      <span className="font-bold">{remainingImages}</span>{" "}
+                      {remainingImages === 1 ? "slot" : "slots"} remaining
+                    </span>
+                  </ImageDropzone>
+                )}
+
+                {imageError && (
+                  <div className="rounded-lg border border-red-300 bg-red-50 px-3 py-2">
+                    <p className="text-xs font-semibold text-red-600">
+                      {imageError.fileName && (
+                        <span className="font-medium">
+                          {imageError.fileName}{" "}
+                        </span>
                       )}
 
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="absolute right-2 top-2 z-10 size-5 rounded-full bg-background/90 text-muted-foreground shadow-sm backdrop-blur-sm hover:bg-background hover:text-destructive"
-                        onClick={() => removeImage(image.id)}
-                        aria-label={`Remove ${image.file.name}`}
-                      >
-                        <X className="size-3" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              )}
-              {images.length < MAX_IMAGES && (
-                <ImageDropzone>
-                  <span
-                    className={`text-xs font-medium ${
-                      isDragging ? "text-primary" : "text-hover-text"
-                    }`}
-                  >
-                    {isDragging
-                      ? "Drop images here"
-                      : images.length === 0
-                        ? "Drop images here, or click to browse"
-                        : "Drop more images or click to browse"}
-                  </span>
-
-                  <span className="text-[11px] text-muted-foreground">
-                    Accepted formats:{" "}
-                    <span className="font-medium text-foreground">
-                      JPG, PNG, WEBP
-                    </span>
-                    {" · "}
-                    Max size:{" "}
-                    <span className="font-medium text-foreground">
-                      5 MB per image
-                    </span>
-                    {" · "}
-                    <span className="font-bold">{remainingImages}</span>{" "}
-                    {remainingImages === 1 ? "slot" : "slots"} remaining
-                  </span>
-                </ImageDropzone>
-              )}
-
-              {imageError && (
-                <div className="rounded-lg border border-red-300 bg-red-50 px-3 py-2">
-                  <p className="text-xs font-semibold text-red-600">
-                    {imageError.fileName && (
-                      <span className="font-medium">
-                        {imageError.fileName}{" "}
-                      </span>
-                    )}
-
-                    {imageError.message}
-                  </p>
-
-                  {imageError.details && (
-                    <p className="text-xs text-muted-foreground">
-                      {imageError.details}
+                      {imageError.message}
                     </p>
-                  )}
-                </div>
-              )}
 
-              <Input
-                id="product-images"
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                multiple
-                onChange={handleImageChange}
-                disabled={isSubmitting || images.length >= MAX_IMAGES}
-                className="hidden"
-              />
+                    {imageError.details && (
+                      <p className="text-xs text-muted-foreground">
+                        {imageError.details}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                <Input
+                  id="product-images"
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  multiple
+                  onChange={handleImageChange}
+                  disabled={isSubmitting || images.length >= MAX_IMAGES}
+                  className="hidden"
+                />
+              </div>
             </div>
-          </div>
-        </form>
+          </form>
 
-        <SheetFooter className="w-full border-t">
-          <div className="flex w-full flex-row-reverse justify-start gap-2">
-            <Button
-              type="submit"
-              form="add-product-form"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? (
-                <>
-                  <Spinner />
-                  Saving...
-                </>
-              ) : (
-                "Save product"
-              )}
-            </Button>
-
-            <SheetClose asChild>
-              <Button variant="outline" type="button" disabled={isSubmitting}>
-                Cancel
+          <SheetFooter className="w-full border-t">
+            <div className="flex w-full flex-row-reverse justify-start gap-2">
+              <Button
+                type="submit"
+                form="add-product-form"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Spinner />
+                    Saving...
+                  </>
+                ) : (
+                  "Save product"
+                )}
               </Button>
-            </SheetClose>
-          </div>
-        </SheetFooter>
-      </SheetContent>
-    </Sheet>
+                <Button
+                  variant="outline"
+                  type="button"
+                  disabled={isSubmitting}
+                  onClick={() => handleSheetChange(false)}
+                >
+                  Cancel
+                </Button>
+            </div>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
+      <UnsavedChangesDialog
+        open={showDiscardDialog}
+        onOpenChange={setShowDiscardDialog}
+        onKeepEditing={handleKeepEditing}
+        onDiscard={handleDiscardAndClose}
+      />
+    </>
   );
 }
