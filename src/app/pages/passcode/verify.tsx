@@ -45,7 +45,12 @@ function formatAttemptMessage(
 }
 
 function isApiErrorResponse(error: unknown): error is ApiErrorResponse {
-  return typeof error === "object" && error !== null && "message" in error;
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "success" in error &&
+    "message" in error
+  );
 }
 
 export default function PasscodeVerifyPage() {
@@ -96,6 +101,9 @@ export default function PasscodeVerifyPage() {
     } catch (error) {
       console.error("Passcode verification failed:", error);
 
+      setPasscode("");
+      setPasscodeError(null);
+
       if (isApiErrorResponse(error)) {
         const details = error.error?.details;
 
@@ -111,8 +119,10 @@ export default function PasscodeVerifyPage() {
             error.message || "Invalid passcode. Please try again.",
           );
         }
+
         return;
       }
+
       setPasscodeError(
         error instanceof Error
           ? error.message
@@ -122,7 +132,6 @@ export default function PasscodeVerifyPage() {
       setIsLoading(false);
     }
   };
-
   return (
     <div className="flex min-h-full w-full items-center justify-center p-6 md:p-10">
       <div className="w-full max-w-lg">
@@ -142,7 +151,6 @@ export default function PasscodeVerifyPage() {
               </TabsTrigger>
             </TabsList>
           </Tabs>
-
           <form onSubmit={handleSubmit} className="w-full" noValidate>
             <CardHeader className="px-1">
               <CardTitle className="text-lg font-bold">
@@ -160,7 +168,6 @@ export default function PasscodeVerifyPage() {
                 </CardDescription>
               )}
             </CardHeader>
-
             <Field className="w-full px-1 py-4">
               <InputOTP
                 id="passcode"
@@ -176,7 +183,9 @@ export default function PasscodeVerifyPage() {
                 className="h-10 focus-visible:border-primary focus-visible:ring-primary/20"
               >
                 <InputOTPGroup className="flex w-full justify-center text-sm font-bold">
-                  {Array.from({ length: OTP_LENGTH }).map((_, index) => (
+                  {Array.from({
+                    length: OTP_LENGTH,
+                  }).map((_, index) => (
                     <InputOTPSlot
                       key={index}
                       index={index}
@@ -189,7 +198,6 @@ export default function PasscodeVerifyPage() {
                   ))}
                 </InputOTPGroup>
               </InputOTP>
-
               {passcodeError && (
                 <p
                   id="passcode-error"
@@ -201,7 +209,6 @@ export default function PasscodeVerifyPage() {
                 </p>
               )}
             </Field>
-
             <CardFooter className="flex w-full flex-col gap-2 px-2">
               <Button
                 type="submit"
@@ -217,7 +224,6 @@ export default function PasscodeVerifyPage() {
                   "Log in"
                 )}
               </Button>
-
               <CardDescription className="px-1 pt-2 text-center text-xs text-muted-foreground">
                 Enter the 6-digit passcode sent to your email.
               </CardDescription>

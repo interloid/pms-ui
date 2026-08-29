@@ -6,6 +6,7 @@ import { ProtectedRoute } from "@/app/auth/protected-route";
 import { PublicRoute } from "@/app/auth/public-route";
 import LoadingScreen from "@/components/shad/loading-screen";
 import { ToasterMessage } from "@/components/shad/toaster";
+import { ErrorBoundary } from "@/components/shad/error-bountry";
 
 const LoginForm = lazy(() => import("@/app/pages/login"));
 const Callback = lazy(() => import("./pages/callback"));
@@ -25,6 +26,7 @@ export default function App() {
       <BrowserRouter>
         <AuthProvider>
           <TooltipProvider>
+            <ErrorBoundary>
             <Suspense fallback={<LoadingScreen />}>
               <Routes>
                 <Route element={<PublicRoute />}>
@@ -50,6 +52,7 @@ export default function App() {
                 <Route path="*" element={<Navigate to="/login" replace />} />
               </Routes>
             </Suspense>
+            </ErrorBoundary>
           </TooltipProvider>
         </AuthProvider>
       </BrowserRouter>
