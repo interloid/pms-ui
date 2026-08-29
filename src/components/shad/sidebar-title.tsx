@@ -17,6 +17,7 @@ export default function SidebarTitle() {
         <img
           src={logo}
           alt="Interloid"
+          loading="lazy"
           className="
             h-8 w-auto object-contain
             group-data-[collapsible=icon]:h-8

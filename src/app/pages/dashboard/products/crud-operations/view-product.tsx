@@ -69,6 +69,7 @@ export function ProductView({
                     <img
                       src={primaryImage.url}
                       alt={product.name}
+                      loading="lazy"
                       className="h-full w-full object-cover"
                     />
                   ) : (

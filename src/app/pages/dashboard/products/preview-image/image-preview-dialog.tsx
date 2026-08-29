@@ -12,6 +12,7 @@ export function ImagePreviewDialog({
         {image && (
           <div className="flex max-h-[80vh] items-center justify-center overflow-hidden rounded-md bg-muted">
             <img
+              loading="lazy"
               src={image.src}
               alt={image.alt}
               className="max-h-[75vh] max-w-full w-full object-contain"

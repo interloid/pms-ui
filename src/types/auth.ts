@@ -106,3 +106,12 @@ export type AuthErrorCode =
 export type AuthError = {
   code: AuthErrorCode;
 };
+
+export function isAuthError(error: unknown): error is AuthError {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    typeof error.code === "string"
+  );
+}

@@ -35,10 +35,10 @@ export function ProductImage({ src, alt, className = "" }: ProductImageProps) {
           <Spinner className="size-4" />
         </div>
       )}
-
       <img
         src={src}
         alt={alt ?? "Product"}
+        loading="lazy"
         className={`size-full object-cover transition-opacity duration-200 ${
           isLoading ? "opacity-0" : "opacity-100"
         }`}

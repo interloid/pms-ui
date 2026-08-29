@@ -1,25 +1,15 @@
 import { AddProducts } from "@/app/pages/dashboard/products/crud-operations/add-product";
 import { useSearch } from "@/context/search-context";
-import { useAuth } from "@/hooks/useAuth";
 import type { InputInlineProps } from "@/types/data-type";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { LogoutDialog } from "@/components/shad/logout-dialog";
 
 export function HeaderActions({ user }: InputInlineProps) {
   const { searchQuery, setSearchQuery, refresh } = useSearch();
-  const { logout } = useAuth();
 
   return (
     <div className="ml-auto flex items-center gap-2 sm:gap-3">
@@ -40,7 +30,6 @@ export function HeaderActions({ user }: InputInlineProps) {
           src={user?.avatar ?? undefined}
           alt={user?.name ?? "User"}
         />
-
         <AvatarFallback>
           {user?.name
             ?.trim()
@@ -51,42 +40,17 @@ export function HeaderActions({ user }: InputInlineProps) {
             .toUpperCase() ?? "?"}
         </AvatarFallback>
       </Avatar>
-      <Dialog>
-        <DialogTrigger asChild>
+
+      <LogoutDialog
+        trigger={
           <Button
             variant="destructive"
-            className="cursor-pointer bg-cancel-button-background! text-secondary hover:bg-destructive! px-2.5 text-sm sm:px-4"
+            className="cursor-pointer bg-cancel-button-background! px-2.5 text-sm text-secondary hover:bg-destructive! sm:px-4"
           >
             Log out
           </Button>
-        </DialogTrigger>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="text-[16px]">
-              Are you sure you want to log out?
-            </DialogTitle>
-            <DialogDescription>
-              You will be signed out of your account and redirected to the login
-              page.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="outline" className="cursor-pointer">
-                Cancel
-              </Button>
-            </DialogClose>
-
-            <Button
-              variant="destructive"
-              onClick={logout}
-              className="cursor-pointer bg-cancel-button-background text-secondary hover:bg-destructive"
-            >
-              Log out
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        }
+      />
     </div>
   );
 }

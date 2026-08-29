@@ -82,7 +82,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setStatus("unauthenticated");
     }
   }, []);
-
   useEffect(() => {
     void checkAuth();
   }, [checkAuth]);

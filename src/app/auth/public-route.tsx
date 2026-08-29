@@ -1,24 +1,23 @@
-import { Navigate, Outlet } from "react-router-dom";
-
+import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Spinner } from "@/components/ui/spinner";
 
 export function PublicRoute() {
   const { status } = useAuth();
+  const location = useLocation();
 
   if (status === "loading") {
     return (
-      <div className="h-full">
-        <div className="flex min-h-full items-center justify-center gap-2">
-          <Spinner />
-          loading...
-        </div>
+      <div className="flex min-h-full items-center justify-center gap-2">
+        <Spinner />
+        <span>Loading...</span>
       </div>
     );
   }
-
   if (status === "authenticated") {
-    return <Navigate to="/products" replace />;
+    return (
+      <Navigate to="/products" replace state={{ from: location.pathname }} />
+    );
   }
 
   return <Outlet />;

@@ -23,6 +23,7 @@ export function ProductImagePreview({
         className={`group relative block overflow-hidden ${className}`}
       >
         <img
+        loading="lazy"
           src={src}
           alt={alt}
           onLoad={() => setIsLoading(false)}

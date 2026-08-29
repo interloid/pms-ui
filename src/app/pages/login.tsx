@@ -25,7 +25,7 @@ import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa";
 import MicrosoftLogo from "@/components/icons/microsoft-logo";
 import { Eye, EyeOff } from "lucide-react";
-import type { AuthError } from "@/types/auth";
+import { isAuthError } from "@/types/auth";
 
 export default function LoginPage({
   className,
@@ -80,11 +80,16 @@ export default function LoginPage({
         replace: true,
       });
     } catch (error) {
-      const authError = error as AuthError;
-      switch (authError.code) {
+      if (!isAuthError(error)) {
+        setError("Unable to log in. Please try again.");
+        return;
+      }
+
+      switch (error.code) {
         case "INVALID_CREDENTIALS":
           setError("Invalid username or password.");
           break;
+
         case "NETWORK_ERROR":
           setError("Unable to connect to the server. Please try again.");
           break;
@@ -92,6 +97,7 @@ export default function LoginPage({
         case "SERVER_ERROR":
           setError("Something went wrong. Please try again later.");
           break;
+
         default:
           setError("Unable to log in. Please try again.");
       }
@@ -154,20 +160,39 @@ export default function LoginPage({
                         type="button"
                         variant="outline"
                         className="h-10 flex-1 text-xs"
+                        disabled={providerLoading !== null}
                         onClick={() => handleProviderLogin("github")}
                       >
-                        <FaGithub className="size-4" />
-                        GitHub
+                        {providerLoading === "github" ? (
+                          <>
+                            <Spinner className="size-4" />
+                            Connecting...
+                          </>
+                        ) : (
+                          <>
+                            <FaGithub className="size-4" />
+                            GitHub
+                          </>
+                        )}
                       </Button>
-
                       <Button
                         type="button"
                         variant="outline"
                         className="h-10 flex-1 text-xs"
+                        disabled={providerLoading !== null}
                         onClick={() => handleProviderLogin("microsoft")}
                       >
-                        <MicrosoftLogo />
-                        Microsoft
+                        {providerLoading === "microsoft" ? (
+                          <>
+                            <Spinner className="size-4" />
+                            Connecting...
+                          </>
+                        ) : (
+                          <>
+                            <MicrosoftLogo />
+                            Microsoft
+                          </>
+                        )}
                       </Button>
                     </div>
                   </Field>

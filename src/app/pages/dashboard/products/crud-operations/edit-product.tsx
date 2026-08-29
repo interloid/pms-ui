@@ -867,7 +867,6 @@ export function ProductEdit({
                     >
                       <SelectValue placeholder="Select..." />
                     </SelectTrigger>
-
                     <SelectContent
                       position="popper"
                       side="bottom"
@@ -895,7 +894,6 @@ export function ProductEdit({
                       (Only JPG, PNG, and WEBP image formats are allowed.)
                     </span>
                   </Label>
-
                   <span className="text-[11px] text-muted-foreground">
                     {activeImageCount}/{MAX_IMAGES}
                   </span>
