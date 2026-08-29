@@ -39,7 +39,7 @@ export function ProductFilters({
         value={category}
         onValueChange={(value) => onCategoryChange(value as ProductCategory)}
       >
-        <SelectTrigger className="h-9 w-35 hover:bg-primary-hover! hover:border-primary">
+        <SelectTrigger className="h-9 w-fit hover:bg-primary-hover! hover:border-primary">
           <span className="text-xs">Category:</span>
           <SelectValue />
         </SelectTrigger>
@@ -49,7 +49,7 @@ export function ProductFilters({
           align="start"
           sideOffset={4}
           avoidCollisions={false}
-          className="w-36"
+          className="w-fit"
         >
           {categories.map((item) => (
             <SelectItem

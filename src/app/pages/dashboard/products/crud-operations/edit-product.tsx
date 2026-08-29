@@ -37,7 +37,7 @@ import {
 } from "@/components/ui/sheet";
 import { updateProduct } from "@/services/product-service";
 import {
-  categories,
+  productCategories,
   statuses,
   type ApiProduct,
   type ApiProductImage,
@@ -767,16 +767,11 @@ export function ProductEdit({
                       sideOffset={4}
                       avoidCollisions={false}
                     >
-                      {categories
-                        .filter((category) => category.value !== "All")
-                        .map((category) => (
-                          <SelectItem
-                            key={category.value}
-                            value={category.value}
-                          >
-                            {category.label}
-                          </SelectItem>
-                        ))}
+                      {productCategories.map((category) => (
+                        <SelectItem key={category.value} value={category.value}>
+                          {category.label}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
 

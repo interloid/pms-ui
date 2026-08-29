@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/sheet";
 import { Spinner } from "@/components/ui/spinner";
 import {
+    productCategories,
   statuses,
   type AddProductsProps,
   type FormErrors,
@@ -41,20 +42,7 @@ import { ProductImagePreview } from "../preview-image/product-image-preview";
 const MAX_IMAGES = 6;
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
-const ALLOWED_FILE_TYPES = [
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-];
-
-const categories = [
-  { value: "Lighting", label: "Lighting" },
-  { value: "Apparel", label: "Apparel" },
-  { value: "Home", label: "Home" },
-  { value: "Electronics", label: "Electronics" },
-  { value: "Outdoor", label: "Outdoor" },
-  { value: "Stationery", label: "Stationery" },
-];
+const ALLOWED_FILE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 export function AddProducts({ onProductCreated }: AddProductsProps) {
   const [name, setName] = useState("");
@@ -93,6 +81,16 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
     setIsDragging(false);
   }
 
+  function handleSheetChange(nextOpen: boolean) {
+    if (isSubmitting) {
+      return;
+    }
+    if (!nextOpen) {
+      resetForm();
+    }
+    setOpen(nextOpen);
+  }
+
   function validateForm(): boolean {
     const newErrors: FormErrors = {};
 
@@ -121,9 +119,7 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
     return Object.keys(newErrors).length === 0;
   }
 
-  async function handleSubmit(
-    event: React.FormEvent<HTMLFormElement>,
-  ) {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (!validateForm()) {
@@ -157,9 +153,7 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
       onProductCreated?.();
     } catch (error) {
       toast.error(
-        error instanceof Error
-          ? error.message
-          : "Failed to create product",
+        error instanceof Error ? error.message : "Failed to create product",
       );
     } finally {
       setIsSubmitting(false);
@@ -215,8 +209,7 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
       if (!ALLOWED_FILE_TYPES.includes(file.type)) {
         error = {
           fileName: file.name,
-          message:
-            "is not supported. Please use JPG, PNG, or WEBP.",
+          message: "is not supported. Please use JPG, PNG, or WEBP.",
         };
 
         continue;
@@ -234,13 +227,7 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
         continue;
       }
 
-      if (
-        isDuplicateFile(
-          file,
-          images,
-          newImages,
-        )
-      ) {
+      if (isDuplicateFile(file, images, newImages)) {
         error = {
           fileName: file.name,
           message: "has already been selected.",
@@ -253,54 +240,38 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
         id: crypto.randomUUID(),
         file,
         previewUrl: URL.createObjectURL(file),
-        isPrimary:
-          images.length === 0 && newImages.length === 0,
+        isPrimary: images.length === 0 && newImages.length === 0,
       });
     }
 
     if (newImages.length > 0) {
-      setImages((previousImages) => [
-        ...previousImages,
-        ...newImages,
-      ]);
+      setImages((previousImages) => [...previousImages, ...newImages]);
     }
 
     setImageError(error);
   }
 
-  function handleImageChange(
-    event: ChangeEvent<HTMLInputElement>,
-  ) {
+  function handleImageChange(event: ChangeEvent<HTMLInputElement>) {
     processFiles(event.target.files ?? []);
     event.target.value = "";
   }
 
-  function handleDragEnter(
-    event: DragEvent<HTMLLabelElement>,
-  ) {
+  function handleDragEnter(event: DragEvent<HTMLLabelElement>) {
     event.preventDefault();
     event.stopPropagation();
 
-    if (
-      isSubmitting ||
-      images.length >= MAX_IMAGES
-    ) {
+    if (isSubmitting || images.length >= MAX_IMAGES) {
       return;
     }
 
     setIsDragging(true);
   }
 
-  function handleDragOver(
-    event: DragEvent<HTMLLabelElement>,
-  ) {
+  function handleDragOver(event: DragEvent<HTMLLabelElement>) {
     event.preventDefault();
     event.stopPropagation();
 
-    if (
-      isSubmitting ||
-      images.length >= MAX_IMAGES
-    ) {
+    if (isSubmitting || images.length >= MAX_IMAGES) {
       return;
     }
 
@@ -308,35 +279,24 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
     setIsDragging(true);
   }
 
-  function handleDragLeave(
-    event: DragEvent<HTMLLabelElement>,
-  ) {
+  function handleDragLeave(event: DragEvent<HTMLLabelElement>) {
     event.preventDefault();
     event.stopPropagation();
 
-    if (
-      event.currentTarget.contains(
-        event.relatedTarget as Node | null,
-      )
-    ) {
+    if (event.currentTarget.contains(event.relatedTarget as Node | null)) {
       return;
     }
 
     setIsDragging(false);
   }
 
-  function handleDrop(
-    event: DragEvent<HTMLLabelElement>,
-  ) {
+  function handleDrop(event: DragEvent<HTMLLabelElement>) {
     event.preventDefault();
     event.stopPropagation();
 
     setIsDragging(false);
 
-    if (
-      isSubmitting ||
-      images.length >= MAX_IMAGES
-    ) {
+    if (isSubmitting || images.length >= MAX_IMAGES) {
       return;
     }
 
@@ -345,27 +305,17 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
 
   function removeImage(id: string) {
     setImages((previousImages) => {
-      const imageToRemove = previousImages.find(
-        (image) => image.id === id,
-      );
+      const imageToRemove = previousImages.find((image) => image.id === id);
 
       if (!imageToRemove) {
         return previousImages;
       }
 
-      URL.revokeObjectURL(
-        imageToRemove.previewUrl,
-      );
+      URL.revokeObjectURL(imageToRemove.previewUrl);
 
-      const remainingImages =
-        previousImages.filter(
-          (image) => image.id !== id,
-        );
+      const remainingImages = previousImages.filter((image) => image.id !== id);
 
-      if (
-        imageToRemove.isPrimary &&
-        remainingImages.length > 0
-      ) {
+      if (imageToRemove.isPrimary && remainingImages.length > 0) {
         remainingImages[0] = {
           ...remainingImages[0],
           isPrimary: true,
@@ -385,26 +335,7 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
     );
   }
 
-  function handleSheetChange(nextOpen: boolean) {
-    if (isSubmitting) {
-      return;
-    }
-
-    if (!nextOpen) {
-      revokeImageUrls(images);
-      setImages([]);
-      setImageError(null);
-      setIsDragging(false);
-    }
-
-    setOpen(nextOpen);
-  }
-
-  function FieldError({
-    message,
-  }: {
-    message?: string;
-  }) {
+  function FieldError({ message }: { message?: string }) {
     return (
       <p
         className="h-4 text-xs leading-4 font-medium text-destructive"
@@ -415,14 +346,8 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
     );
   }
 
-  function ImageDropzone({
-    children,
-  }: {
-    children: ReactNode;
-  }) {
-    const disabled =
-      isSubmitting ||
-      images.length >= MAX_IMAGES;
+  function ImageDropzone({ children }: { children: ReactNode }) {
+    const disabled = isSubmitting || images.length >= MAX_IMAGES;
 
     return (
       <label
@@ -435,9 +360,7 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
           "flex min-h-25 w-full flex-col items-center justify-center",
           "gap-1 rounded-lg border border-dashed px-4 py-4",
           "text-center transition-colors",
-          disabled
-            ? "cursor-not-allowed opacity-60"
-            : "cursor-pointer",
+          disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer",
           isDragging
             ? "border-primary bg-primary/10"
             : "border-hover-text hover:bg-primary-hover/50",
@@ -449,19 +372,14 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
   }
 
   return (
-    <Sheet
-      open={open}
-      onOpenChange={handleSheetChange}
-    >
+    <Sheet open={open} onOpenChange={handleSheetChange}>
       <SheetTrigger asChild>
         <Button>+ Add Product</Button>
       </SheetTrigger>
 
       <SheetContent className="gap-8 sm:max-w-xl!">
         <SheetHeader className="border-b">
-          <SheetTitle className="font-bold">
-            Add Product
-          </SheetTitle>
+          <SheetTitle className="font-bold">Add Product</SheetTitle>
         </SheetHeader>
 
         <form
@@ -472,15 +390,9 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
         >
           <div className="grid flex-1 auto-rows-min gap-4 overflow-y-auto px-4">
             <div className="grid gap-3">
-              <Label
-                htmlFor="product-name"
-                className="text-xs"
-              >
+              <Label htmlFor="product-name" className="text-xs">
                 Product Name
-                <span className="text-destructive">
-                  {" "}
-                  *
-                </span>
+                <span className="text-destructive"> *</span>
               </Label>
 
               <Input
@@ -510,15 +422,9 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
 
             <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="grid w-full gap-2">
-                <Label
-                  htmlFor="product-sku"
-                  className="text-xs"
-                >
+                <Label htmlFor="product-sku" className="text-xs">
                   SKU
-                  <span className="text-destructive">
-                    {" "}
-                    *
-                  </span>
+                  <span className="text-destructive"> *</span>
                 </Label>
 
                 <Input
@@ -547,15 +453,9 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
               </div>
 
               <div className="grid w-full gap-2">
-                <Label
-                  htmlFor="product-category"
-                  className="text-xs"
-                >
+                <Label htmlFor="product-category" className="text-xs">
                   Category
-                  <span className="text-destructive">
-                    {" "}
-                    *
-                  </span>
+                  <span className="text-destructive"> *</span>
                 </Label>
 
                 <Select
@@ -573,9 +473,7 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
                 >
                   <SelectTrigger
                     id="product-category"
-                    aria-invalid={Boolean(
-                      errors.category,
-                    )}
+                    aria-invalid={Boolean(errors.category)}
                     className={`h-10 w-full focus-visible:ring-primary/20 ${
                       errors.category
                         ? "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20"
@@ -592,34 +490,23 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
                     sideOffset={4}
                     avoidCollisions={false}
                   >
-                    {categories.map((item) => (
-                      <SelectItem
-                        key={item.value}
-                        value={item.value}
-                      >
+                    {productCategories.map((item) => (
+                      <SelectItem key={item.value} value={item.value}>
                         {item.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
 
-                <FieldError
-                  message={errors.category}
-                />
+                <FieldError message={errors.category} />
               </div>
             </div>
 
             <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-3">
               <div className="grid w-full gap-2">
-                <Label
-                  htmlFor="product-price"
-                  className="text-xs"
-                >
+                <Label htmlFor="product-price" className="text-xs">
                   Price
-                  <span className="text-destructive">
-                    {" "}
-                    *
-                  </span>
+                  <span className="text-destructive"> *</span>
                 </Label>
 
                 <Input
@@ -639,9 +526,7 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
                   placeholder="0.00"
                   min={0}
                   step="0.01"
-                  aria-invalid={Boolean(
-                    errors.price,
-                  )}
+                  aria-invalid={Boolean(errors.price)}
                   className={`h-10 w-full placeholder:text-xs focus-visible:ring-primary/20 ${
                     errors.price
                       ? "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20"
@@ -653,10 +538,7 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
               </div>
 
               <div className="grid w-full gap-2">
-                <Label
-                  htmlFor="product-stock"
-                  className="text-xs"
-                >
+                <Label htmlFor="product-stock" className="text-xs">
                   Stock
                 </Label>
 
@@ -664,29 +546,20 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
                   id="product-stock"
                   type="number"
                   value={stock}
-                  onChange={(event) =>
-                    setStock(event.target.value)
-                  }
+                  onChange={(event) => setStock(event.target.value)}
                   placeholder="0"
                   min={0}
                   className="h-10 w-full placeholder:text-xs focus-visible:border-primary focus-visible:ring-primary/20"
                 />
-
-                <FieldError />
+                <FieldError message={errors.stock} />
               </div>
 
               <div className="grid w-full gap-2">
-                <Label
-                  htmlFor="product-status"
-                  className="text-xs"
-                >
+                <Label htmlFor="product-status" className="text-xs">
                   Status
                 </Label>
 
-                <Select
-                  value={status}
-                  onValueChange={setStatus}
-                >
+                <Select value={status} onValueChange={setStatus}>
                   <SelectTrigger
                     id="product-status"
                     className="h-10 w-full focus-visible:border-primary focus-visible:ring-primary/20"
@@ -703,10 +576,7 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
                     className="w-36"
                   >
                     {statuses.map((item) => (
-                      <SelectItem
-                        key={item.value}
-                        value={item.value}
-                      >
+                      <SelectItem key={item.value} value={item.value}>
                         {item.label}
                       </SelectItem>
                     ))}
@@ -718,10 +588,7 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
             </div>
 
             <div className="grid w-full gap-2">
-              <Label
-                htmlFor="product-description"
-                className="text-xs"
-              >
+              <Label htmlFor="product-description" className="text-xs">
                 Description
               </Label>
 
@@ -729,19 +596,14 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
                 id="product-description"
                 placeholder="Optional"
                 value={description}
-                onChange={(event) =>
-                  setDescription(event.target.value)
-                }
+                onChange={(event) => setDescription(event.target.value)}
                 className="h-25 min-h-25 w-full resize-none placeholder:text-xs focus-visible:border-primary focus-visible:ring-primary/20"
               />
             </div>
 
             <div className="grid w-full gap-2">
               <div className="flex items-center gap-1">
-                <Label
-                  htmlFor="product-images"
-                  className="text-xs"
-                >
+                <Label htmlFor="product-images" className="text-xs">
                   Images
                 </Label>
 
@@ -770,11 +632,7 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
                       ) : (
                         <button
                           type="button"
-                          onClick={() =>
-                            setPrimaryImage(
-                              image.id,
-                            )
-                          }
+                          onClick={() => setPrimaryImage(image.id)}
                           className="absolute bottom-2 left-2 z-10 rounded-md bg-background/90 px-2 py-1 text-[10px] font-medium text-foreground shadow-sm backdrop-blur-sm transition-colors hover:bg-background"
                         >
                           Set primary
@@ -786,9 +644,7 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
                         variant="ghost"
                         size="icon"
                         className="absolute right-2 top-2 z-10 size-5 rounded-full bg-background/90 text-muted-foreground shadow-sm backdrop-blur-sm hover:bg-background hover:text-destructive"
-                        onClick={() =>
-                          removeImage(image.id)
-                        }
+                        onClick={() => removeImage(image.id)}
                         aria-label={`Remove ${image.file.name}`}
                       >
                         <X className="size-3" />
@@ -801,9 +657,7 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
                 <ImageDropzone>
                   <span
                     className={`text-xs font-medium ${
-                      isDragging
-                        ? "text-primary"
-                        : "text-hover-text"
+                      isDragging ? "text-primary" : "text-hover-text"
                     }`}
                   >
                     {isDragging
@@ -824,13 +678,8 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
                       5 MB per image
                     </span>
                     {" · "}
-                    <span className="font-bold">
-                      {remainingImages}
-                    </span>{" "}
-                    {remainingImages === 1
-                      ? "slot"
-                      : "slots"}{" "}
-                    remaining
+                    <span className="font-bold">{remainingImages}</span>{" "}
+                    {remainingImages === 1 ? "slot" : "slots"} remaining
                   </span>
                 </ImageDropzone>
               )}
@@ -861,10 +710,7 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
                 accept="image/jpeg,image/png,image/webp"
                 multiple
                 onChange={handleImageChange}
-                disabled={
-                  isSubmitting ||
-                  images.length >= MAX_IMAGES
-                }
+                disabled={isSubmitting || images.length >= MAX_IMAGES}
                 className="hidden"
               />
             </div>
@@ -889,11 +735,7 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
             </Button>
 
             <SheetClose asChild>
-              <Button
-                variant="outline"
-                type="button"
-                disabled={isSubmitting}
-              >
+              <Button variant="outline" type="button" disabled={isSubmitting}>
                 Cancel
               </Button>
             </SheetClose>

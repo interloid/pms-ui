@@ -83,7 +83,6 @@ export default function ProductsPage() {
         }
       }
     }
-
     loadProducts();
 
     return () => {
@@ -100,9 +99,11 @@ export default function ProductsPage() {
     sort.field,
     sort.order,
   ]);
+  
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchQuery);
+      setPage(1);
     }, 500);
 
     return () => {

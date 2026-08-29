@@ -74,10 +74,7 @@ export type ProductCategory =
   | "Outdoor"
   | "Stationery";
 
-export const categories: Array<{
-  value: ProductCategory;
-  label: string;
-}> = [
+export const categories = [
   { value: "All", label: "All" },
   { value: "Lighting", label: "Lighting" },
   { value: "Apparel", label: "Apparel" },
@@ -86,6 +83,10 @@ export const categories: Array<{
   { value: "Outdoor", label: "Outdoor" },
   { value: "Stationery", label: "Stationery" },
 ];
+
+export const productCategories = categories.filter(
+  (item) => item.value !== "All",
+);
 
 export type ProductStatus = "active" | "draft" | "out_of_stock" | "archived";
 
