@@ -37,6 +37,7 @@ import {
 import { createProduct } from "@/services/product-service";
 import { ProductImagePreview } from "../preview-image/product-image-preview";
 import { UnsavedChangesDialog } from "@/components/shad/unsaved-changes-dialog";
+import { FieldError } from "@/components/shad/field-error";
 
 const MAX_IMAGES = 6;
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
@@ -370,17 +371,6 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
         ...image,
         isPrimary: image.id === id,
       })),
-    );
-  }
-
-  function FieldError({ message }: { message?: string }) {
-    return (
-      <p
-        className="h-4 text-xs leading-4 font-medium text-destructive"
-        aria-live="polite"
-      >
-        {message || "\u00A0"}
-      </p>
     );
   }
 

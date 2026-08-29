@@ -78,6 +78,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       await logoutService();
     } finally {
+      setUser(null);
       setStatus("unauthenticated");
     }
   }, []);

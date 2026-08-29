@@ -23,13 +23,22 @@ export function TablePagination({
   setPage,
   setPageSize,
 }: PaginationProps) {
+  const lastPage = Math.max(totalPages, 1);
+
   const startItem = productCount === 0 ? 0 : (page - 1) * pageSize + 1;
   const endItem = Math.min(page * pageSize, productCount);
+
+  const isFirstPage = page <= 1;
+  const isLastPage = page >= lastPage;
+  const isEmpty = productCount === 0;
 
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between lg:px-4">
       <div className="flex items-center gap-2">
-        <span className="text-sm text-muted-foreground">Rows per page</span>
+        <span className="text-sm text-muted-foreground">
+          Rows per page
+        </span>
+
         <Select
           value={String(pageSize)}
           onValueChange={(value) => {
@@ -54,49 +63,56 @@ export function TablePagination({
           </SelectContent>
         </Select>
       </div>
+
       <div className="flex items-center justify-between gap-4 sm:justify-end">
         <span className="text-sm text-muted-foreground">
           {startItem}-{endItem} of {productCount}
         </span>
 
         <div className="flex items-center gap-1">
+          {/* First page */}
           <Button
             variant="outline"
             size="icon"
             className="size-8 hover:border-primary hover:bg-primary-hover!"
-            disabled={page === 1 || productCount === 0}
+            disabled={isFirstPage || isEmpty}
             onClick={() => setPage(1)}
             aria-label="Go to first page"
           >
             <ChevronsLeft className="size-4" />
           </Button>
 
+          {/* Previous page */}
           <Button
             variant="outline"
             size="icon"
             className="size-8 hover:border-primary hover:bg-primary-hover!"
-            disabled={page === 1 || productCount === 0}
+            disabled={isFirstPage || isEmpty}
             onClick={() => setPage((current) => current - 1)}
             aria-label="Go to previous page"
           >
             <ChevronLeft className="size-4" />
           </Button>
+
+          {/* Next page */}
           <Button
             variant="outline"
             size="icon"
             className="size-8 hover:border-primary hover:bg-primary-hover!"
-            disabled={page === totalPages || productCount === 0}
-            onClick={() => setPage((current) => current + 1)}
+            disabled={isLastPage || isEmpty}
+            onClick={() => setPage((current) => Math.min(current + 1, lastPage))}
             aria-label="Go to next page"
           >
             <ChevronRight className="size-4" />
           </Button>
+
+          {/* Last page */}
           <Button
             variant="outline"
             size="icon"
             className="size-8 hover:border-primary hover:bg-primary-hover!"
-            disabled={page === totalPages || productCount === 0}
-            onClick={() => setPage(totalPages)}
+            disabled={isLastPage || isEmpty}
+            onClick={() => setPage(lastPage)}
             aria-label="Go to last page"
           >
             <ChevronsRight className="size-4" />

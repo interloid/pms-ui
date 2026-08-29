@@ -1,5 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 import type { AuthUser } from "./auth";
+import type { ReactNode } from "react";
 
 export type NavItem = {
   title: string;
@@ -208,12 +209,19 @@ export type HeaderProps = {
 export type InputInlineProps = {
   user: AuthUser | null;
 };
-export type SearchContextValue = {
+
+export interface SearchContextValue {
   searchQuery: string;
-  setSearchQuery: (query: string) => void;
+  setSearchQuery: React.Dispatch<React.SetStateAction<string>>;
   refreshKey: number;
   refresh: () => void;
-};
+  productCount: number;
+  setProductCount: React.Dispatch<React.SetStateAction<number>>;
+}
+
+export interface SearchProviderProps {
+  children: ReactNode;
+}
 
 export type FormErrors = {
   name?: string;

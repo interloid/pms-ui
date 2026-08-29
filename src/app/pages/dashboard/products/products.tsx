@@ -22,13 +22,14 @@ import { TablePagination } from "@/components/shad/table-pagination";
 import { Button } from "@/components/ui/button";
 
 export default function ProductsPage() {
-  const { searchQuery, refreshKey, refresh } = useSearch();
+  const { searchQuery, refreshKey, refresh, productCount, setProductCount } =
+    useSearch();
   const [products, setProducts] = useState<ApiProduct[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const [category, setCategory] = useState<ProductCategory>("All");
   const [status, setStatus] = useState<ProductStatusFilter>("All");
   const [priceRange, setPriceRange] = useState("all");
-  const [productCount, setProductCount] = useState<number>(0);
   const [totalPages, setTotalPages] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [page, setPage] = useState(1);
@@ -80,6 +81,7 @@ export default function ProductsPage() {
       } finally {
         if (!ignore) {
           setIsLoading(false);
+          setHasLoadedOnce(true);
         }
       }
     }
@@ -99,7 +101,7 @@ export default function ProductsPage() {
     sort.field,
     sort.order,
   ]);
-  
+
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchQuery);
@@ -150,8 +152,8 @@ export default function ProductsPage() {
     try {
       await deleteProductApi(id);
       setDeleteId(null);
-      setProducts((current) => current.filter((product) => product.id !== id));
       toast.success("Product deleted successfully");
+      refresh();
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Failed to delete product",
@@ -195,9 +197,6 @@ export default function ProductsPage() {
       current?.id === updatedProduct.id ? updatedProduct : current,
     );
   }
-  if (isLoading) {
-    return <ProductListSkeleton />;
-  }
   if (loadError) {
     return (
       <div className="flex min-h-50 items-center justify-center">
@@ -223,21 +222,33 @@ export default function ProductsPage() {
           onPriceChange={updatePrice}
           onReset={resetFilters}
         />
-        <ProductTable
-          products={products}
-          archiveId={archiveId}
-          deleteId={deleteId}
-          sort={sort}
-          onSort={handleSort}
-          onView={handleViewProduct}
-          onEdit={handleEditProduct}
-          onArchive={setArchiveId}
-          onCancelArchive={() => setArchiveId(null)}
-          onConfirmArchive={handleArchiveProduct}
-          onDelete={setDeleteId}
-          onCancelDelete={() => setDeleteId(null)}
-          onConfirmDelete={handleDeleteProduct}
-        />
+        {!hasLoadedOnce ? (
+          <ProductListSkeleton />
+        ) : (
+          <div
+            className={
+              isLoading
+                ? "opacity-60 transition-opacity duration-200"
+                : "transition-opacity duration-200"
+            }
+          >
+            <ProductTable
+              products={products}
+              archiveId={archiveId}
+              deleteId={deleteId}
+              sort={sort}
+              onSort={handleSort}
+              onView={handleViewProduct}
+              onEdit={handleEditProduct}
+              onArchive={setArchiveId}
+              onCancelArchive={() => setArchiveId(null)}
+              onConfirmArchive={handleArchiveProduct}
+              onDelete={setDeleteId}
+              onCancelDelete={() => setDeleteId(null)}
+              onConfirmDelete={handleDeleteProduct}
+            />
+          </div>
+        )}
         <ProductView
           product={viewProduct}
           open={viewOpen}
