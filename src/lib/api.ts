@@ -1,13 +1,17 @@
 import type { ApiRequestOptions, JsonBody } from "@/types/data-type";
 
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
+
+if (!API_BASE_URL && import.meta.env.PROD) {
+  console.error(
+    "VITE_API_BASE_URL is not configured; API calls will use a relative path.",
+  );
+}
 const API_TIMEOUT = 15_000;
 
-if (!API_BASE_URL) {
-  throw new Error("VITE_API_BASE_URL is not configured.");
-}
-
-function prepareRequestBody(body?: BodyInit | JsonBody): BodyInit | undefined {
+function prepareRequestBody(
+  body?: BodyInit | JsonBody,
+): BodyInit | undefined {
   if (body === undefined) {
     return undefined;
   }
@@ -25,9 +29,16 @@ export async function apiRequest<T>(
   options: ApiRequestOptions = {},
 ): Promise<T> {
   const controller = new AbortController();
+  let timedOut = false;
+
   const timeoutId = setTimeout(() => {
+    timedOut = true;
     controller.abort();
   }, API_TIMEOUT);
+  
+  const signal = options.signal
+    ? AbortSignal.any([options.signal, controller.signal])
+    : controller.signal;
 
   try {
     const requestBody = prepareRequestBody(options.body);
@@ -35,8 +46,8 @@ export async function apiRequest<T>(
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       ...options,
       body: requestBody,
-      signal: controller.signal,
       credentials: "include",
+      signal,
       headers: {
         ...(isFormData
           ? {}
@@ -55,8 +66,10 @@ export async function apiRequest<T>(
     } else {
       data = await response.text();
     }
+
     if (!response.ok) {
       let message = `Request failed with status ${response.status}`;
+
       if (typeof data === "string" && data.trim()) {
         message = data;
       } else if (
@@ -72,6 +85,9 @@ export async function apiRequest<T>(
     return data as T;
   } catch (error) {
     if (error instanceof DOMException && error.name === "AbortError") {
+      if (!timedOut) {
+        throw error;
+      }
       throw new Error(
         "The request timed out. Please check your connection and try again.",
       );

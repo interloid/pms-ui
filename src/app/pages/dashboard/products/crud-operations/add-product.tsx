@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/sheet";
 import { Spinner } from "@/components/ui/spinner";
 import {
-    productCategories,
+  productCategories,
   statuses,
   type AddProductsProps,
   type FormErrors,
@@ -106,16 +106,25 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
       newErrors.category = "Please select a category.";
     }
 
+    const numericPrice = Number(price);
+    const numericStock = Number(stock);
+
     if (price.trim() === "") {
       newErrors.price = "This price is required.";
+    } else if (!Number.isFinite(numericPrice)) {
+      newErrors.price = "Please enter a valid price.";
+    } else if (numericPrice < 0) {
+      newErrors.price = "Price cannot be negative.";
     }
 
     if (stock.trim() === "") {
       newErrors.stock = "This stock is required.";
+    } else if (!Number.isFinite(numericStock)) {
+      newErrors.stock = "Please enter a valid stock.";
+    } else if (numericStock < 0) {
+      newErrors.stock = "Stock cannot be negative.";
     }
-
     setErrors(newErrors);
-
     return Object.keys(newErrors).length === 0;
   }
 
@@ -153,7 +162,7 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
       onProductCreated?.();
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to create product",
+        error instanceof Error ? error.message: "Failed to create product",
       );
     } finally {
       setIsSubmitting(false);
