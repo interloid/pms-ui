@@ -19,6 +19,7 @@ import {
 } from "@/services/product-service";
 import { ProductListSkeleton } from "@/components/shad/product-list-skeleton";
 import { TablePagination } from "@/components/shad/table-pagination";
+import { Button } from "@/components/ui/button";
 
 export default function ProductsPage() {
   const { searchQuery, refreshKey, refresh } = useSearch();
@@ -42,10 +43,16 @@ export default function ProductsPage() {
     field: "updated",
     order: "desc",
   });
+  const [loadError, setLoadError] = useState<string | null>(null);
+
   useEffect(() => {
+    let ignore = false;
+
     async function loadProducts() {
       try {
         setIsLoading(true);
+        setLoadError(null);
+
         const response = await getProducts({
           page,
           pageSize,
@@ -56,16 +63,32 @@ export default function ProductsPage() {
           sort: sort.field,
           order: sort.order,
         });
+
+        if (ignore) {
+          return;
+        }
+
         setProducts(response.products);
         setProductCount(response.total);
         setTotalPages(response.totalPages);
       } catch (error) {
-        console.error("Failed to load products:", error);
+        if (!ignore) {
+          setLoadError(
+            error instanceof Error ? error.message : "Failed to load products",
+          );
+        }
       } finally {
-        setIsLoading(false);
+        if (!ignore) {
+          setIsLoading(false);
+        }
       }
     }
+
     loadProducts();
+
+    return () => {
+      ignore = true;
+    };
   }, [
     page,
     pageSize,
@@ -77,7 +100,6 @@ export default function ProductsPage() {
     sort.field,
     sort.order,
   ]);
-
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchQuery);
@@ -174,6 +196,18 @@ export default function ProductsPage() {
   }
   if (isLoading) {
     return <ProductListSkeleton />;
+  }
+  if (loadError) {
+    return (
+      <div className="flex min-h-50 items-center justify-center">
+        <div className="flex flex-col items-center gap-3 text-center">
+          <p className="text-sm font-medium text-destructive">{loadError}</p>
+          <Button type="button" variant="outline" onClick={refresh}>
+            Try again
+          </Button>
+        </div>
+      </div>
+    );
   }
   return (
     <>

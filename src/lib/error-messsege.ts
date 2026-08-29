@@ -36,3 +36,38 @@ export function getUserFriendlyErrorMessage(
   }
   return fallback;
 }
+
+
+export function getPasscodeErrorMessage(error: unknown): string {
+  if (!(error instanceof Error)) {
+    return "Invalid passcode.";
+  }
+
+  try {
+    const parsed = JSON.parse(error.message);
+
+    const details = parsed?.error?.details;
+
+    if (details) {
+      const { remaining_attempts, retry_after_seconds } = details;
+
+      if (remaining_attempts !== undefined) {
+        if (remaining_attempts === 0 && retry_after_seconds) {
+          const minutes = Math.ceil(retry_after_seconds / 60);
+
+          return `Invalid passcode. Try again after ${minutes} minute${
+            minutes === 1 ? "" : "s"
+          }.`;
+        }
+
+        return `Invalid passcode. ${remaining_attempts} attempt${
+          remaining_attempts === 1 ? "" : "s"
+        } left before a ${Math.ceil(retry_after_seconds / 60)}-minute cooldown.`;
+      }
+    }
+
+    return parsed?.message || "Invalid passcode.";
+  } catch {
+    return error.message || "Invalid passcode.";
+  }
+}

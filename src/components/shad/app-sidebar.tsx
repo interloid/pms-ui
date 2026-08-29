@@ -75,7 +75,7 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
         <NavMain items={data.workspace} />
       </SidebarContent>
 
-      <SidebarFooter className="border">
+      <SidebarFooter className="border border-r-0">
         <NavUser user={user} />
       </SidebarFooter>
 
