@@ -318,8 +318,7 @@ export function ProductForm({
     const files = Array.from(fileList);
 
     if (files.length === 0) {
-      return;
-    }
+      return;}
 
     setImageError(null);
 
@@ -652,7 +651,6 @@ export function ProductForm({
         });
 
         const createdProduct = await createProduct(formData);
-
         toast.success("Product created successfully");
 
         resetForm();
@@ -737,7 +735,9 @@ export function ProductForm({
     <>
       <Sheet open={open} onOpenChange={handleSheetChange}>
         {sheetTrigger}
-        <SheetContent className="gap-0 p-0 sm:max-w-xl!">
+        <SheetContent
+          className="gap-0 p-0 sm:max-w-xl! animate-none!"
+        >
           <SheetHeader className="border-b px-5 py-4">
             <SheetTitle className="text-[15px] font-semibold">
               {isAddMode ? "Add Product" : (product?.name ?? "Product")}
