@@ -70,7 +70,6 @@ export function TablePagination({
         </span>
 
         <div className="flex items-center gap-1">
-          {/* First page */}
           <Button
             variant="outline"
             size="icon"
@@ -81,8 +80,6 @@ export function TablePagination({
           >
             <ChevronsLeft className="size-4" />
           </Button>
-
-          {/* Previous page */}
           <Button
             variant="outline"
             size="icon"
@@ -93,8 +90,6 @@ export function TablePagination({
           >
             <ChevronLeft className="size-4" />
           </Button>
-
-          {/* Next page */}
           <Button
             variant="outline"
             size="icon"
@@ -105,8 +100,6 @@ export function TablePagination({
           >
             <ChevronRight className="size-4" />
           </Button>
-
-          {/* Last page */}
           <Button
             variant="outline"
             size="icon"

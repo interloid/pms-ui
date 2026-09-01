@@ -5,9 +5,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+
 import { ProductTableRow } from "./product-table-row";
 import { SortableHeader } from "@/components/shad/sortable-header";
 import EmptyProductTableRow from "@/components/shad/empty-products";
+
 import type { ProductTableProps } from "@/types/data-type";
 
 export function ProductTable({
@@ -31,8 +33,12 @@ export function ProductTable({
         <Table className="text-center">
           <TableHeader>
             <TableRow className="bg-muted/50 text-xs text-muted-text hover:bg-muted/50">
-              <TableHead className="text-center"> SKU </TableHead>
-              <TableHead className="text-center"> PRODUCT NAME </TableHead>
+              <TableHead className="text-center">SKU</TableHead>
+
+              <TableHead className="text-center">
+                PRODUCT NAME
+              </TableHead>
+
               <SortableHeader
                 label="CATEGORY"
                 field="category"
@@ -68,9 +74,12 @@ export function ProductTable({
                 onSort={onSort}
               />
 
-              <TableHead className="text-center">ACTIONS</TableHead>
+              <TableHead className="text-center">
+                ACTIONS
+              </TableHead>
             </TableRow>
           </TableHeader>
+
           <TableBody>
             {products.length > 0 ? (
               products.map((product) => (
@@ -80,13 +89,17 @@ export function ProductTable({
                   isArchiving={archiveId === product.id}
                   isDeleting={deleteId === product.id}
                   onView={() => onView(product)}
-                  onArchive={() => onArchive(product.id)}
                   onEdit={() => onEdit(product)}
+                  onArchive={() => onArchive(product.id)}
                   onCancelArchive={onCancelArchive}
-                  onConfirmArchive={() => onConfirmArchive(product.id)}
+                  onConfirmArchive={() =>
+                    onConfirmArchive(product.id)
+                  }
                   onDelete={() => onDelete(product.id)}
                   onCancelDelete={onCancelDelete}
-                  onConfirmDelete={() => onConfirmDelete(product.id)}
+                  onConfirmDelete={() =>
+                    onConfirmDelete(product.id)
+                  }
                 />
               ))
             ) : (

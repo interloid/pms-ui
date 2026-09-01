@@ -1,6 +1,6 @@
 import type { LucideIcon } from "lucide-react";
-import type { AuthUser } from "./auth";
 import type { ReactNode } from "react";
+import type { AuthUser } from "./auth";
 
 export type NavItem = {
   title: string;
@@ -16,6 +16,72 @@ export type EmptyPageProps = {
   title?: string;
   description?: string;
 };
+
+export type ProductCategory =
+  | "Lighting"
+  | "Apparel"
+  | "Home"
+  | "Electronics"
+  | "Outdoor"
+  | "Stationery";
+
+export type ProductCategoryFilter = "All" | ProductCategory;
+
+export type ProductStatus =
+  | "active"
+  | "draft"
+  | "out_of_stock"
+  | "archived";
+
+export type ProductStatusFilter = "All" | ProductStatus;
+
+export type ProductSortField =
+  | "sku"
+  | "name"
+  | "category"
+  | "price"
+  | "stock"
+  | "status"
+  | "updated";
+
+export type SortOrder = "asc" | "desc";
+
+export type ProductSort = {
+  field: ProductSortField;
+  order: SortOrder;
+};
+
+export const categories: Array<{
+  value: ProductCategoryFilter;
+  label: string;
+}> = [
+  { value: "All", label: "All" },
+  { value: "Lighting", label: "Lighting" },
+  { value: "Apparel", label: "Apparel" },
+  { value: "Home", label: "Home" },
+  { value: "Electronics", label: "Electronics" },
+  { value: "Outdoor", label: "Outdoor" },
+  { value: "Stationery", label: "Stationery" },
+];
+
+export const productCategories = categories.filter(
+  (category) => category.value !== "All",
+);
+
+export const statuses: Array<{
+  value: ProductStatus;
+  label: string;
+}> = [
+  { value: "active", label: "Active" },
+  { value: "draft", label: "Draft" },
+  { value: "out_of_stock", label: "Out of Stock" },
+  { value: "archived", label: "Archived" },
+];
+
+export const statusFilters: Array<{
+  value: ProductStatusFilter;
+  label: string;
+}> = [{ value: "All", label: "All" }, ...statuses];
 
 export type ApiProductImage = {
   id: string;
@@ -50,6 +116,7 @@ export type GetProductsResponse = {
   data: ApiProduct[];
   pagination: Pagination;
 };
+
 export type ProductsResult = {
   products: ApiProduct[];
   total: number;
@@ -60,51 +127,24 @@ export type GetProductsParams = {
   page: number;
   pageSize: number;
   status?: ProductStatusFilter;
-  category?: ProductCategory;
+  category?: ProductCategoryFilter;
   search?: string;
   priceRange?: string;
   sort?: ProductSortField;
   order?: SortOrder;
 };
-export type ProductCategory =
-  | "All"
-  | "Lighting"
-  | "Apparel"
-  | "Home"
-  | "Electronics"
-  | "Outdoor"
-  | "Stationery";
 
-export const categories = [
-  { value: "All", label: "All" },
-  { value: "Lighting", label: "Lighting" },
-  { value: "Apparel", label: "Apparel" },
-  { value: "Home", label: "Home" },
-  { value: "Electronics", label: "Electronics" },
-  { value: "Outdoor", label: "Outdoor" },
-  { value: "Stationery", label: "Stationery" },
-];
+export type ProductForm = {
+  name: string;
+  sku: string;
+  category: ProductCategory | "";
+  price: string;
+  stock: string;
+  status: ProductStatus;
+  description: string;
+};
 
-export const productCategories = categories.filter(
-  (item) => item.value !== "All",
-);
-
-export type ProductStatus = "active" | "draft" | "out_of_stock" | "archived";
-
-export const statuses: Array<{
-  value: ProductStatus;
-  label: string;
-}> = [
-  { value: "active", label: "Active" },
-  { value: "draft", label: "Draft" },
-  { value: "out_of_stock", label: "Out of Stock" },
-  { value: "archived", label: "Archived" },
-];
-
-export const statusFilters: Array<{
-  value: ProductStatusFilter;
-  label: string;
-}> = [{ value: "All", label: "All" }, ...statuses];
+export type FormError = Partial<Record<keyof ProductForm, string>>;
 
 export interface ProductImage {
   id: string;
@@ -113,11 +153,32 @@ export interface ProductImage {
   isPrimary: boolean;
 }
 
-export interface ProductImageProps {
+export type ProductImageProps = {
   src?: string;
   alt: string;
   className?: string;
-}
+};
+
+export type ProductImagePreviewProps = {
+  src: string;
+  alt: string;
+  className?: string;
+};
+
+export type ImagePreviewDialogProps = {
+  image: {
+    src: string;
+    alt: string;
+  } | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+};
+
+export type ImageError = {
+  fileName?: string;
+  message: string;
+  details?: string;
+};
 
 export interface ProductTableRowProps {
   product: ApiProduct;
@@ -140,118 +201,24 @@ export type ProductTableProps = {
   sort: ProductSort;
   onSort: (field: ProductSortField) => void;
   onView: (product: ApiProduct) => void;
+  onEdit: (product: ApiProduct) => void;
   onArchive: (id: string) => void;
   onCancelArchive: () => void;
   onConfirmArchive: (id: string) => void;
   onDelete: (id: string) => void;
   onCancelDelete: () => void;
   onConfirmDelete: (id: string) => void;
-  onEdit: (product: ApiProduct) => void;
 };
 
-export type ProductStatusFilter = "All" | ProductStatus;
-
 export type ProductFiltersProps = {
-  category: ProductCategory;
+  category: ProductCategoryFilter;
   status: ProductStatusFilter;
   priceRange: string;
   productCount: number;
-  onCategoryChange: (value: ProductCategory) => void;
+  onCategoryChange: (value: ProductCategoryFilter) => void;
   onStatusChange: (value: ProductStatusFilter) => void;
   onPriceChange: (value: string) => void;
   onReset: () => void;
-};
-
-export type ProductViewProps = {
-  product: ApiProduct | null;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onEdit: (product: ApiProduct) => void;
-};
-
-export type ImageError = {
-  fileName?: string;
-  message: string;
-  details?: string;
-};
-
-export type ProductEditProps = {
-  product: ApiProduct | null;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onUpdated?: (product: ApiProduct) => void;
-};
-
-export type ProductForm = {
-  name: string;
-  sku: string;
-  category: ProductCategory;
-  price: string;
-  stock: string;
-  status: ProductStatus;
-  description: string;
-};
-
-export type AddProductsProps = {
-  onProductCreated?: () => void;
-};
-
-export type User = {
-  name: string;
-  avatar?: string;
-};
-
-export type HeaderProps = {
-  user: AuthUser | null;
-  productCount?: number;
-};
-
-export type InputInlineProps = {
-  user: AuthUser | null;
-};
-
-export interface SearchContextValue {
-  searchQuery: string;
-  setSearchQuery: React.Dispatch<React.SetStateAction<string>>;
-  refreshKey: number;
-  refresh: () => void;
-  productCount: number;
-  setProductCount: React.Dispatch<React.SetStateAction<number>>;
-}
-
-export interface SearchProviderProps {
-  children: ReactNode;
-}
-
-export type FormErrors = {
-  name?: string;
-  sku?: string;
-  category?: string;
-  price?: string;
-  stock?: string;
-};
-
-export type FormError = Partial<Record<keyof ProductForm, string>>;
-
-export type JsonBody = Record<string, unknown>;
-
-export type ApiRequestOptions = Omit<RequestInit, "body"> & {
-  body?: BodyInit | JsonBody;
-};
-
-export type ProductSortField =
-  "sku" | "name" | "category" | "price" | "stock" | "status" | "updated";
-
-export type SortOrder = "asc" | "desc";
-
-export type ProductSort = {
-  field: ProductSortField;
-  order: SortOrder;
-};
-
-export type Props = ProductTableProps & {
-  sort: ProductSort;
-  onSort: (field: ProductSortField) => void;
 };
 
 export type SortableTableHeadProps = {
@@ -267,21 +234,55 @@ export type PaginationProps = {
   pageSize: number;
   productCount: number;
   totalPages: number;
+
   setPage: React.Dispatch<React.SetStateAction<number>>;
   setPageSize: React.Dispatch<React.SetStateAction<number>>;
 };
 
-export type ImagePreviewDialogProps = {
-  image: {
-    src: string;
-    alt: string;
-  } | null;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+export interface SearchContextValue {
+  searchQuery: string;
+  setSearchQuery: React.Dispatch<React.SetStateAction<string>>;
+
+  refreshKey: number;
+  refresh: () => void;
+
+  productCount: number;
+  setProductCount: React.Dispatch<React.SetStateAction<number>>;
+}
+
+export interface SearchProviderProps {
+  children: ReactNode;
+}
+
+export type User = {
+  name: string;
+  avatar?: string;
 };
 
-export type ProductImagePreviewProps = {
-  src: string;
-  alt: string;
-  className?: string;
+export type HeaderProps = {
+  user: AuthUser | null;
+  productCount?: number;
+};
+
+export type InputInlineProps = {
+  user: AuthUser | null;
+};
+
+export type JsonBody = Record<string, unknown>;
+
+export type ApiRequestOptions = Omit<RequestInit, "body"> & {
+  body?: BodyInit | JsonBody;
+};
+
+export type ProductMode = "add" | "view" | "edit";
+
+export type ProductFormProps = {
+  mode: ProductMode;
+  product?: ApiProduct | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onEdit?: (product: ApiProduct) => void;
+  onProductCreated?: (product: ApiProduct) => void;
+  onProductUpdated?: (product: ApiProduct) => void;
+  trigger?: React.ReactNode;
 };

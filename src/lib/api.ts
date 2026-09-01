@@ -2,14 +2,13 @@ import type { ApiRequestOptions, JsonBody } from "@/types/data-type";
 
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
 
-if (!API_BASE_URL && import.meta.env.PROD) {
-  console.error(
-    "VITE_API_BASE_URL is not configured; API calls will use a relative path.",
-  );
-}
-
 const API_TIMEOUT = 15_000;
 
+if (!API_BASE_URL && import.meta.env.PROD) {
+  console.error(
+    "VITE_API_BASE_URL is not configured. API calls will use relative paths.",
+  );
+}
 export class ApiError extends Error {
   readonly status: number;
   readonly code?: string;
@@ -73,11 +72,7 @@ function getApiErrorMessage(data: unknown, status: number): string {
   return `Request failed with status ${status}`;
 }
 
-function getApiErrorDetails(data: unknown): {
-  code?: string;
-  details?: unknown;
-  requestId?: string;
-} {
+function getApiErrorDetails(data: unknown) {
   if (!isRecord(data)) {
     return {};
   }
@@ -97,6 +92,7 @@ export async function apiRequest<T>(
   options: ApiRequestOptions = {},
 ): Promise<T> {
   const controller = new AbortController();
+
   let timedOut = false;
 
   const timeoutId = setTimeout(() => {
@@ -109,12 +105,11 @@ export async function apiRequest<T>(
     : controller.signal;
 
   try {
-    const requestBody = prepareRequestBody(options.body);
     const isFormData = options.body instanceof FormData;
 
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       ...options,
-      body: requestBody,
+      body: prepareRequestBody(options.body),
       credentials: "include",
       signal,
       headers: {
@@ -129,19 +124,16 @@ export async function apiRequest<T>(
 
     const contentType = response.headers.get("content-type") ?? "";
 
-    let data: unknown = null;
-
-    if (contentType.includes("application/json")) {
-      data = await response.json();
-    } else {
-      data = await response.text();
-    }
+    const data: unknown = contentType.includes("application/json")
+      ? await response.json()
+      : await response.text();
 
     if (!response.ok) {
-      const message = getApiErrorMessage(data, response.status);
-      const errorDetails = getApiErrorDetails(data);
-
-      throw new ApiError(message, response.status, errorDetails);
+      throw new ApiError(
+        getApiErrorMessage(data, response.status),
+        response.status,
+        getApiErrorDetails(data),
+      );
     }
 
     return data as T;

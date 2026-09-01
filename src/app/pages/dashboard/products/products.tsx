@@ -1,22 +1,22 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { ProductFilters } from "@/app/pages/dashboard/products/product-filters";
+import { ProductForm } from "./Product-form";
+import { ProductTable } from "./product-table";
 import { useSearch } from "@/context/search-context";
+import {
+  archiveProduct as archiveProductApi,
+  deleteProduct as deleteProductApi,
+  getProducts,
+} from "@/services/product-service";
 import type {
   ApiProduct,
-  ProductCategory,
+  ProductCategoryFilter,
+  ProductMode,
   ProductSort,
   ProductSortField,
   ProductStatusFilter,
 } from "@/types/data-type";
-import { ProductTable } from "./product-table";
-import { ProductView } from "./crud-operations/view-product";
-import { ProductEdit } from "./crud-operations/edit-product";
-import {
-  getProducts,
-  deleteProduct as deleteProductApi,
-  archiveProduct as archiveProductApi,
-} from "@/services/product-service";
 import { ProductListSkeleton } from "@/components/shad/product-list-skeleton";
 import { TablePagination } from "@/components/shad/table-pagination";
 import { Button } from "@/components/ui/button";
@@ -24,28 +24,32 @@ import { Button } from "@/components/ui/button";
 export default function ProductsPage() {
   const { searchQuery, refreshKey, refresh, productCount, setProductCount } =
     useSearch();
+
   const [products, setProducts] = useState<ApiProduct[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
-  const [category, setCategory] = useState<ProductCategory>("All");
+  const [loadError, setLoadError] = useState<string | null>(null);
+
+  const [category, setCategory] = useState<ProductCategoryFilter>("All");
   const [status, setStatus] = useState<ProductStatusFilter>("All");
   const [priceRange, setPriceRange] = useState("all");
-  const [totalPages, setTotalPages] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
+
   const [archiveId, setArchiveId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [viewProduct, setViewProduct] = useState<ApiProduct | null>(null);
-  const [viewOpen, setViewOpen] = useState(false);
-  const [editProduct, setEditProduct] = useState<ApiProduct | null>(null);
-  const [editOpen, setEditOpen] = useState(false);
+
   const [debouncedSearch, setDebouncedSearch] = useState(searchQuery);
+
   const [sort, setSort] = useState<ProductSort>({
     field: "updated",
     order: "desc",
   });
-  const [loadError, setLoadError] = useState<string | null>(null);
-
+  const [formProduct, setFormProduct] = useState<ApiProduct | null>(null);
+  const [formMode, setFormMode] = useState<ProductMode>("add");
+  const [formOpen, setFormOpen] = useState(false);
   useEffect(() => {
     let ignore = false;
 
@@ -65,9 +69,7 @@ export default function ProductsPage() {
           order: sort.order,
         });
 
-        if (ignore) {
-          return;
-        }
+        if (ignore) return;
 
         setProducts(response.products);
         setProductCount(response.total);
@@ -85,6 +87,7 @@ export default function ProductsPage() {
         }
       }
     }
+
     loadProducts();
 
     return () => {
@@ -100,6 +103,7 @@ export default function ProductsPage() {
     refreshKey,
     sort.field,
     sort.order,
+    setProductCount,
   ]);
 
   useEffect(() => {
@@ -108,12 +112,10 @@ export default function ProductsPage() {
       setPage(1);
     }, 500);
 
-    return () => {
-      clearTimeout(timer);
-    };
+    return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  function updateCategory(value: ProductCategory) {
+  function updateCategory(value: ProductCategoryFilter) {
     setCategory(value);
     setPage(1);
   }
@@ -139,20 +141,24 @@ export default function ProductsPage() {
     setPage(1);
   }
 
-  const handleSort = (field: ProductSortField) => {
+  function handleSort(field: ProductSortField) {
     setSort((current) => ({
       field,
       order:
         current.field === field && current.order === "asc" ? "desc" : "asc",
     }));
+
     setPage(1);
-  };
+  }
 
   async function handleDeleteProduct(id: string) {
     try {
       await deleteProductApi(id);
+
       setDeleteId(null);
+
       toast.success("Product deleted successfully");
+
       refresh();
     } catch (error) {
       toast.error(
@@ -164,8 +170,11 @@ export default function ProductsPage() {
   async function handleArchiveProduct(id: string) {
     try {
       await archiveProductApi(id);
+
       setArchiveId(null);
+
       toast.success("Product archived successfully");
+
       refresh();
     } catch (error) {
       toast.error(
@@ -175,33 +184,33 @@ export default function ProductsPage() {
   }
 
   function handleViewProduct(product: ApiProduct) {
-    setViewProduct(product);
-    setViewOpen(true);
+    setFormMode("view");
+    setFormProduct(product);
+    setFormOpen(true);
   }
 
   function handleEditProduct(product: ApiProduct) {
-    setViewOpen(false);
-    setEditProduct(product);
-    setEditOpen(true);
+    setFormMode("edit");
+    setFormProduct(product);
+    setFormOpen(true);
   }
+
   function handleProductUpdated(updatedProduct: ApiProduct) {
     setProducts((current) =>
       current.map((product) =>
         product.id === updatedProduct.id ? updatedProduct : product,
       ),
     );
-    setViewProduct((current) =>
-      current?.id === updatedProduct.id ? updatedProduct : current,
-    );
-    setEditProduct((current) =>
+
+    setFormProduct((current) =>
       current?.id === updatedProduct.id ? updatedProduct : current,
     );
   }
+
   if (loadError) {
     return (
       <div className="flex min-h-50 items-center justify-center">
         <div className="flex flex-col items-center gap-3 text-center">
-          <p className="text-sm font-medium text-destructive">{loadError}</p>
           <Button type="button" variant="outline" onClick={refresh}>
             Try again
           </Button>
@@ -209,6 +218,7 @@ export default function ProductsPage() {
       </div>
     );
   }
+
   return (
     <>
       <div className="w-full space-y-4">
@@ -249,17 +259,15 @@ export default function ProductsPage() {
             />
           </div>
         )}
-        <ProductView
-          product={viewProduct}
-          open={viewOpen}
-          onOpenChange={setViewOpen}
+
+        <ProductForm
+          mode={formMode}
+          product={formProduct}
+          open={formOpen}
+          onOpenChange={setFormOpen}
           onEdit={handleEditProduct}
-        />
-        <ProductEdit
-          product={editProduct}
-          open={editOpen}
-          onOpenChange={setEditOpen}
-          onUpdated={handleProductUpdated}
+          onProductUpdated={handleProductUpdated}
+          onProductCreated={() => refresh()}
         />
       </div>
       <TablePagination

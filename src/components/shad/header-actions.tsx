@@ -1,4 +1,5 @@
-import { AddProducts } from "@/app/pages/dashboard/products/crud-operations/add-product";
+import { useState } from "react";
+import { ProductForm } from "@/app/pages/dashboard/products/Product-form";
 import { useSearch } from "@/context/search-context";
 import type { InputInlineProps } from "@/types/data-type";
 
@@ -10,6 +11,7 @@ import { LogoutDialog } from "@/components/shad/logout-dialog";
 
 export function HeaderActions({ user }: InputInlineProps) {
   const { searchQuery, setSearchQuery, refresh } = useSearch();
+  const [addOpen, setAddOpen] = useState(false);
 
   return (
     <div className="ml-auto flex items-center gap-2 sm:gap-3">
@@ -22,7 +24,20 @@ export function HeaderActions({ user }: InputInlineProps) {
           className="w-40 cursor-pointer focus-visible:border-primary focus-visible:ring-primary/20 sm:w-56 md:w-72 lg:w-81"
         />
 
-        <AddProducts onProductCreated={refresh} />
+        <ProductForm
+          mode="add"
+          open={addOpen}
+          onOpenChange={setAddOpen}
+          onProductCreated={refresh}
+          trigger={
+            <Button
+              type="button"
+              className="cursor-pointer whitespace-nowrap"
+            >
+              Add Product
+            </Button>
+          }
+        />
       </Field>
 
       <Avatar className="hidden size-9 sm:flex">

@@ -17,11 +17,10 @@ export async function getProducts({
   order = "desc",
 }: GetProductsParams): Promise<ProductsResult> {
   const params = new URLSearchParams();
-
-  params.set("sort", sort);
-  params.set("order", order);
   params.set("page", String(page));
   params.set("page_size", String(pageSize));
+  params.set("sort", sort);
+  params.set("order", order);
 
   if (status !== "All") {
     params.set("status", status);
@@ -39,8 +38,13 @@ export async function getProducts({
 
   if (priceRange !== "all") {
     const [minPrice, maxPrice] = priceRange.split("-");
-    params.set("min_price", minPrice);
-    params.set("max_price", maxPrice);
+
+    if (minPrice) {
+      params.set("min_price", minPrice);
+    }
+    if (maxPrice) {
+      params.set("max_price", maxPrice);
+    }
   }
   const response = await apiRequest<GetProductsResponse>(
     `/api/v1/products?${params.toString()}`,
@@ -53,7 +57,9 @@ export async function getProducts({
   };
 }
 
-export async function createProduct(formData: FormData): Promise<ApiProduct> {
+export async function createProduct(
+  formData: FormData,
+): Promise<ApiProduct> {
   const response = await apiRequest<{
     success: boolean;
     message: string;
@@ -67,7 +73,7 @@ export async function createProduct(formData: FormData): Promise<ApiProduct> {
 
 export async function updateProduct(
   id: string,
-  body: FormData,
+  formData: FormData,
 ): Promise<ApiProduct> {
   const response = await apiRequest<{
     success: boolean;
@@ -75,13 +81,15 @@ export async function updateProduct(
     data: ApiProduct;
   }>(`/api/v1/products/${id}`, {
     method: "PATCH",
-    body,
+    body: formData,
   });
 
   return response.data;
 }
 
-export async function archiveProduct(id: string): Promise<ApiProduct> {
+export async function archiveProduct(
+  id: string,
+): Promise<ApiProduct> {
   const formData = new FormData();
   formData.append("status", "archived");
   formData.append("removed_image_ids", JSON.stringify([]));
