@@ -1,4 +1,4 @@
-import type { ApiRequestOptions, JsonBody } from "@/types/data-type";
+import { ApiError, type ApiRequestOptions, type JsonBody } from "@/types/data-type";
 
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
 
@@ -8,30 +8,6 @@ if (!API_BASE_URL && import.meta.env.PROD) {
   console.error(
     "VITE_API_BASE_URL is not configured. API calls will use relative paths.",
   );
-}
-export class ApiError extends Error {
-  readonly status: number;
-  readonly code?: string;
-  readonly details?: unknown;
-  readonly requestId?: string;
-
-  constructor(
-    message: string,
-    status: number,
-    options?: {
-      code?: string;
-      details?: unknown;
-      requestId?: string;
-    },
-  ) {
-    super(message);
-
-    this.name = "ApiError";
-    this.status = status;
-    this.code = options?.code;
-    this.details = options?.details;
-    this.requestId = options?.requestId;
-  }
 }
 
 function prepareRequestBody(

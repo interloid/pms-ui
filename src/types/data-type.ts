@@ -268,7 +268,7 @@ export type InputInlineProps = {
   user: AuthUser | null;
 };
 
-export type JsonBody = Record<string, unknown>;
+export type JsonBody = object;
 
 export type ApiRequestOptions = Omit<RequestInit, "body"> & {
   body?: BodyInit | JsonBody;
@@ -286,3 +286,28 @@ export type ProductFormProps = {
   onProductUpdated?: (product: ApiProduct) => void;
   trigger?: React.ReactNode;
 };
+
+export class ApiError extends Error {
+  readonly status: number;
+  readonly code?: string;
+  readonly details?: unknown;
+  readonly requestId?: string;
+
+  constructor(
+    message: string,
+    status: number,
+    options?: {
+      code?: string;
+      details?: unknown;
+      requestId?: string;
+    },
+  ) {
+    super(message);
+
+    this.name = "ApiError";
+    this.status = status;
+    this.code = options?.code;
+    this.details = options?.details;
+    this.requestId = options?.requestId;
+  }
+}

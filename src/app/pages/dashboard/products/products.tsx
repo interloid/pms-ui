@@ -261,6 +261,7 @@ export default function ProductsPage() {
         )}
 
         <ProductForm
+          key={`${formMode}-${formProduct?.id ?? "new"}`}
           mode={formMode}
           product={formProduct}
           open={formOpen}

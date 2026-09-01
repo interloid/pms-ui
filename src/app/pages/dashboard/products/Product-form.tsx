@@ -183,39 +183,11 @@ export function ProductForm({
 
   const [showDiscardDialog, setShowDiscardDialog] = useState(false);
 
-  const originalForm = useRef<ProductFormData>(getInitialForm(product));
-
-  const originalPrimaryImageId = useRef<string | null>(
-    product?.images?.find((image) => image.is_primary)?.id ?? null,
-  );
-
   const newImagesRef = useRef<ProductImage[]>([]);
 
   useEffect(() => {
     newImagesRef.current = newImages;
   }, [newImages]);
-
-  useEffect(() => {
-    if (!open) {
-      return;
-    }
-
-    const initialForm = getInitialForm(product);
-
-    setForm(initialForm);
-    setErrors({});
-    setExistingImages(product?.images ?? []);
-    setNewImages([]);
-    setRemovedImageIds(new Set());
-    setImageError(null);
-    setIsDragging(false);
-    setShowDiscardDialog(false);
-
-    originalForm.current = initialForm;
-
-    originalPrimaryImageId.current =
-      product?.images?.find((image) => image.is_primary)?.id ?? null;
-  }, [product, open, mode]);
 
   useEffect(() => {
     return () => {
@@ -256,23 +228,25 @@ export function ProductForm({
       return false;
     }
 
-    const original = originalForm.current;
+    const initial = getInitialForm(product);
 
     const formChanged =
-      form.name !== original.name ||
-      form.sku !== original.sku ||
-      form.category !== original.category ||
-      form.price !== original.price ||
-      form.stock !== original.stock ||
-      form.status !== original.status ||
-      form.description !== original.description;
+      form.name !== initial.name ||
+      form.sku !== initial.sku ||
+      form.category !== initial.category ||
+      form.price !== initial.price ||
+      form.stock !== initial.stock ||
+      form.status !== initial.status ||
+      form.description !== initial.description;
 
     const imagesChanged = removedImageIds.size > 0 || newImages.length > 0;
 
-    const currentPrimaryExistingId = primaryExistingImage?.id ?? null;
+    const originalPrimaryId =
+      product?.images?.find((image) => image.is_primary)?.id ?? null;
 
+    const currentPrimaryExistingId = primaryExistingImage?.id ?? null;
     const primaryChanged =
-      currentPrimaryExistingId !== originalPrimaryImageId.current ||
+      currentPrimaryExistingId !== originalPrimaryId ||
       currentPrimaryNewImageIndex >= 0;
 
     return formChanged || imagesChanged || primaryChanged;
@@ -282,6 +256,7 @@ export function ProductForm({
     newImages,
     primaryExistingImage,
     currentPrimaryNewImageIndex,
+    product,
     isViewMode,
   ]);
 
@@ -629,11 +604,6 @@ export function ProductForm({
     setRemovedImageIds(new Set());
     setImageError(null);
     setIsDragging(false);
-
-    originalForm.current = initialForm;
-
-    originalPrimaryImageId.current =
-      product?.images?.find((image) => image.is_primary)?.id ?? null;
   }
 
   function handleSheetChange(nextOpen: boolean) {
@@ -843,7 +813,6 @@ export function ProductForm({
                       </div>
                     )}
                   </div>
-
                   <div className="grid grid-cols-[120px_1fr] gap-x-4 gap-y-3 text-[13px]">
                     <span className="text-muted-foreground">SKU</span>
                     <span className="font-mono text-xs">{product.sku}</span>
@@ -963,7 +932,7 @@ export function ProductForm({
                     >
                       <SelectTrigger
                         id={`${mode}-product-category`}
-                        className="h-10"
+                        className="h-10 w-full"
                       >
                         <SelectValue placeholder="Select..." />
                       </SelectTrigger>
@@ -1046,7 +1015,7 @@ export function ProductForm({
                     >
                       <SelectTrigger
                         id={`${mode}-product-status`}
-                        className="h-10"
+                        className="h-10 w-full"
                       >
                         <SelectValue />
                       </SelectTrigger>
@@ -1059,7 +1028,6 @@ export function ProductForm({
                         ))}
                       </SelectContent>
                     </Select>
-
                     <FieldError />
                   </div>
                 </div>
@@ -1081,150 +1049,229 @@ export function ProductForm({
                     className="min-h-24 resize-none"
                   />
                 </div>
+                <div className="grid gap-2">
+                  <Label className="text-xs gap-0">
+                    Images
+                    {isEditMode && (
+                      <span className="ml-1 font-medium  text-cancel-button-background">
+                        ( jpeg, png, webp files were only allowed )
+                      </span>
+                    )}
+                  </Label>
+                  {isAddMode && (
+                    <>
+                      {newImages.length > 0 && (
+                        <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                          {newImages.map((image) => (
+                            <div
+                              key={image.id}
+                              className={`relative aspect-square overflow-hidden rounded-md border ${
+                                image.isPrimary
+                                  ? "border-2 border-primary"
+                                  : "border-border"
+                              }`}
+                            >
+                              <ProductImagePreview
+                                src={image.previewUrl}
+                                alt={image.file.name}
+                                className="h-full w-full"
+                              />
 
-                <div className="grid gap-3">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-xs">Images</Label>
+                              <button
+                                type="button"
+                                onClick={() => removeNewImage(image.id)}
+                                className="absolute right-1 top-1 z-20 flex size-5 items-center justify-center rounded-full border bg-background/90 shadow-sm hover:text-destructive"
+                                aria-label={`Remove ${image.file.name}`}
+                              >
+                                <X className="size-3" />
+                              </button>
 
-                    <span className="text-xs text-muted-foreground">
-                      {activeImageCount}/{MAX_IMAGES}
-                    </span>
-                  </div>
+                              {image.isPrimary ? (
+                                <span className="absolute bottom-1 left-1 rounded-full bg-primary px-2 py-0.5 text-[10px] font-medium text-primary-foreground">
+                                  Primary
+                                </span>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => setNewImagePrimary(image.id)}
+                                  className="absolute bottom-1 left-1 rounded-full border bg-background/90 px-2 py-0.5 text-[10px]"
+                                >
+                                  Set primary
+                                </button>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
 
-                  <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-                    {activeExistingImages.map((image) => (
-                      <div
-                        key={image.id}
-                        className={`relative aspect-square overflow-hidden rounded-md border ${
-                          image.is_primary
-                            ? "border-2 border-primary"
-                            : "border-border"
-                        }`}
-                      >
-                        <ProductImagePreview
-                          src={image.url}
-                          alt={`${form.name} image`}
-                          className="h-full w-full"
-                        />
-
-                        <button
-                          type="button"
-                          onClick={() => toggleRemoveExistingImage(image.id)}
-                          className="absolute right-1.5 top-1.5 z-20 flex size-5 items-center justify-center rounded-full border bg-background/90 shadow-sm hover:text-destructive"
-                        >
-                          <X className="size-3" />
-                        </button>
-
-                        {image.is_primary ? (
-                          <span className="absolute bottom-1 left-1 rounded-full bg-primary px-2 py-0.5 text-[10px] text-primary-foreground">
-                            Primary
-                          </span>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => setExistingImagePrimary(image.id)}
-                            className="absolute bottom-1 left-1 rounded-full border bg-background/90 px-2 py-0.5 text-[10px]"
-                          >
-                            Set primary
-                          </button>
-                        )}
-                      </div>
-                    ))}
-
-                    {removedExistingImages.map((image) => (
-                      <div
-                        key={`removed-${image.id}`}
-                        className="relative flex aspect-square items-center justify-center rounded-md border border-dashed border-destructive bg-destructive/5"
-                      >
-                        <span className="px-2 text-center text-[10px] text-destructive">
-                          Removed on save
-                        </span>
-
-                        <button
-                          type="button"
-                          onClick={() => toggleRemoveExistingImage(image.id)}
-                          className="absolute right-1 top-1 flex size-5 items-center justify-center rounded-full border bg-background"
-                        >
-                          <RotateCcw className="size-3" />
-                        </button>
-                      </div>
-                    ))}
-                    {newImages.map((image) => (
-                      <div
-                        key={image.id}
-                        className={`relative aspect-square overflow-hidden rounded-md border ${
-                          image.isPrimary
-                            ? "border-2 border-primary"
-                            : "border-border"
-                        }`}
-                      >
-                        <ProductImagePreview
-                          src={image.previewUrl}
-                          alt={image.file.name}
-                          className="h-full w-full"
-                        />
-
-                        <button
-                          type="button"
-                          onClick={() => removeNewImage(image.id)}
-                          className="absolute right-1 top-1 z-20 flex size-5 items-center justify-center rounded-full border bg-background/90 hover:text-destructive"
-                        >
-                          <X className="size-3" />
-                        </button>
-
-                        {image.isPrimary ? (
-                          <span className="absolute bottom-1 left-1 rounded-full bg-primary px-2 py-0.5 text-[10px] text-primary-foreground">
-                            Primary
-                          </span>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => setNewImagePrimary(image.id)}
-                            className="absolute bottom-1 left-1 rounded-full border bg-background/90 px-2 py-0.5 text-[10px]"
-                          >
-                            Set primary
-                          </button>
-                        )}
-                      </div>
-                    ))}
-
-                    {remainingSlots > 0 && (
                       <label
                         htmlFor={`${mode}-product-images`}
                         onDragEnter={handleDragEnter}
                         onDragOver={handleDragOver}
                         onDragLeave={handleDragLeave}
                         onDrop={handleDrop}
-                        className={`flex aspect-square cursor-pointer flex-col items-center justify-center rounded-md border border-dashed ${
+                        className={`flex cursor-pointer flex-col items-center justify-center gap-1.5 rounded-lg border border-dashed px-5 py-7 text-center transition-colors ${
                           isDragging
-                            ? "border-primary bg-primary/10 text-primary"
-                            : "border-border text-muted-foreground hover:bg-muted"
+                            ? "border-primary bg-accent"
+                            : "border-border bg-background hover:border-primary hover:bg-accent/50"
+                        } ${
+                          isSubmitting || remainingSlots <= 0
+                            ? "pointer-events-none cursor-not-allowed opacity-50"
+                            : ""
                         }`}
                       >
-                        <span className="text-2xl">+</span>
-
-                        <span className="text-[10px] font-medium">
-                          {isDragging ? "Drop images" : "Add images"}
+                        <span className="text-[13px] font-medium">
+                          {isDragging
+                            ? "Drop images here"
+                            : "Drop images here, or click to browse"}
                         </span>
-
-                        <span className="text-[9px]">
-                          {remainingSlots}{" "}
-                          {remainingSlots === 1 ? "slot" : "slots"} left
+                        <span className="text-xs font-normal text-foreground">
+                          JPG, PNG or WEBP · up to 5 MB each · max 6 images
                         </span>
                       </label>
-                    )}
+                      <Input
+                        id={`${mode}-product-images`}
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        multiple
+                        onChange={handleImageChange}
+                        disabled={isSubmitting || remainingSlots <= 0}
+                        className="hidden"
+                      />
+                    </>
+                  )}
+                  {isEditMode && (
+                    <>
+                      <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                        {activeExistingImages.map((image) => (
+                          <div
+                            key={image.id}
+                            className={`relative aspect-square overflow-hidden rounded-md border ${
+                              image.is_primary
+                                ? "border-2 border-primary"
+                                : "border-border"
+                            }`}
+                          >
+                            <ProductImagePreview
+                              src={image.url}
+                              alt={product?.name ?? "Product image"}
+                              className="h-full w-full"
+                            />
+                            {image.is_primary && (
+                              <span className="absolute bottom-1 left-1 rounded-full bg-primary px-2 py-0.5 text-[10px] font-medium text-primary-foreground">
+                                Primary
+                              </span>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() =>
+                                toggleRemoveExistingImage(image.id)
+                              }
+                              className="absolute right-1 top-1 z-20 flex size-5 items-center justify-center rounded-full border bg-background/90 shadow-sm hover:text-destructive"
+                              aria-label={`Remove ${image.id}`}
+                            >
+                              <X className="size-3" />
+                            </button>
+                            {!image.is_primary && (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setExistingImagePrimary(image.id)
+                                }
+                                className="absolute bottom-1 left-1 rounded-full border bg-background/90 px-2 py-0.5 text-[10px]"
+                              >
+                                Set primary
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                        {newImages.map((image) => (
+                          <div
+                            key={image.id}
+                            className={`relative aspect-square overflow-hidden rounded-md border ${
+                              image.isPrimary
+                                ? "border-2 border-primary"
+                                : "border-border"
+                            }`}
+                          >
+                            <ProductImagePreview
+                              src={image.previewUrl}
+                              alt={image.file.name}
+                              className="h-full w-full"
+                            />
 
-                    <Input
-                      id={`${mode}-product-images`}
-                      type="file"
-                      accept="image/jpeg,image/png,image/webp"
-                      multiple
-                      onChange={handleImageChange}
-                      disabled={isSubmitting || remainingSlots <= 0}
-                      className="hidden"
-                    />
-                  </div>
+                            <button
+                              type="button"
+                              onClick={() => removeNewImage(image.id)}
+                              className="absolute right-1 top-1 z-20 flex size-5 items-center justify-center rounded-full border bg-background/90 shadow-sm hover:text-destructive"
+                              aria-label={`Remove ${image.file.name}`}
+                            >
+                              <X className="size-3" />
+                            </button>
 
+                            {image.isPrimary ? (
+                              <span className="absolute bottom-1 left-1 rounded-full bg-primary px-2 py-0.5 text-[10px] font-medium text-primary-foreground">
+                                Primary
+                              </span>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => setNewImagePrimary(image.id)}
+                                className="absolute bottom-1 left-1 rounded-full border bg-background/90 px-2 py-0.5 text-[10px]"
+                              >
+                                Set primary
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                        {removedExistingImages.map((image) => (
+                          <div
+                            key={`removed-${image.id}`}
+                            className="relative flex aspect-square items-center justify-center rounded-md border border-dashed border-destructive bg-destructive/5 p-2 text-center"
+                          >
+                            <span className="text-[10px] font-medium text-destructive">
+                              Removed on save
+                            </span>
+
+                            <button
+                              type="button"
+                              onClick={() =>
+                                toggleRemoveExistingImage(image.id)
+                              }
+                              className="absolute right-1 top-1 flex size-5 items-center justify-center rounded-full border bg-background/90 shadow-sm"
+                              aria-label="Restore image"
+                            >
+                              <RotateCcw className="size-3" />
+                            </button>
+                          </div>
+                        ))}
+                        {remainingSlots > 0 && (
+                          <label
+                            htmlFor={`${mode}-product-images`}
+                            className={`flex aspect-square cursor-pointer items-center justify-center rounded-md border border-dashed border-border text-muted-foreground transition-colors hover:border-primary hover:bg-accent ${
+                              isSubmitting
+                                ? "pointer-events-none cursor-not-allowed opacity-50"
+                                : ""
+                            }`}
+                            aria-label="Add images"
+                          >
+                            <span className="text-2xl font-light leading-none">
+                              +
+                            </span>
+                          </label>
+                        )}
+                      </div>
+                      <Input
+                        id={`${mode}-product-images`}
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        multiple
+                        onChange={handleImageChange}
+                        disabled={isSubmitting || remainingSlots <= 0}
+                        className="hidden"
+                      />
+                    </>
+                  )}
                   {imageError && (
                     <div className="rounded-lg border border-red-300 bg-red-50 px-3 py-2">
                       <p className="text-xs font-semibold text-red-600">
@@ -1246,7 +1293,6 @@ export function ProductForm({
                   )}
                 </div>
               </div>
-
               <SheetFooter className="h-16 shrink-0 border-t px-5">
                 <div className="flex w-full flex-row-reverse gap-2">
                   <Button type="submit" disabled={isSubmitting}>
