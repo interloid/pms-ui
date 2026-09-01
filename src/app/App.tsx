@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/context/auth-provider";
 import { ProtectedRoute } from "@/app/auth/protected-route";
@@ -8,7 +8,6 @@ import LoadingScreen from "@/components/shad/loading-screen";
 import { ToasterMessage } from "@/components/shad/toaster";
 import { ErrorBoundary } from "@/components/shad/error-bountry";
 import { NotFoundPage } from "@/components/shad/not-found-page";
-
 const LoginForm = lazy(() => import("@/app/pages/Authentication/login"));
 const Callback = lazy(() => import("./pages/Authentication/callback"));
 const DashboardLayout = lazy(() => import("@/layouts/dashboard"));
@@ -53,6 +52,7 @@ export default function App() {
                       <Route path="/settings" element={<Settings />} />
                     </Route>
                   </Route>
+                  <Route path="/" element={<Navigate to="/login" replace />} />
                   <Route path="*" element={<NotFoundPage />} />
                 </Routes>
               </Suspense>
