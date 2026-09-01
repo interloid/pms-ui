@@ -34,18 +34,8 @@ export function ProductTable({
           <TableHeader>
             <TableRow className="bg-muted/50 text-xs text-muted-text hover:bg-muted/50">
               <TableHead className="text-center">SKU</TableHead>
-
-              <TableHead className="text-center">
-                PRODUCT NAME
-              </TableHead>
-
-              <SortableHeader
-                label="CATEGORY"
-                field="category"
-                sort={sort}
-                onSort={onSort}
-              />
-
+              <TableHead className="text-center">PRODUCT NAME</TableHead>
+              <TableHead className="hidden text-center md:table-cell">CATEGORY</TableHead>
               <SortableHeader
                 label="PRICE"
                 field="price"
@@ -72,11 +62,10 @@ export function ProductTable({
                 field="updated"
                 sort={sort}
                 onSort={onSort}
+                className="hidden md:table-cell"
               />
 
-              <TableHead className="text-center">
-                ACTIONS
-              </TableHead>
+              <TableHead className="text-center">ACTIONS</TableHead>
             </TableRow>
           </TableHeader>
 
@@ -92,14 +81,10 @@ export function ProductTable({
                   onEdit={() => onEdit(product)}
                   onArchive={() => onArchive(product.id)}
                   onCancelArchive={onCancelArchive}
-                  onConfirmArchive={() =>
-                    onConfirmArchive(product.id)
-                  }
+                  onConfirmArchive={() => onConfirmArchive(product.id)}
                   onDelete={() => onDelete(product.id)}
                   onCancelDelete={onCancelDelete}
-                  onConfirmDelete={() =>
-                    onConfirmDelete(product.id)
-                  }
+                  onConfirmDelete={() => onConfirmDelete(product.id)}
                 />
               ))
             ) : (

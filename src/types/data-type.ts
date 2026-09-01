@@ -2,7 +2,7 @@ import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import type { AuthUser } from "./auth";
 
-export type NavItem = {
+type NavItem = {
   title: string;
   url: string;
   icon: LucideIcon;

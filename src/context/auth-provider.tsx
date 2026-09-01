@@ -1,10 +1,4 @@
-import {
-  createContext,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import {
   getCurrentSession,
@@ -14,25 +8,22 @@ import {
 } from "@/services/auth-service";
 
 import type {
-  AuthContextValue,
   AuthProviderProps,
   AuthStatus,
   AuthUser,
   LoginCredentials,
 } from "@/types/auth";
 
-export const AuthContext = createContext<AuthContextValue | undefined>(
-  undefined,
-);
+import { AuthContext } from "./auth";
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const [status, setStatus] = useState<AuthStatus>("loading");
   const [user, setUser] = useState<AuthUser | null>(null);
-
   const checkAuth = useCallback(async () => {
     try {
       const response = await getCurrentSession();
       const apiUser = response?.data?.user;
+
       if (!apiUser?.id || !apiUser?.email) {
         throw new Error("Invalid user data");
       }
@@ -41,12 +32,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
         email: apiUser.email,
         name: `${apiUser.first_name ?? ""} ${apiUser.last_name ?? ""}`.trim(),
       };
+
       setUser(userData);
       setStatus("authenticated");
+
       return true;
     } catch {
       setUser(null);
       setStatus("unauthenticated");
+
       return false;
     }
   }, []);
@@ -54,14 +48,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const login = useCallback(async (credentials: LoginCredentials) => {
     const response = await loginService(credentials);
     const apiUser = response?.data?.user;
+
     if (!apiUser?.id || !apiUser?.email) {
       throw new Error("Invalid user data returned from login");
     }
+
     const userData: AuthUser = {
       id: apiUser.id,
       email: apiUser.email,
       name: `${apiUser.first_name ?? ""} ${apiUser.last_name ?? ""}`.trim(),
     };
+
     setUser(userData);
     setStatus("authenticated");
   }, []);
@@ -82,9 +79,41 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setStatus("unauthenticated");
     }
   }, []);
+
   useEffect(() => {
-    void checkAuth();
-  }, [checkAuth]);
+    let cancelled = false;
+
+    const initializeAuth = async () => {
+      try {
+        const response = await getCurrentSession();
+        const apiUser = response?.data?.user;
+
+        if (!apiUser?.id || !apiUser?.email) {
+          throw new Error("Invalid user data");
+        }
+        if (cancelled) {
+          return;
+        }
+        const userData: AuthUser = {
+          id: apiUser.id,
+          email: apiUser.email,
+          name: `${apiUser.first_name ?? ""} ${apiUser.last_name ?? ""}`.trim(),
+        };
+        setUser(userData);
+        setStatus("authenticated");
+      } catch {
+        if (cancelled) {
+          return;
+        }
+        setUser(null);
+        setStatus("unauthenticated");
+      }
+    };
+    void initializeAuth();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const value = useMemo(
     () => ({

@@ -3,7 +3,7 @@ import { toast } from "sonner";
 import { ProductFilters } from "@/app/pages/dashboard/products/product-filters";
 import { ProductForm } from "./Product-form";
 import { ProductTable } from "./product-table";
-import { useSearch } from "@/context/search-context";
+import { useSearch } from "@/context/use-search";
 import {
   archiveProduct as archiveProductApi,
   deleteProduct as deleteProductApi,

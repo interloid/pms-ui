@@ -62,7 +62,7 @@ export function ProductFilters({
           ))}
         </SelectContent>
       </Select>
-      <div className="flex items-center gap-1">
+      <div className="flex flex-wrap items-center gap-1">
         {statusFilters.map((item) => {
           const active = status === item.value;
           return (
@@ -73,8 +73,8 @@ export function ProductFilters({
               size="sm"
               className={
                 active
-                  ? "h-9 rounded-full px-4"
-                  : "h-9 rounded-full px-4 font-normal hover:bg-primary-hover! hover:border-primary"
+                  ? "h-9 rounded-full px-3 sm:px-4"
+                  : "h-9 rounded-full px-3 font-normal hover:bg-primary-hover! hover:border-primary sm:px-4"
               }
               onClick={() => onStatusChange(item.value)}
             >

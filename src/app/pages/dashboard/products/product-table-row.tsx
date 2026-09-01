@@ -10,22 +10,8 @@ import {
 import { TableCell, TableRow } from "@/components/ui/table";
 import type { ApiProduct, ProductTableRowProps } from "@/types/data-type";
 import { ProductImage } from "./product-image";
-import { formatDateTime, getStatusLabel } from "@/lib/converters";
+import { formatDateTime, getStatusClassName, getStatusLabel } from "@/lib/converters";
 
-function getStatusClassName(status: string) {
-  switch (status) {
-    case "active":
-      return "border-emerald-200 bg-emerald-50 text-emerald-700";
-    case "draft":
-      return "border-slate-200 bg-slate-50 text-slate-600";
-    case "out_of_stock":
-      return "border-orange-200 bg-orange-50 text-orange-700";
-    case "archived":
-      return "border-slate-200 bg-slate-50 text-slate-500";
-    default:
-      return "";
-  }
-}
 
 function getPrimaryImage(product: ApiProduct) {
   return (
@@ -56,11 +42,11 @@ export function ProductTableRow({
           colSpan={8}
           className="border-l-2 border-l-cancel-button-background py-4"
         >
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-3 min-w-0">
               <ProductImage src={primaryImage} alt={product.name} />
-              <div>
-                <p className="text-sm font-medium">
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium">
                   Archive &quot;{product.name}&quot;?
                 </p>
                 <p className="text-sm text-muted-foreground">
@@ -97,11 +83,11 @@ export function ProductTableRow({
           colSpan={8}
           className="border-l-2 border-l-cancel-button-background py-4"
         >
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-3 min-w-0">
               <ProductImage src={primaryImage} alt={product.name} />
-              <div>
-                <p className="text-sm font-medium">
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium">
                   Delete &quot;{product.name}&quot;?
                 </p>
                 <p className="text-sm text-muted-foreground">
@@ -134,7 +120,7 @@ export function ProductTableRow({
       <TableCell>
         <div className="flex items-center gap-3">
           <ProductImage src={primaryImage} alt={product.name} />
-          <span className="font-mono text-xs text-muted-foreground">
+          <span className="hidden font-mono text-xs text-muted-foreground min-[420px]:inline">
             {product.sku}
           </span>
         </div>
@@ -143,12 +129,12 @@ export function ProductTableRow({
         <button
           type="button"
           onClick={onView}
-          className="text-center text-sm font-semibold hover:underline"
+          className="max-w-40 truncate text-center text-sm font-semibold hover:underline sm:max-w-none"
         >
           {product.name}
         </button>
       </TableCell>
-      <TableCell className="text-sm text-muted-foreground">
+      <TableCell className="hidden text-sm text-muted-foreground md:table-cell">
         {product.category_name}
       </TableCell>
       <TableCell className="text-center font-mono text-sm">
@@ -160,7 +146,7 @@ export function ProductTableRow({
           {getStatusLabel(product.status)}
         </Badge>
       </TableCell>
-      <TableCell className="text-xs text-center text-muted-foreground">
+      <TableCell className="hidden text-center text-xs text-muted-foreground md:table-cell">
         {formatDateTime(product.updated_at)}
       </TableCell>
       <TableCell

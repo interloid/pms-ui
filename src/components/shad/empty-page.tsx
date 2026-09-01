@@ -16,7 +16,7 @@ type EmptyPageProps = {
   children?: ReactNode;
 };
 
-export default function EmptyPage({
+export default function EmptyProductPage({
   icon: Icon,
   title = "Coming soon",
   description = "This page is currently under development.",
@@ -32,10 +32,8 @@ export default function EmptyPage({
             </EmptyMedia>
           )}
           <EmptyTitle>{title}</EmptyTitle>
-
           <EmptyDescription>{description}</EmptyDescription>
         </EmptyHeader>
-
         {children}
       </Empty>
     </div>

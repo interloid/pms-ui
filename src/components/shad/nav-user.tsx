@@ -13,8 +13,10 @@ import {
 } from "@/components/ui/sidebar";
 import type { AuthUser } from "@/types/auth";
 import { LogoutDialog } from "@/components/shad/logout-dialog";
+import { getInitials } from "@/lib/utils";
 
 export function NavUser({ user }: { user: AuthUser | null }) {
+  const initials = getInitials(user?.name ?? "");
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -26,15 +28,8 @@ export function NavUser({ user }: { user: AuthUser | null }) {
             >
               <Avatar className="h-8 w-8 rounded-lg">
                 <AvatarImage src={user?.avatar} alt={user?.name} />
-
                 <AvatarFallback className="rounded-lg">
-                  {user?.name
-                    ?.trim()
-                    .split(/\s+/)
-                    .map((word) => word[0])
-                    .join("")
-                    .slice(0, 2)
-                    .toUpperCase() ?? "?"}
+                  {initials}
                 </AvatarFallback>
               </Avatar>
 

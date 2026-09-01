@@ -1,22 +1,18 @@
 import { ArrowDown, ArrowUp } from "lucide-react";
 import { TableHead } from "@/components/ui/table";
-import type { ProductSort, ProductSortField } from "@/types/data-type";
+import type { SortableTableHeadProps } from "@/types/data-type";
 
 export function SortableHeader({
   label,
   field,
   sort,
   onSort,
-}: {
-  label: string;
-  field: ProductSortField;
-  sort: ProductSort;
-  onSort: (field: ProductSortField) => void;
-}) {
+  className,
+}: SortableTableHeadProps) {
   const isActive = sort.field === field;
 
   return (
-    <TableHead>
+    <TableHead className={className}>
       <button
         type="button"
         onClick={() => onSort(field)}
@@ -32,7 +28,6 @@ export function SortableHeader({
                 : "text-muted-foreground/40"
             }`}
           />
-
           <ArrowDown
             className={`size-3 ${
               isActive && sort.order === "desc"

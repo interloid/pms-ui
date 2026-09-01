@@ -50,6 +50,7 @@ import { createProduct, updateProduct } from "@/services/product-service";
 
 import { revokeImageUrls } from "@/lib/utils";
 import { getUserFriendlyErrorMessage } from "@/lib/error-messsege";
+import { formatDateTime, getStatusClassName } from "@/lib/converters";
 
 const MAX_IMAGES = 6;
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
@@ -120,25 +121,6 @@ function FieldError({ message }: { message?: string }) {
       {message || "\u00A0"}
     </p>
   );
-}
-
-function getStatusClassName(status: ProductStatus) {
-  switch (status) {
-    case "active":
-      return "border-emerald-200 bg-emerald-50 text-emerald-700";
-
-    case "draft":
-      return "border-slate-200 bg-slate-50 text-slate-600";
-
-    case "out_of_stock":
-      return "border-orange-200 bg-orange-50 text-orange-700";
-
-    case "archived":
-      return "border-slate-200 bg-slate-50 text-slate-500";
-
-    default:
-      return "";
-  }
 }
 
 function getStatusLabel(status: ProductStatus) {
@@ -842,12 +824,12 @@ export function ProductForm({
                     </span>
                     <span className="text-muted-foreground">Created</span>
                     <span className="text-muted-foreground">
-                      {product.created_at || "—"}
+                      {formatDateTime(product.created_at || "—")}
                     </span>
 
                     <span className="text-muted-foreground">Updated</span>
                     <span className="text-muted-foreground">
-                      {product.updated_at || "—"}
+                      {formatDateTime(product.updated_at || "—")}
                     </span>
                   </div>
                 </div>

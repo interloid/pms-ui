@@ -1,4 +1,8 @@
-import { ApiError, type ApiRequestOptions, type JsonBody } from "@/types/data-type";
+import {
+  ApiError,
+  type ApiRequestOptions,
+  type JsonBody,
+} from "@/types/data-type";
 
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
 
@@ -10,9 +14,7 @@ if (!API_BASE_URL && import.meta.env.PROD) {
   );
 }
 
-function prepareRequestBody(
-  body?: BodyInit | JsonBody,
-): BodyInit | undefined {
+function prepareRequestBody(body?: BodyInit | JsonBody): BodyInit | undefined {
   if (body === undefined) {
     return undefined;
   }
@@ -118,9 +120,11 @@ export async function apiRequest<T>(
       if (!timedOut) {
         throw error;
       }
-
       throw new Error(
         "The request timed out. Please check your connection and try again.",
+        {
+          cause: error,
+        },
       );
     }
 
