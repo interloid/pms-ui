@@ -24,7 +24,7 @@ export default function Header({ user, productCount = 0 }: HeaderProps) {
     <header className="flex min-h-16 flex-col border-b sm:min-h-16 sm:flex-row sm:items-center">
       <div className="flex min-h-16 flex-1 items-center gap-2 px-3 sm:px-4">
         <div className="flex min-w-0 flex-1 items-center gap-2">
-          <MobileMenuButton/>
+          <MobileMenuButton />
           <h1 className="line-clamp-1 text-sm font-medium">
             {title}
             {pathname === "/products" && (
@@ -36,7 +36,6 @@ export default function Header({ user, productCount = 0 }: HeaderProps) {
         </div>
         <HeaderActions user={user} />
       </div>
-
       <div className="flex items-center border-t px-3 py-2 sm:hidden sm:border-t-0 sm:px-4 sm:py-0">
         <div className="relative w-full">
           <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />

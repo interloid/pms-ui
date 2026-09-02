@@ -9,9 +9,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { TableCell, TableRow } from "@/components/ui/table";
 import type { ApiProduct, ProductTableRowProps } from "@/types/data-type";
-import { ProductImage } from "./product-image";
-import { formatDateTime, getStatusClassName, getStatusLabel } from "@/lib/converters";
-
+import { ProductImage } from "@/app/pages/dashboard/products/productTable/product-image";
+import {
+  formatDateTime,
+  getStatusClassName,
+  getStatusLabel,
+} from "@/lib/converters";
+import { useState } from "react";
 
 function getPrimaryImage(product: ApiProduct) {
   return (
@@ -34,6 +38,7 @@ export function ProductTableRow({
   onConfirmDelete,
 }: ProductTableRowProps) {
   const primaryImage = getPrimaryImage(product);
+  const [actionsOpen, setActionsOpen] = useState(false);
 
   if (isArchiving) {
     return (
@@ -153,7 +158,7 @@ export function ProductTableRow({
         className="relative z-20"
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="flex items-center gap-1">
+        <div className="flex items-center justify-center gap-1">
           <Button
             variant="outline"
             size="sm"
@@ -165,7 +170,7 @@ export function ProductTableRow({
           >
             View
           </Button>
-          <DropdownMenu>
+          <DropdownMenu open={actionsOpen} onOpenChange={setActionsOpen}>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="outline"
@@ -187,27 +192,34 @@ export function ProductTableRow({
             >
               {product.status !== "archived" && (
                 <DropdownMenuItem
-                  className="hover:"
                   onSelect={(event) => {
                     event.preventDefault();
+
+                    setActionsOpen(false);
                     onArchive();
                   }}
                 >
                   Archive
                 </DropdownMenuItem>
               )}
+
               <DropdownMenuItem
                 onSelect={(event) => {
                   event.preventDefault();
+
+                  setActionsOpen(false);
                   onEdit();
                 }}
               >
                 Edit
               </DropdownMenuItem>
+
               <DropdownMenuItem
                 className="text-destructive"
                 onSelect={(event) => {
                   event.preventDefault();
+
+                  setActionsOpen(false);
                   onDelete();
                 }}
               >

@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { toast } from "sonner";
 import { ProductFilters } from "@/app/pages/dashboard/products/product-filters";
-import { ProductForm } from "./Product-form";
-import { ProductTable } from "./product-table";
+import { ProductTable } from "./productTable/product-table";
+import { ProductView } from "./crud-operations/view-product";
+import { ProductEdit } from "./crud-operations/edit-product";
 import { useSearch } from "@/context/use-search";
 import {
   archiveProduct as archiveProductApi,
@@ -12,7 +13,6 @@ import {
 import type {
   ApiProduct,
   ProductCategoryFilter,
-  ProductMode,
   ProductSort,
   ProductSortField,
   ProductStatusFilter,
@@ -47,9 +47,12 @@ export default function ProductsPage() {
     field: "updated",
     order: "desc",
   });
-  const [formProduct, setFormProduct] = useState<ApiProduct | null>(null);
-  const [formMode, setFormMode] = useState<ProductMode>("add");
-  const [formOpen, setFormOpen] = useState(false);
+
+  const [viewProduct, setViewProduct] = useState<ApiProduct | null>(null);
+  const [viewOpen, setViewOpen] = useState(false);
+  const [editProduct, setEditProduct] = useState<ApiProduct | null>(null);
+  const [editOpen, setEditOpen] = useState(false);
+
   useEffect(() => {
     let ignore = false;
 
@@ -115,22 +118,22 @@ export default function ProductsPage() {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  function updateCategory(value: ProductCategoryFilter) {
+  const updateCategory = useCallback((value: ProductCategoryFilter) => {
     setCategory(value);
     setPage(1);
-  }
+  }, []);
 
-  function updateStatus(value: ProductStatusFilter) {
+  const updateStatus = useCallback((value: ProductStatusFilter) => {
     setStatus(value);
     setPage(1);
-  }
+  }, []);
 
-  function updatePrice(value: string) {
+  const updatePrice = useCallback((value: string) => {
     setPriceRange(value);
     setPage(1);
-  }
+  }, []);
 
-  function resetFilters() {
+  const resetFilters = useCallback(() => {
     setCategory("All");
     setStatus("All");
     setPriceRange("all");
@@ -139,9 +142,9 @@ export default function ProductsPage() {
       order: "desc",
     });
     setPage(1);
-  }
+  }, []);
 
-  function handleSort(field: ProductSortField) {
+  const handleSort = useCallback((field: ProductSortField) => {
     setSort((current) => ({
       field,
       order:
@@ -149,63 +152,72 @@ export default function ProductsPage() {
     }));
 
     setPage(1);
-  }
+  }, []);
 
-  async function handleDeleteProduct(id: string) {
-    try {
-      await deleteProductApi(id);
+  const handleDeleteProduct = useCallback(
+    async (id: string) => {
+      try {
+        await deleteProductApi(id);
 
-      setDeleteId(null);
+        setDeleteId(null);
 
-      toast.success("Product deleted successfully");
+        toast.success("Product deleted successfully");
 
-      refresh();
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Failed to delete product",
-      );
-    }
-  }
+        refresh();
+      } catch (error) {
+        toast.error(
+          error instanceof Error ? error.message : "Failed to delete product",
+        );
+      }
+    },
+    [refresh],
+  );
 
-  async function handleArchiveProduct(id: string) {
-    try {
-      await archiveProductApi(id);
+  const handleArchiveProduct = useCallback(
+    async (id: string) => {
+      try {
+        await archiveProductApi(id);
 
-      setArchiveId(null);
+        setArchiveId(null);
 
-      toast.success("Product archived successfully");
+        toast.success("Product archived successfully");
 
-      refresh();
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Failed to archive product",
-      );
-    }
-  }
+        refresh();
+      } catch (error) {
+        toast.error(
+          error instanceof Error ? error.message : "Failed to archive product",
+        );
+      }
+    },
+    [refresh],
+  );
 
-  function handleViewProduct(product: ApiProduct) {
-    setFormMode("view");
-    setFormProduct(product);
-    setFormOpen(true);
-  }
+  const openEdit = useCallback((product: ApiProduct) => {
+    setViewOpen(false);
+    setEditProduct(product);
+    setEditOpen(true);
+  }, []);
 
-  function handleEditProduct(product: ApiProduct) {
-    setFormMode("edit");
-    setFormProduct(product);
-    setFormOpen(true);
-  }
+  const openView = useCallback((product: ApiProduct) => {
+    setViewProduct(product);
+    setViewOpen(true);
+  }, []);
 
-  function handleProductUpdated(updatedProduct: ApiProduct) {
+  const handleProductUpdated = useCallback((updatedProduct: ApiProduct) => {
     setProducts((current) =>
       current.map((product) =>
         product.id === updatedProduct.id ? updatedProduct : product,
       ),
     );
 
-    setFormProduct((current) =>
+    setViewProduct((current) =>
       current?.id === updatedProduct.id ? updatedProduct : current,
     );
-  }
+
+    setEditProduct((current) =>
+      current?.id === updatedProduct.id ? updatedProduct : current,
+    );
+  }, []);
 
   if (loadError) {
     return (
@@ -232,6 +244,7 @@ export default function ProductsPage() {
           onPriceChange={updatePrice}
           onReset={resetFilters}
         />
+
         {!hasLoadedOnce ? (
           <ProductListSkeleton />
         ) : (
@@ -244,12 +257,12 @@ export default function ProductsPage() {
           >
             <ProductTable
               products={products}
+              onEdit={openEdit}
+              onView={openView}
               archiveId={archiveId}
               deleteId={deleteId}
               sort={sort}
               onSort={handleSort}
-              onView={handleViewProduct}
-              onEdit={handleEditProduct}
               onArchive={setArchiveId}
               onCancelArchive={() => setArchiveId(null)}
               onConfirmArchive={handleArchiveProduct}
@@ -259,17 +272,22 @@ export default function ProductsPage() {
             />
           </div>
         )}
-
-        <ProductForm
-          key={`${formMode}-${formProduct?.id ?? "new"}`}
-          mode={formMode}
-          product={formProduct}
-          open={formOpen}
-          onOpenChange={setFormOpen}
-          onEdit={handleEditProduct}
-          onProductUpdated={handleProductUpdated}
-          onProductCreated={() => refresh()}
+        <ProductView
+          product={viewProduct}
+          open={viewOpen}
+          onOpenChange={setViewOpen}
+          onEdit={openEdit}
         />
+
+        {editOpen && editProduct && (
+          <ProductEdit
+            key={editProduct.id}
+            product={editProduct}
+            open
+            onOpenChange={setEditOpen}
+            onUpdated={handleProductUpdated}
+          />
+        )}
       </div>
       <TablePagination
         page={page}

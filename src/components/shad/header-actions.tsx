@@ -1,18 +1,17 @@
-import { useState } from "react";
-import { ProductForm } from "@/app/pages/dashboard/products/Product-form";
 import { useSearch } from "@/context/use-search";
-import type { InputInlineProps } from "@/types/data-type";
-
+import type { HeaderActionsProps } from "@/types/data-type";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { LogoutDialog } from "@/components/shad/logout-dialog";
+import { AddProducts } from "@/app/pages/dashboard/products/crud-operations/add-product";
 import { getInitials } from "@/lib/utils";
+import { Button } from "../ui/button";
 
 
-export function HeaderActions({ user }: InputInlineProps) {
+export function HeaderActions({
+  user,
+}: HeaderActionsProps) {
   const { searchQuery, setSearchQuery, refresh } = useSearch();
-  const [addOpen, setAddOpen] = useState(false);
   const initials = getInitials(user?.name ?? "");
 
   return (
@@ -24,22 +23,7 @@ export function HeaderActions({ user }: InputInlineProps) {
         onChange={(e) => setSearchQuery(e.target.value)}
         className="hidden h-9 w-full cursor-pointer focus-visible:border-primary focus-visible:ring-primary/20 sm:flex sm:w-44 md:w-56 lg:w-72"
       />
-
-      <ProductForm
-        mode="add"
-        open={addOpen}
-        onOpenChange={setAddOpen}
-        onProductCreated={refresh}
-        trigger={
-          <Button
-            type="button"
-            className="cursor-pointer whitespace-nowrap px-2.5 sm:px-4"
-          >
-            <span className="hidden sm:inline">Add Product</span>
-            <span className="sm:hidden">Add</span>
-          </Button>
-        }
-      />
+      <AddProducts onProductCreated={refresh} />
 
       <Avatar className="hidden size-9 lg:flex">
         <AvatarImage

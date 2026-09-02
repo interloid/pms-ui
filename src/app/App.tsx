@@ -16,7 +16,7 @@ const Products = lazy(() => import("./pages/dashboard/products/products"));
 const Categories = lazy(() => import("./pages/dashboard/categories"));
 const Customers = lazy(() => import("./pages/dashboard/customers"));
 const Reports = lazy(() => import("./pages/dashboard/reports"));
-const Settings = lazy(() => import("./pages/settings"));
+const Settings = lazy(() => import("./pages/dashboard/settings"));
 const PasscodeRequestPage = lazy(
   () => import("./pages/Authentication/passcode/request"),
 );
