@@ -8,7 +8,11 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { getStatusClassName, getStatusLabel } from "@/lib/converters";
+import {
+  formatDateTime,
+  getStatusClassName,
+  getStatusLabel,
+} from "@/lib/converters";
 import type { ProductViewProps } from "@/types/data-type";
 import { DetailLabel, DetailValue } from "@/components/shad/detail-label";
 import { ProductImagePreview } from "../preview-image/product-image-preview";
@@ -120,12 +124,16 @@ export function ProductView({
 
                 <DetailLabel>Created</DetailLabel>
                 <DetailValue className="text-muted-foreground">
-                  {product.created_at || "—"}
+                  {product.created_at
+                    ? formatDateTime(product.created_at)
+                    : "—"}
                 </DetailValue>
 
                 <DetailLabel>Updated</DetailLabel>
                 <DetailValue className="text-muted-foreground">
-                  {product.updated_at || "—"}
+                  {product.updated_at
+                    ? formatDateTime(product.updated_at)
+                    : "—"}
                 </DetailValue>
               </div>
             </div>

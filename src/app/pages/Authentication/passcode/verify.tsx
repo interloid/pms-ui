@@ -72,9 +72,7 @@ export default function PasscodeVerifyPage() {
   const { loginWithPasscode } = useAuth();
 
   const state = isPasscodeLocationState(location.state) ? location.state : null;
-
   const email = state?.email;
-
   const [passcode, setPasscode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [passcodeError, setPasscodeError] = useState<string | null>(null);
@@ -133,10 +131,8 @@ export default function PasscodeVerifyPage() {
             error.message || "Invalid passcode. Please try again.",
           );
         }
-
         return;
       }
-
       setPasscodeError(
         error instanceof Error
           ? error.message

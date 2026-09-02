@@ -34,6 +34,8 @@ export function ProductImage({ src, alt, className = "" }: ProductImageProps) {
       <img
         src={src}
         alt={alt ?? "Product"}
+        width={40}
+        height={40}
         loading="lazy"
         className={`size-full object-cover transition-opacity duration-200 ${
           isLoading ? "opacity-0" : "opacity-100"

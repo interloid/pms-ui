@@ -217,16 +217,19 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
 
       onProductCreated?.();
     } catch (error) {
-      const errorMessage = getUserFriendlyErrorMessage(error);
-      if (errorMessage.toLowerCase().includes("sku")) {
+      if (
+        error instanceof Error &&
+        "code" in error &&
+        (error as { code?: string }).code === "SKU_TAKEN"
+      ) {
         setErrors((prev) => ({
           ...prev,
-          sku: errorMessage,
+          sku: "This SKU already exists.",
         }));
         return;
       }
 
-      toast.error(errorMessage);
+      toast.error(getUserFriendlyErrorMessage(error));
     } finally {
       setIsSubmitting(false);
     }

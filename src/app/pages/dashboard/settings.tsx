@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import EmptyPage from "@/components/shad/empty-page";
 import { Button } from "@/components/ui/button";
-import SettingsIcon from "@mui/icons-material/Settings";
+import { Settings as SettingsIcon } from "lucide-react";
 
 export default function Settings() {
   const navigate = useNavigate();
