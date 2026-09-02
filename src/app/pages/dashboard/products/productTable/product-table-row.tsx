@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { TableCell, TableRow } from "@/components/ui/table";
-import type { ApiProduct, ProductTableRowProps } from "@/types/data-type";
+import type { ProductTableRowProps } from "@/types/data-type";
 import { ProductImage } from "@/app/pages/dashboard/products/productTable/product-image";
 import {
   formatDateTime,
@@ -16,13 +16,7 @@ import {
   getStatusLabel,
 } from "@/lib/converters";
 import { useState } from "react";
-
-function getPrimaryImage(product: ApiProduct) {
-  return (
-    product.images?.find((image) => image.is_primary)?.url ??
-    product.images?.[0]?.url
-  );
-}
+import { getPrimaryImage } from "@/lib/product-utils";
 
 export function ProductTableRow({
   product,
@@ -49,7 +43,7 @@ export function ProductTableRow({
         >
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3 min-w-0">
-              <ProductImage src={primaryImage} alt={product.name} />
+              <ProductImage src={primaryImage?.url} alt={product.name} />
               <div className="min-w-0">
                 <p className="truncate text-sm font-medium">
                   Archive &quot;{product.name}&quot;?
@@ -90,7 +84,7 @@ export function ProductTableRow({
         >
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3 min-w-0">
-              <ProductImage src={primaryImage} alt={product.name} />
+              <ProductImage src={primaryImage?.url} alt={product.name} />
               <div className="min-w-0">
                 <p className="truncate text-sm font-medium">
                   Delete &quot;{product.name}&quot;?
@@ -124,7 +118,7 @@ export function ProductTableRow({
     >
       <TableCell>
         <div className="flex items-center gap-3">
-          <ProductImage src={primaryImage} alt={product.name} />
+          <ProductImage src={primaryImage?.url} alt={product.name} />
           <span className="hidden font-mono text-xs text-muted-foreground min-[420px]:inline">
             {product.sku}
           </span>

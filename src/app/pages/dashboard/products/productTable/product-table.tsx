@@ -35,7 +35,9 @@ export function ProductTable({
             <TableRow className="bg-muted/50 text-xs text-muted-text hover:bg-muted/50">
               <TableHead className="text-center">SKU</TableHead>
               <TableHead className="text-center">PRODUCT NAME</TableHead>
-              <TableHead className="hidden text-center md:table-cell">CATEGORY</TableHead>
+              <TableHead className="hidden text-center md:table-cell">
+                CATEGORY
+              </TableHead>
               <SortableHeader
                 label="PRICE"
                 field="price"

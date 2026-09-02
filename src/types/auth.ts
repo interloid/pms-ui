@@ -59,15 +59,9 @@ export interface ApiErrorResponse {
   request_id?: string;
 }
 
-export type OAuthProvider =
-  | "google"
-  | "github"
-  | "microsoft";
+export type OAuthProvider = "google" | "github" | "microsoft";
 
-export type AuthStatus =
-  | "loading"
-  | "authenticated"
-  | "unauthenticated";
+export type AuthStatus = "loading" | "authenticated" | "unauthenticated";
 
 export type AuthUser = {
   id: string;
@@ -81,10 +75,7 @@ export interface AuthContextValue {
   isAuthenticated: boolean;
   user: AuthUser | null;
   login: (credentials: LoginCredentials) => Promise<void>;
-  loginWithPasscode: (
-    email: string,
-    passcode: string,
-  ) => Promise<void>;
+  loginWithPasscode: (email: string, passcode: string) => Promise<void>;
   checkAuth: () => Promise<boolean>;
   logout: () => Promise<void>;
 }
@@ -98,10 +89,7 @@ export interface PasscodeLocationState {
 }
 
 export type AuthErrorCode =
-  | "INVALID_CREDENTIALS"
-  | "NETWORK_ERROR"
-  | "SERVER_ERROR"
-  | "UNKNOWN_ERROR";
+  "INVALID_CREDENTIALS" | "NETWORK_ERROR" | "SERVER_ERROR" | "UNKNOWN_ERROR";
 
 export type AuthError = {
   code: AuthErrorCode;

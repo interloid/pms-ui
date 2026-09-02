@@ -37,7 +37,6 @@ export function getUserFriendlyErrorMessage(
   return fallback;
 }
 
-
 export function getPasscodeErrorMessage(error: unknown): string {
   if (!(error instanceof Error)) {
     return "Invalid passcode.";

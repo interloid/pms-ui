@@ -7,10 +7,7 @@ import { AddProducts } from "@/app/pages/dashboard/products/crud-operations/add-
 import { getInitials } from "@/lib/utils";
 import { Button } from "../ui/button";
 
-
-export function HeaderActions({
-  user,
-}: HeaderActionsProps) {
+export function HeaderActions({ user }: HeaderActionsProps) {
   const { searchQuery, setSearchQuery, refresh } = useSearch();
   const initials = getInitials(user?.name ?? "");
 

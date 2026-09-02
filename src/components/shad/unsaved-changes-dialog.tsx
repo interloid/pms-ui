@@ -31,9 +31,7 @@ export function UnsavedChangesDialog({
             <AlertTriangle className="size-5 text-amber-600" />
           </div>
 
-          <DialogTitle className="text-base">
-            Unsaved changes
-          </DialogTitle>
+          <DialogTitle className="text-base">Unsaved changes</DialogTitle>
 
           <DialogDescription className="text-sm leading-5">
             You have unsaved changes. If you leave now, your changes will be

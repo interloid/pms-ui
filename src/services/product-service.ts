@@ -57,9 +57,7 @@ export async function getProducts({
   };
 }
 
-export async function createProduct(
-  formData: FormData,
-): Promise<ApiProduct> {
+export async function createProduct(formData: FormData): Promise<ApiProduct> {
   const response = await apiRequest<{
     success: boolean;
     message: string;
@@ -87,9 +85,7 @@ export async function updateProduct(
   return response.data;
 }
 
-export async function archiveProduct(
-  id: string,
-): Promise<ApiProduct> {
+export async function archiveProduct(id: string): Promise<ApiProduct> {
   const formData = new FormData();
   formData.append("status", "archived");
   formData.append("removed_image_ids", JSON.stringify([]));

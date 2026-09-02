@@ -17,10 +17,7 @@ import {
 import { Field } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
-import type {
-  ApiErrorResponse,
-  PasscodeLocationState,
-} from "@/types/auth";
+import type { ApiErrorResponse, PasscodeLocationState } from "@/types/auth";
 
 const OTP_LENGTH = 6;
 
@@ -65,8 +62,7 @@ function isPasscodeLocationState(
   return (
     typeof state === "object" &&
     state !== null &&
-    (!("email" in state) ||
-      typeof state.email === "string")
+    (!("email" in state) || typeof state.email === "string")
   );
 }
 
@@ -75,9 +71,7 @@ export default function PasscodeVerifyPage() {
   const location = useLocation();
   const { loginWithPasscode } = useAuth();
 
-  const state = isPasscodeLocationState(location.state)
-    ? location.state
-    : null;
+  const state = isPasscodeLocationState(location.state) ? location.state : null;
 
   const email = state?.email;
 
@@ -86,9 +80,7 @@ export default function PasscodeVerifyPage() {
   const [passcodeError, setPasscodeError] = useState<string | null>(null);
 
   const handlePasscodeChange = (value: string) => {
-    const numericValue = value
-      .replace(/\D/g, "")
-      .slice(0, OTP_LENGTH);
+    const numericValue = value.replace(/\D/g, "").slice(0, OTP_LENGTH);
 
     setPasscode(numericValue);
 
@@ -97,9 +89,7 @@ export default function PasscodeVerifyPage() {
     }
   };
 
-  const handleSubmit = async (
-    event: React.FormEvent<HTMLFormElement>,
-  ) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (!email) {
@@ -140,8 +130,7 @@ export default function PasscodeVerifyPage() {
           );
         } else {
           setPasscodeError(
-            error.message ||
-              "Invalid passcode. Please try again.",
+            error.message || "Invalid passcode. Please try again.",
           );
         }
 
@@ -172,20 +161,13 @@ export default function PasscodeVerifyPage() {
                 Username
               </TabsTrigger>
 
-              <TabsTrigger
-                value="Passcode"
-                className="h-8! flex-1 text-xs"
-              >
+              <TabsTrigger value="Passcode" className="h-8! flex-1 text-xs">
                 Passcode
               </TabsTrigger>
             </TabsList>
           </Tabs>
 
-          <form
-            onSubmit={handleSubmit}
-            className="w-full"
-            noValidate
-          >
+          <form onSubmit={handleSubmit} className="w-full" noValidate>
             <CardHeader className="px-1">
               <CardTitle className="text-lg font-bold">
                 Enter your passcode
@@ -214,27 +196,21 @@ export default function PasscodeVerifyPage() {
                 pattern="[0-9]*"
                 autoFocus
                 aria-invalid={Boolean(passcodeError)}
-                aria-describedby={
-                  passcodeError
-                    ? "passcode-error"
-                    : undefined
-                }
+                aria-describedby={passcodeError ? "passcode-error" : undefined}
                 className="h-10 focus-visible:border-primary focus-visible:ring-primary/20"
               >
                 <InputOTPGroup className="flex w-full justify-center text-sm font-bold">
-                  {Array.from({ length: OTP_LENGTH }).map(
-                    (_, index) => (
-                      <InputOTPSlot
-                        key={index}
-                        index={index}
-                        className={
-                          passcodeError
-                            ? "w-full border-destructive data-[active=true]:border-destructive data-[active=true]:ring-destructive/20"
-                            : "w-full data-[active=true]:border-primary data-[active=true]:ring-primary/20"
-                        }
-                      />
-                    ),
-                  )}
+                  {Array.from({ length: OTP_LENGTH }).map((_, index) => (
+                    <InputOTPSlot
+                      key={index}
+                      index={index}
+                      className={
+                        passcodeError
+                          ? "w-full border-destructive data-[active=true]:border-destructive data-[active=true]:ring-destructive/20"
+                          : "w-full data-[active=true]:border-primary data-[active=true]:ring-primary/20"
+                      }
+                    />
+                  ))}
                 </InputOTPGroup>
               </InputOTP>
 
@@ -253,10 +229,7 @@ export default function PasscodeVerifyPage() {
             <CardFooter className="flex w-full flex-col gap-2 px-2">
               <Button
                 type="submit"
-                disabled={
-                  isLoading ||
-                  passcode.length !== OTP_LENGTH
-                }
+                disabled={isLoading || passcode.length !== OTP_LENGTH}
                 className="h-10 w-full"
               >
                 {isLoading ? (

@@ -46,18 +46,16 @@ import { getUserFriendlyErrorMessage } from "@/lib/error-messsege";
 import { ProductImagePreview } from "../preview-image/product-image-preview";
 import { UnsavedChangesDialog } from "@/components/shad/unsaved-changes-dialog";
 import { FieldError } from "@/components/shad/field-error";
-
-const MAX_IMAGES = 6;
-const MAX_FILE_SIZE = 5 * 1024 * 1024;
-
-const ALLOWED_FILE_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;
-
-const FORM_DATA_FIELDS = {
-  images: "images",
-  removedImageIds: "removed_image_ids",
-  primaryImageId: "primary_image_id",
-  primaryNewImageIndex: "primary_new_image_index",
-} as const;
+import {
+  isDuplicateFile,
+  MAX_IMAGES,
+  validateImage,
+} from "./components/product-constants";
+import { getPrimaryImage } from "@/lib/product-utils";
+import { ImageErrorBanner } from "./components/image-error-banner";
+import { ImageOverlayControls } from "./components/image-overlay-controls";
+import { validateProductFields } from "./components/product-validation";
+import { PRODUCT_FORM_FIELDS } from "./components/product-form-fields";
 
 function getInitialForm(product: ApiProduct): ProductForm {
   return {
@@ -69,29 +67,6 @@ function getInitialForm(product: ApiProduct): ProductForm {
     status: product.status,
     description: product.description,
   };
-}
-
-function validateImage(file: File): ImageError | null {
-  if (
-    !ALLOWED_FILE_TYPES.includes(
-      file.type as (typeof ALLOWED_FILE_TYPES)[number],
-    )
-  ) {
-    return {
-      fileName: file.name,
-      message: "is not supported. Please use JPG, PNG, or WEBP.",
-    };
-  }
-
-  if (file.size > MAX_FILE_SIZE) {
-    return {
-      fileName: file.name,
-      message: "wasn't added",
-      details: `${(file.size / 1024 / 1024).toFixed(1)} MB exceeds the 5 MB limit.`,
-    };
-  }
-
-  return null;
 }
 
 function getPrimaryExistingImage(
@@ -132,7 +107,7 @@ export function ProductEdit({
   );
   const [originalPrimaryImageId, setOriginalPrimaryImageId] = useState<
     string | null
-  >(product ? (product.images.find((image) => image.is_primary)?.id ?? null) : null);
+  >(product ? (getPrimaryImage(product)?.id ?? null) : null);
 
   const newImagesRef = useRef<ProductImage[]>([]);
 
@@ -157,9 +132,7 @@ export function ProductEdit({
   );
 
   const activeImageCount = activeExistingImages.length + newImages.length;
-
   const remainingSlots = Math.max(MAX_IMAGES - activeImageCount, 0);
-
   const primaryExistingImage = useMemo(
     () => getPrimaryExistingImage(existingImages, removedImageIds),
     [existingImages, removedImageIds],
@@ -171,7 +144,6 @@ export function ProductEdit({
   );
 
   const currentPrimaryImageId = primaryExistingImage?.id ?? null;
-
   const currentPrimaryNewImageIndex = primaryNewImage
     ? newImages.findIndex((image) => image.id === primaryNewImage.id)
     : -1;
@@ -182,7 +154,6 @@ export function ProductEdit({
     }
 
     const original = originalForm;
-
     const formChanged =
       form.name !== original.name ||
       form.sku !== original.sku ||
@@ -193,7 +164,6 @@ export function ProductEdit({
       form.description !== original.description;
 
     const imagesChanged = removedImageIds.size > 0 || newImages.length > 0;
-
     const primaryImageChanged =
       currentPrimaryImageId !== originalPrimaryImageId ||
       currentPrimaryNewImageIndex >= 0;
@@ -236,45 +206,16 @@ export function ProductEdit({
     });
   }
 
-  function validateForm(): boolean {
+  const validateForm = () => {
     if (!form) {
       return false;
     }
+    const errors = validateProductFields(form);
 
-    const newErrors: FormError = {};
+    setErrors(errors);
 
-    if (!form.name.trim()) {
-      newErrors.name = "This Name is required.";
-    }
-
-    if (!form.sku.trim()) {
-      newErrors.sku = "This SKU is required.";
-    }
-
-    if (!form.category) {
-      newErrors.category = "This category is required.";
-    }
-
-    if (!form.price.trim()) {
-      newErrors.price = "This price is required.";
-    } else if (!Number.isFinite(Number(form.price))) {
-      newErrors.price = "Please enter a valid price.";
-    } else if (Number(form.price) < 0) {
-      newErrors.price = "Price cannot be negative.";
-    }
-
-    if (!form.stock.trim()) {
-      newErrors.stock = "This stock is required.";
-    } else if (!Number.isFinite(Number(form.stock))) {
-      newErrors.stock = "Please enter a valid stock.";
-    } else if (Number(form.stock) < 0) {
-      newErrors.stock = "Stock cannot be negative.";
-    }
-
-    setErrors(newErrors);
-
-    return Object.keys(newErrors).length === 0;
-  }
+    return Object.keys(errors).length === 0;
+  };
 
   function discardChanges() {
     if (!product) {
@@ -285,7 +226,7 @@ export function ProductEdit({
 
     const initialForm = getInitialForm(product);
     const images = product.images ?? [];
-    const primaryImage = images.find((image) => image.is_primary);
+    const primaryImage = getPrimaryImage(product);
 
     setForm(initialForm);
     setErrors({});
@@ -444,6 +385,17 @@ export function ProductEdit({
         continue;
       }
 
+      if (isDuplicateFile(file, [...newImages, ...addedImages])) {
+        firstError ??= {
+          fileName: file.name,
+          fileSize: file.size,
+          message: "Duplicate image",
+          details: "This image has already been added.",
+        };
+
+        continue;
+      }
+
       const shouldBecomePrimary =
         activeExistingImages.length === 0 &&
         newImages.length === 0 &&
@@ -509,7 +461,14 @@ export function ProductEdit({
 
     setIsDragging(false);
 
-    if (isSubmitting || remainingSlots <= 0) {
+    if (isSubmitting) {
+      return;
+    }
+
+    if (remainingSlots <= 0) {
+      setImageError({
+        message: `Maximum ${MAX_IMAGES} images allowed.`,
+      });
       return;
     }
 
@@ -587,36 +546,27 @@ export function ProductEdit({
     try {
       const formData = new FormData();
 
-      formData.append("name", name);
-      formData.append("sku", sku);
-      formData.append("category_name", form.category);
-      formData.append("price", String(price));
-      formData.append("stock", String(stock));
-      formData.append("status", form.status);
-      formData.append("description", description);
+      formData.append(PRODUCT_FORM_FIELDS.NAME, name);
+      formData.append(PRODUCT_FORM_FIELDS.SKU, sku);
+      formData.append(PRODUCT_FORM_FIELDS.CATEGORY, form.category);
+      formData.append(PRODUCT_FORM_FIELDS.PRICE, String(price));
+      formData.append(PRODUCT_FORM_FIELDS.STOCK, String(stock));
+      formData.append(PRODUCT_FORM_FIELDS.STATUS, form.status);
+      formData.append(PRODUCT_FORM_FIELDS.DESCRIPTION, description);
 
-      if (removedImageIds.size > 0) {
-        formData.append(
-          FORM_DATA_FIELDS.removedImageIds,
-          JSON.stringify(Array.from(removedImageIds)),
-        );
-      }
+      formData.append(
+        PRODUCT_FORM_FIELDS.REMOVED_IMAGE_IDS,
+        JSON.stringify([...removedImageIds]),
+      );
 
       for (const image of newImages) {
-        formData.append(FORM_DATA_FIELDS.images, image.file);
+        formData.append(PRODUCT_FORM_FIELDS.IMAGES, image.file);
       }
 
       if (primaryExistingImage) {
         formData.append(
-          FORM_DATA_FIELDS.primaryImageId,
+          PRODUCT_FORM_FIELDS.PRIMARY_IMAGE_ID,
           primaryExistingImage.id,
-        );
-      }
-
-      if (currentPrimaryNewImageIndex >= 0) {
-        formData.append(
-          FORM_DATA_FIELDS.primaryNewImageIndex,
-          String(currentPrimaryNewImageIndex),
         );
       }
 
@@ -630,22 +580,8 @@ export function ProductEdit({
       onOpenChange(false);
       onUpdated?.(updated);
     } catch (error) {
-      const message = error instanceof Error ? error.message.toLowerCase() : "";
-
-      if (message.includes("sku")) {
-        setErrors((previous) => ({
-          ...previous,
-          sku: "This SKU already exists.",
-        }));
-        return;
-      }
-
-      toast.error(
-        getUserFriendlyErrorMessage(
-          error,
-          "Unable to update the product due to Duplicate Images. Please try again.",
-        ),
-      );
+      const errorMessage = getUserFriendlyErrorMessage(error);
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -897,22 +833,12 @@ export function ProductEdit({
                         <X className="size-2" />
                       </button>
 
-                      {image.is_primary ? (
-                        <span className="absolute bottom-1.5 left-1.5 z-20 rounded-full bg-primary px-2 py-0.5 text-[10px] font-medium text-primary-foreground shadow-sm">
-                          Primary
-                        </span>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => setExistingImagePrimary(image.id)}
-                          className="absolute bottom-1.5 left-1.5 z-20 rounded-full border bg-background/90 px-2 py-0.5 text-[10px] font-medium text-muted-foreground shadow-sm backdrop-blur transition-colors hover:bg-background hover:text-foreground"
-                        >
-                          Set primary
-                        </button>
-                      )}
+                      <ImageOverlayControls
+                        isPrimary={image.is_primary}
+                        onSetPrimary={() => setExistingImagePrimary(image.id)}
+                      />
                     </div>
                   ))}
-
                   {removedExistingImages.map((image) => (
                     <div
                       key={`removed-${image.id}`}
@@ -932,7 +858,6 @@ export function ProductEdit({
                       </button>
                     </div>
                   ))}
-
                   {newImages.map((image) => (
                     <div
                       key={image.id}
@@ -972,7 +897,6 @@ export function ProductEdit({
                       )}
                     </div>
                   ))}
-
                   {remainingSlots > 0 && (
                     <label
                       htmlFor="edit-product-images"
@@ -1002,7 +926,6 @@ export function ProductEdit({
                       </span>
                     </label>
                   )}
-
                   <Input
                     id="edit-product-images"
                     type="file"
@@ -1013,28 +936,12 @@ export function ProductEdit({
                     className="hidden"
                   />
                 </div>
-
-                {imageError && (
-                  <div className="rounded-lg border border-red-300 bg-red-50 px-3 py-2">
-                    <p className="text-xs font-semibold text-red-600">
-                      {imageError.fileName && (
-                        <span className="font-medium">
-                          {imageError.fileName}{" "}
-                        </span>
-                      )}
-
-                      {imageError.message}
-                    </p>
-
-                    {imageError.details && (
-                      <p className="text-xs text-muted-foreground">
-                        {imageError.details}
-                      </p>
-                    )}
-                  </div>
-                )}
+                {imageError && <ImageErrorBanner error={imageError} />}
               </div>
-
+              <span className="mt-0.5 px-2 text-[10px] font-medium text-red-500">
+                {" "}
+                (Duplicate images are not allowed)
+              </span>
               <div className="grid gap-1.5">
                 <Label
                   htmlFor="edit-product-description"

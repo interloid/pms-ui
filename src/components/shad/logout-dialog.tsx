@@ -28,9 +28,7 @@ export function LogoutDialog({ trigger }: LogoutDialogProps) {
       setIsLoggingOut(true);
       await logout();
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Failed to log out",
-      );
+      toast.error(error instanceof Error ? error.message : "Failed to log out");
     } finally {
       setIsLoggingOut(false);
     }

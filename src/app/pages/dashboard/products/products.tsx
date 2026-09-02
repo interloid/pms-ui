@@ -79,9 +79,11 @@ export default function ProductsPage() {
         setTotalPages(response.totalPages);
       } catch (error) {
         if (!ignore) {
-          setLoadError(
-            error instanceof Error ? error.message : "Failed to load products",
-          );
+          const message =
+            error instanceof Error && error.message.includes("Authentication")
+              ? "Your session has expired. Please sign in again."
+              : "Unable to load products. Please try again.";
+          setLoadError(message);
         }
       } finally {
         if (!ignore) {
@@ -223,6 +225,7 @@ export default function ProductsPage() {
     return (
       <div className="flex min-h-50 items-center justify-center">
         <div className="flex flex-col items-center gap-3 text-center">
+          <p className="text-sm text-destructive font-medium">{loadError}</p>
           <Button type="button" variant="outline" onClick={refresh}>
             Try again
           </Button>
@@ -238,7 +241,6 @@ export default function ProductsPage() {
           category={category}
           status={status}
           priceRange={priceRange}
-          productCount={productCount}
           onCategoryChange={updateCategory}
           onStatusChange={updateStatus}
           onPriceChange={updatePrice}

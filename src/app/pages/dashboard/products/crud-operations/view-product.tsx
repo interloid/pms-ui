@@ -12,6 +12,7 @@ import { getStatusClassName, getStatusLabel } from "@/lib/converters";
 import type { ProductViewProps } from "@/types/data-type";
 import { DetailLabel, DetailValue } from "@/components/shad/detail-label";
 import { ProductImagePreview } from "../preview-image/product-image-preview";
+import { getPrimaryImage } from "@/lib/product-utils";
 
 export function ProductView({
   product,
@@ -23,8 +24,7 @@ export function ProductView({
     return null;
   }
 
-  const primaryImage =
-    product.images?.find((image) => image.is_primary) ?? product.images?.[0];
+  const primaryImage = getPrimaryImage(product);
 
   return (
     <>

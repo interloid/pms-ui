@@ -34,22 +34,14 @@ export function NavUser({ user }: { user: AuthUser | null }) {
               </Avatar>
 
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">
-                  {user?.name}
-                </span>
+                <span className="truncate font-medium">{user?.name}</span>
 
-                <span className="truncate text-xs">
-                  {user?.email}
-                </span>
+                <span className="truncate text-xs">{user?.email}</span>
               </div>
             </SidebarMenuButton>
           </DropdownMenuTrigger>
 
-          <DropdownMenuContent
-            side="top"
-            align="start"
-            className="w-56"
-          >
+          <DropdownMenuContent side="top" align="start" className="w-56">
             <LogoutDialog
               trigger={
                 <DropdownMenuItem

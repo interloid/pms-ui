@@ -35,9 +35,7 @@ export function TablePagination({
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between lg:px-4">
       <div className="flex items-center gap-2">
-        <span className="text-sm text-muted-foreground">
-          Rows per page
-        </span>
+        <span className="text-sm text-muted-foreground">Rows per page</span>
 
         <Select
           value={String(pageSize)}
@@ -95,7 +93,9 @@ export function TablePagination({
             size="icon"
             className="size-8 hover:border-primary hover:bg-primary-hover!"
             disabled={isLastPage || isEmpty}
-            onClick={() => setPage((current) => Math.min(current + 1, lastPage))}
+            onClick={() =>
+              setPage((current) => Math.min(current + 1, lastPage))
+            }
             aria-label="Go to next page"
           >
             <ChevronRight className="size-4" />

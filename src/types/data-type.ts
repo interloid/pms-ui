@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import type { ChangeEvent, DragEvent, ReactNode } from "react";
+import type { ReactNode } from "react";
 import type { AuthUser } from "./auth";
 
 type NavItem = {
@@ -18,12 +18,7 @@ export type EmptyPageProps = {
 };
 
 export type ProductCategory =
-  | "Lighting"
-  | "Apparel"
-  | "Home"
-  | "Electronics"
-  | "Outdoor"
-  | "Stationery";
+  "Lighting" | "Apparel" | "Home" | "Electronics" | "Outdoor" | "Stationery";
 
 export type ProductCategoryFilter = "All" | ProductCategory;
 
@@ -32,13 +27,7 @@ export type ProductStatus = "active" | "draft" | "out_of_stock" | "archived";
 export type ProductStatusFilter = "All" | ProductStatus;
 
 export type ProductSortField =
-  | "sku"
-  | "name"
-  | "category"
-  | "price"
-  | "stock"
-  | "status"
-  | "updated";
+  "sku" | "name" | "category" | "price" | "stock" | "status" | "updated";
 
 export type SortOrder = "asc" | "desc";
 
@@ -172,6 +161,7 @@ export type ImagePreviewDialogProps = {
 
 export type ImageError = {
   fileName?: string;
+  fileSize?: number;
   message: string;
   details?: string;
 };
@@ -210,7 +200,6 @@ export type ProductFiltersProps = {
   category: ProductCategoryFilter;
   status: ProductStatusFilter;
   priceRange: string;
-  productCount: number;
   onCategoryChange: (value: ProductCategoryFilter) => void;
   onStatusChange: (value: ProductStatusFilter) => void;
   onPriceChange: (value: string) => void;
@@ -272,8 +261,6 @@ export type ApiRequestOptions = Omit<RequestInit, "body"> & {
   body?: BodyInit | JsonBody;
 };
 
-export type ProductMode = "add" | "view" | "edit";
-
 export type AddProductsProps = {
   onProductCreated?: () => void;
 };
@@ -290,17 +277,6 @@ export type ProductViewProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onEdit?: (product: ApiProduct) => void;
-};
-
-export type ProductFormProps = {
-  mode: ProductMode;
-  product?: ApiProduct | null;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onEdit?: (product: ApiProduct) => void;
-  onProductCreated?: () => void;
-  onProductUpdated?: (product: ApiProduct) => void;
-  trigger?: React.ReactNode;
 };
 
 export class ApiError extends Error {
@@ -327,52 +303,12 @@ export class ApiError extends Error {
     this.requestId = options?.requestId;
   }
 }
-export interface ProductFormFieldsProps {
-  form: ProductForm;
-  errors: FormError;
-  mode: ProductMode;
-  onChange: <K extends keyof ProductForm>(
-    field: K,
-    value: ProductForm[K],
-  ) => void;
+
+export interface ImageErrorBannerProps {
+  error: ImageError;
 }
 
-export interface ProductFormImagesProps {
-  mode: ProductMode;
-
-  existingImages: ApiProductImage[];
-  newImages: ProductImage[];
-  removedImageIds: Set<string>;
-
-  remainingSlots: number;
-  imageError: ImageError | null;
-  isDragging: boolean;
-  isSubmitting: boolean;
-
-  onImageChange: (event: ChangeEvent<HTMLInputElement>) => void;
-  onDragEnter: (event: DragEvent<HTMLLabelElement>) => void;
-  onDragOver: (event: DragEvent<HTMLLabelElement>) => void;
-  onDragLeave: (event: DragEvent<HTMLLabelElement>) => void;
-  onDrop: (event: DragEvent<HTMLLabelElement>) => void;
-
-  onRemoveExisting: (id: string) => void;
-  onRemoveNew: (id: string) => void;
-
-  onSetExistingPrimary: (id: string) => void;
-  onSetNewPrimary: (id: string) => void;
-}
-
-export interface ProductImageCardProps {
-  src: string;
-  alt: string;
+export interface ImageOverlayControlsProps {
   isPrimary: boolean;
-  onRemove: () => void;
-  onSetPrimary?: () => void;
+  onSetPrimary: () => void;
 }
-
-export interface ProductFormFooterProps {
-  isSubmitting: boolean;
-  isAddMode: boolean;
-  onCancel: () => void;
-}
-

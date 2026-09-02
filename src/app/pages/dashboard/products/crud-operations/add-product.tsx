@@ -32,17 +32,24 @@ import {
   type AddProductsProps,
   type FormError,
   type ImageError,
+  type ProductForm,
   type ProductImage,
 } from "@/types/data-type";
 import { createProduct } from "@/services/product-service";
 import { ProductImagePreview } from "../preview-image/product-image-preview";
 import { UnsavedChangesDialog } from "@/components/shad/unsaved-changes-dialog";
 import { FieldError } from "@/components/shad/field-error";
-
-const MAX_IMAGES = 6;
-const MAX_FILE_SIZE = 5 * 1024 * 1024;
-
-const ALLOWED_FILE_TYPES = ["image/jpeg", "image/png", "image/webp"];
+import {
+  isDuplicateFile,
+  MAX_IMAGES,
+  validateImage,
+} from "./components/product-constants";
+import { revokeImageUrls } from "@/lib/utils";
+import { getUserFriendlyErrorMessage } from "@/lib/error-messsege";
+import { ImageErrorBanner } from "./components/image-error-banner";
+import { ImageOverlayControls } from "./components/image-overlay-controls";
+import { validateProductFields } from "./components/product-validation";
+import { PRODUCT_FORM_FIELDS } from "./components/product-form-fields";
 
 interface ImageDropzoneProps {
   isSubmitting: boolean;
@@ -66,7 +73,6 @@ function ImageDropzone({
   children,
 }: ImageDropzoneProps) {
   const disabled = isSubmitting || isAtLimit;
-
   return (
     <label
       htmlFor="product-images"
@@ -117,12 +123,6 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
     description.trim() !== "" ||
     images.length > 0;
 
-  function revokeImageUrls(imageList: ProductImage[]) {
-    imageList.forEach((image) => {
-      URL.revokeObjectURL(image.previewUrl);
-    });
-  }
-
   function resetForm() {
     revokeImageUrls(images);
 
@@ -168,44 +168,21 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
     setOpen(false);
   }
 
-  function validateForm(): boolean {
-    const newErrors: FormError = {};
+  const validateForm = () => {
+    const errors = validateProductFields({
+      name,
+      sku,
+      category: category as ProductForm["category"],
+      price,
+      stock,
+      status: status as ProductForm["status"],
+      description,
+    });
 
-    if (!name.trim()) {
-      newErrors.name = "This name is required.";
-    }
+    setErrors(errors);
 
-    if (!sku.trim()) {
-      newErrors.sku = "This sku is required.";
-    }
-
-    if (!category) {
-      newErrors.category = "Please select a category.";
-    }
-
-    const numericPrice = Number(price);
-    const numericStock = Number(stock);
-
-    if (price.trim() === "") {
-      newErrors.price = "This price is required.";
-    } else if (!Number.isFinite(numericPrice)) {
-      newErrors.price = "Please enter a valid price.";
-    } else if (numericPrice < 0) {
-      newErrors.price = "Price cannot be negative.";
-    }
-
-    if (stock.trim() === "") {
-      newErrors.stock = "This stock is required.";
-    } else if (!Number.isFinite(numericStock)) {
-      newErrors.stock = "Please enter a valid stock.";
-    } else if (numericStock < 0) {
-      newErrors.stock = "Stock cannot be negative.";
-    }
-
-    setErrors(newErrors);
-
-    return Object.keys(newErrors).length === 0;
-  }
+    return Object.keys(errors).length === 0;
+  };
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -219,16 +196,16 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
     try {
       const formData = new FormData();
 
-      formData.append("name", name.trim());
-      formData.append("sku", sku.trim());
-      formData.append("category_name", category);
-      formData.append("price", price);
-      formData.append("stock", stock);
-      formData.append("status", status);
-      formData.append("description", description.trim());
+      formData.append(PRODUCT_FORM_FIELDS.NAME, name);
+      formData.append(PRODUCT_FORM_FIELDS.SKU, sku);
+      formData.append(PRODUCT_FORM_FIELDS.CATEGORY, category);
+      formData.append(PRODUCT_FORM_FIELDS.PRICE, price);
+      formData.append(PRODUCT_FORM_FIELDS.STOCK, stock);
+      formData.append(PRODUCT_FORM_FIELDS.STATUS, status);
+      formData.append(PRODUCT_FORM_FIELDS.DESCRIPTION, description.trim());
 
       images.forEach((image) => {
-        formData.append("images", image.file);
+        formData.append(PRODUCT_FORM_FIELDS.IMAGES, image.file);
       });
 
       await createProduct(formData);
@@ -240,25 +217,19 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
 
       onProductCreated?.();
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Failed to create product",
-      );
+      const errorMessage = getUserFriendlyErrorMessage(error);
+      if (errorMessage.toLowerCase().includes("sku")) {
+        setErrors((prev) => ({
+          ...prev,
+          sku: errorMessage,
+        }));
+        return;
+      }
+
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
-  }
-
-  function isDuplicateFile(
-    file: File,
-    currentImages: ProductImage[],
-    newImages: ProductImage[],
-  ) {
-    return [...currentImages, ...newImages].some(
-      (image) =>
-        image.file.name === file.name &&
-        image.file.size === file.size &&
-        image.file.lastModified === file.lastModified,
-    );
   }
 
   function processFiles(fileList: FileList | File[]) {
@@ -294,28 +265,14 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
     const newImages: ProductImage[] = [];
 
     for (const file of filesToProcess) {
-      if (!ALLOWED_FILE_TYPES.includes(file.type)) {
-        error = {
-          fileName: file.name,
-          message: "is not supported. Please use JPG, PNG, or WEBP.",
-        };
+      const imageError = validateImage(file);
 
-        continue;
+      if (imageError) {
+        setImageError(imageError);
+        return;
       }
 
-      if (file.size > MAX_FILE_SIZE) {
-        error = {
-          fileName: file.name,
-          message: "wasn't added",
-          details: `${(file.size / 1024 / 1024).toFixed(
-            1,
-          )} MB exceeds the 5 MB limit.`,
-        };
-
-        continue;
-      }
-
-      if (isDuplicateFile(file, images, newImages)) {
+      if (isDuplicateFile(file, [...images, ...newImages])) {
         error = {
           fileName: file.name,
           message: "has already been selected.",
@@ -401,9 +358,7 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
 
       URL.revokeObjectURL(imageToRemove.previewUrl);
 
-      const remainingImages = previousImages.filter(
-        (image) => image.id !== id,
-      );
+      const remainingImages = previousImages.filter((image) => image.id !== id);
 
       if (imageToRemove.isPrimary && remainingImages.length > 0) {
         remainingImages[0] = {
@@ -648,12 +603,10 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
                   <FieldError />
                 </div>
               </div>
-
               <div className="grid w-full gap-2">
                 <Label htmlFor="product-description" className="text-xs">
                   Description
                 </Label>
-
                 <Textarea
                   id="product-description"
                   placeholder="Optional"
@@ -687,19 +640,10 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
                           className="aspect-square cursor-pointer transition-transform duration-200 group-hover:scale-[1.02]"
                         />
 
-                        {image.isPrimary ? (
-                          <span className="pointer-events-none absolute left-2 top-2 rounded-md bg-primary px-2 py-1 text-[10px] font-medium text-primary-foreground shadow-sm">
-                            Primary
-                          </span>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => setPrimaryImage(image.id)}
-                            className="absolute bottom-2 left-2 z-10 rounded-md bg-background/90 px-2 py-1 text-[10px] font-medium text-foreground shadow-sm backdrop-blur-sm transition-colors hover:bg-background"
-                          >
-                            Set primary
-                          </button>
-                        )}
+                        <ImageOverlayControls
+                          isPrimary={image.isPrimary}
+                          onSetPrimary={() => setPrimaryImage(image.id)}
+                        />
 
                         <Button
                           type="button"
@@ -755,26 +699,7 @@ export function AddProducts({ onProductCreated }: AddProductsProps) {
                   </ImageDropzone>
                 )}
 
-                {imageError && (
-                  <div className="rounded-lg border border-red-300 bg-red-50 px-3 py-2">
-                    <p className="text-xs font-semibold text-red-600">
-                      {imageError.fileName && (
-                        <span className="font-medium">
-                          {imageError.fileName}{" "}
-                        </span>
-                      )}
-
-                      {imageError.message}
-                    </p>
-
-                    {imageError.details && (
-                      <p className="text-xs text-muted-foreground">
-                        {imageError.details}
-                      </p>
-                    )}
-                  </div>
-                )}
-
+                {imageError && <ImageErrorBanner error={imageError} />}
                 <Input
                   id="product-images"
                   type="file"

@@ -8,9 +8,7 @@ import type {
   PasscodeVerifyResponse,
 } from "@/types/auth";
 
-export function login(
-  credentials: LoginCredentials,
-): Promise<LoginResponse> {
+export function login(credentials: LoginCredentials): Promise<LoginResponse> {
   return apiRequest<LoginResponse>("/api/v1/auth/login", {
     method: "POST",
     body: credentials,
@@ -34,29 +32,23 @@ export async function logout(): Promise<void> {
 export function requestPasscode(
   email: string,
 ): Promise<PasscodeRequestResponse> {
-  return apiRequest<PasscodeRequestResponse>(
-    "/api/v1/auth/passcode/request",
-    {
-      method: "POST",
-      body: { email },
-    },
-  );
+  return apiRequest<PasscodeRequestResponse>("/api/v1/auth/passcode/request", {
+    method: "POST",
+    body: { email },
+  });
 }
 
 export function verifyPasscode(
   email: string,
   passcode: string,
 ): Promise<PasscodeVerifyResponse> {
-  return apiRequest<PasscodeVerifyResponse>(
-    "/api/v1/auth/passcode/verify",
-    {
-      method: "POST",
-      body: {
-        email,
-        passcode,
-      },
+  return apiRequest<PasscodeVerifyResponse>("/api/v1/auth/passcode/verify", {
+    method: "POST",
+    body: {
+      email,
+      passcode,
     },
-  );
+  });
 }
 
 export function loginWithPasscode(
