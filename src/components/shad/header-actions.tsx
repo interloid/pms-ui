@@ -3,7 +3,7 @@ import type { HeaderActionsProps } from "@/types/data-type";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { LogoutDialog } from "@/components/shad/logout-dialog";
-import { AddProducts } from "@/app/pages/dashboard/products/crud-operations/add-product";
+import AddProducts from "@/app/pages/dashboard/products/crud-operations/add-product";
 import { getInitials } from "@/lib/utils";
 import { Button } from "../ui/button";
 

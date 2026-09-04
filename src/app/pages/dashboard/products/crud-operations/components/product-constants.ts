@@ -1,4 +1,4 @@
-import type { ImageError, ProductImage } from "@/types/data-type";
+import type { ImageError } from "@/types/data-type";
 
 export const MAX_IMAGES = 6;
 export const MAX_FILE_SIZE = 5 * 1024 * 1024;
@@ -32,13 +32,4 @@ export function validateImage(file: File): ImageError | null {
   }
 
   return null;
-}
-
-export function isDuplicateFile(file: File, images: ProductImage[]): boolean {
-  return images.some(
-    (image) =>
-      image.file.name === file.name &&
-      image.file.size === file.size &&
-      image.file.lastModified === file.lastModified,
-  );
 }

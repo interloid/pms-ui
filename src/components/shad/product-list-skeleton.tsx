@@ -5,17 +5,6 @@ const SKELETON_ROWS = 10;
 export function ProductListSkeleton() {
   return (
     <div className="w-full space-y-4">
-      <div className="px-4 lg:px-6">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex flex-wrap items-center gap-3">
-            <Skeleton className="h-9 w-32" />
-            <Skeleton className="h-9 w-32" />
-            <Skeleton className="h-9 w-40" />
-            <Skeleton className="h-9 w-32" />
-          </div>
-          <Skeleton className="h-9 w-36" />
-        </div>
-      </div>
       <div className="overflow-hidden rounded-lg border">
         <div className="grid grid-cols-6 items-center gap-4 border-b px-4 py-3">
           <Skeleton className="h-4 w-24" />

@@ -21,7 +21,6 @@ export function ProductImage({ src, alt, className = "" }: ProductImageProps) {
       </div>
     );
   }
-
   return (
     <div
       className={`relative size-10 shrink-0 overflow-hidden rounded-md border bg-muted ${className}`}
@@ -37,6 +36,7 @@ export function ProductImage({ src, alt, className = "" }: ProductImageProps) {
         width={40}
         height={40}
         loading="lazy"
+        decoding="async"
         className={`size-full object-cover transition-opacity duration-200 ${
           isLoading ? "opacity-0" : "opacity-100"
         }`}

@@ -35,14 +35,13 @@ export function ProductImagePreview({
         <img
           src={src}
           alt={alt}
-          loading="lazy"
+          decoding="async"
           onLoad={handleLoad}
           onError={handleError}
           className={`h-full w-full object-cover transition-all duration-200 ${
             isLoading ? "scale-95 opacity-0" : "scale-100 opacity-100"
           } group-hover:scale-[1.02]`}
         />
-
         {isLoading && (
           <span className="absolute inset-0 flex items-center justify-center bg-muted">
             <LoaderCircle className="size-5 animate-spin text-muted-foreground" />
@@ -63,7 +62,6 @@ export function ProductImagePreview({
           </span>
         )}
       </button>
-
       <ImagePreviewDialog
         image={open ? { src, alt } : null}
         open={open}

@@ -15,7 +15,9 @@ export function ImagePreviewDialog({
             <img
               src={image.src}
               alt={image.alt}
-              className="max-h-[75vh] w-full object-contain"
+              loading="lazy"
+              decoding="async"
+              className="max-h-[75vh] h-full w-full object-contain"
             />
           </div>
         )}

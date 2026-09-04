@@ -3,7 +3,7 @@ import { toast } from "sonner";
 import { ProductFilters } from "@/app/pages/dashboard/products/product-filters";
 import { ProductTable } from "./productTable/product-table";
 import { ProductView } from "./crud-operations/view-product";
-import { ProductEdit } from "./crud-operations/edit-product";
+import ProductEdit  from "./crud-operations/edit-product";
 import { useSearch } from "@/context/use-search";
 import {
   archiveProduct as archiveProductApi,
@@ -24,7 +24,6 @@ import { Button } from "@/components/ui/button";
 export default function ProductsPage() {
   const { searchQuery, refreshKey, refresh, productCount, setProductCount } =
     useSearch();
-
   const [products, setProducts] = useState<ApiProduct[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
@@ -37,12 +36,9 @@ export default function ProductsPage() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
-
   const [archiveId, setArchiveId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-
   const [debouncedSearch, setDebouncedSearch] = useState(searchQuery);
-
   const [sort, setSort] = useState<ProductSort>({
     field: "updated",
     order: "desc",
@@ -160,11 +156,8 @@ export default function ProductsPage() {
     async (id: string) => {
       try {
         await deleteProductApi(id);
-
         setDeleteId(null);
-
         toast.success("Product deleted successfully");
-
         refresh();
       } catch (error) {
         toast.error(
@@ -179,11 +172,8 @@ export default function ProductsPage() {
     async (id: string) => {
       try {
         await archiveProductApi(id);
-
         setArchiveId(null);
-
         toast.success("Product archived successfully");
-
         refresh();
       } catch (error) {
         toast.error(
@@ -280,12 +270,11 @@ export default function ProductsPage() {
           onOpenChange={setViewOpen}
           onEdit={openEdit}
         />
-
-        {editOpen && editProduct && (
+        {editProduct && (
           <ProductEdit
             key={editProduct.id}
             product={editProduct}
-            open
+            open={editOpen}
             onOpenChange={setEditOpen}
             onUpdated={handleProductUpdated}
           />

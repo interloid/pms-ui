@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import type { ReactNode } from "react";
+import type { DragEvent, ReactNode } from "react";
 import type { AuthUser } from "./auth";
 
 type NavItem = {
@@ -311,4 +311,16 @@ export interface ImageErrorBannerProps {
 export interface ImageOverlayControlsProps {
   isPrimary: boolean;
   onSetPrimary: () => void;
+}
+
+
+export interface ImageDropzoneProps {
+  isSubmitting: boolean;
+  isAtLimit: boolean;
+  isDragging: boolean;
+  onDragEnter: (event: DragEvent<HTMLLabelElement>) => void;
+  onDragOver: (event: DragEvent<HTMLLabelElement>) => void;
+  onDragLeave: (event: DragEvent<HTMLLabelElement>) => void;
+  onDrop: (event: DragEvent<HTMLLabelElement>) => void;
+  children: ReactNode;
 }

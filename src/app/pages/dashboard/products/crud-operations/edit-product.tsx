@@ -47,7 +47,6 @@ import { ProductImagePreview } from "../preview-image/product-image-preview";
 import { UnsavedChangesDialog } from "@/components/shad/unsaved-changes-dialog";
 import { FieldError } from "@/components/shad/field-error";
 import {
-  isDuplicateFile,
   MAX_IMAGES,
   validateImage,
 } from "./components/product-constants";
@@ -80,7 +79,7 @@ function getPrimaryNewImage(images: ProductImage[]): ProductImage | undefined {
   return images.find((image) => image.isPrimary);
 }
 
-export function ProductEdit({
+export default function ProductEdit({
   product,
   open,
   onOpenChange,
@@ -385,16 +384,6 @@ export function ProductEdit({
         continue;
       }
 
-      if (isDuplicateFile(file, [...newImages, ...addedImages])) {
-        firstError ??= {
-          fileName: file.name,
-          fileSize: file.size,
-          message: "Duplicate image",
-          details: "This image has already been added.",
-        };
-
-        continue;
-      }
 
       const shouldBecomePrimary =
         activeExistingImages.length === 0 &&
@@ -799,7 +788,7 @@ export function ProductEdit({
                 <div className="flex items-center justify-between">
                   <Label className="gap-1 text-[12px] font-medium">
                     Images
-                    <span className="text-[11px] font-normal text-destructive">
+                    <span className="text-[11px] font-bold">
                       (Only JPG, PNG, and WEBP image formats are allowed.)
                     </span>
                   </Label>
@@ -938,10 +927,6 @@ export function ProductEdit({
                 </div>
                 {imageError && <ImageErrorBanner error={imageError} />}
               </div>
-              <span className="mt-0.5 px-2 text-[10px] font-medium text-red-500">
-                {" "}
-                (Duplicate images are not allowed)
-              </span>
               <div className="grid gap-1.5">
                 <Label
                   htmlFor="edit-product-description"
