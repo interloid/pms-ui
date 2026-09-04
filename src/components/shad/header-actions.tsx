@@ -18,7 +18,7 @@ export function HeaderActions({ user }: HeaderActionsProps) {
         placeholder="Search..."
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
-        className="hidden h-9 w-full cursor-pointer focus-visible:border-primary focus-visible:ring-primary/20 sm:flex sm:w-44 md:w-56 lg:w-72"
+        className="hidden h-9 w-1/2 cursor-pointer focus-visible:border-primary focus-visible:ring-primary/20 sm:flex "
       />
       <AddProducts onProductCreated={refresh} />
 

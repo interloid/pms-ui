@@ -70,7 +70,6 @@ export function ProductTable({
               <TableHead className="text-center">ACTIONS</TableHead>
             </TableRow>
           </TableHeader>
-
           <TableBody>
             {products.length > 0 ? (
               products.map((product) => (

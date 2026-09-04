@@ -976,7 +976,6 @@ export default function ProductEdit({
           </form>
         </SheetContent>
       </Sheet>
-
       <UnsavedChangesDialog
         open={showDiscardDialog}
         onOpenChange={setShowDiscardDialog}

@@ -3,7 +3,7 @@ import { toast } from "sonner";
 import { ProductFilters } from "@/app/pages/dashboard/products/product-filters";
 import { ProductTable } from "./productTable/product-table";
 import { ProductView } from "./crud-operations/view-product";
-import ProductEdit  from "./crud-operations/edit-product";
+import ProductEdit from "./crud-operations/edit-product";
 import { useSearch } from "@/context/use-search";
 import {
   archiveProduct as archiveProductApi,
@@ -26,7 +26,6 @@ export default function ProductsPage() {
     useSearch();
   const [products, setProducts] = useState<ApiProduct[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
 
   const [category, setCategory] = useState<ProductCategoryFilter>("All");
@@ -84,7 +83,6 @@ export default function ProductsPage() {
       } finally {
         if (!ignore) {
           setIsLoading(false);
-          setHasLoadedOnce(true);
         }
       }
     }
@@ -237,32 +235,24 @@ export default function ProductsPage() {
           onReset={resetFilters}
         />
 
-        {!hasLoadedOnce ? (
+        {isLoading ? (
           <ProductListSkeleton />
         ) : (
-          <div
-            className={
-              isLoading
-                ? "opacity-60 transition-opacity duration-200"
-                : "transition-opacity duration-200"
-            }
-          >
-            <ProductTable
-              products={products}
-              onEdit={openEdit}
-              onView={openView}
-              archiveId={archiveId}
-              deleteId={deleteId}
-              sort={sort}
-              onSort={handleSort}
-              onArchive={setArchiveId}
-              onCancelArchive={() => setArchiveId(null)}
-              onConfirmArchive={handleArchiveProduct}
-              onDelete={setDeleteId}
-              onCancelDelete={() => setDeleteId(null)}
-              onConfirmDelete={handleDeleteProduct}
-            />
-          </div>
+          <ProductTable
+            products={products}
+            onEdit={openEdit}
+            onView={openView}
+            archiveId={archiveId}
+            deleteId={deleteId}
+            sort={sort}
+            onSort={handleSort}
+            onArchive={setArchiveId}
+            onCancelArchive={() => setArchiveId(null)}
+            onConfirmArchive={handleArchiveProduct}
+            onDelete={setDeleteId}
+            onCancelDelete={() => setDeleteId(null)}
+            onConfirmDelete={handleDeleteProduct}
+          />
         )}
         <ProductView
           product={viewProduct}

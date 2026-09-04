@@ -41,11 +41,11 @@ export function ProductTableRow({
           colSpan={8}
           className="border-l-2 border-l-cancel-button-background py-4"
         >
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center md:items-start sm:justify-between">
             <div className="flex items-center gap-3 min-w-0">
               <ProductImage src={primaryImage?.url} alt={product.name} />
               <div className="min-w-0">
-                <p className="truncate text-sm font-medium">
+                <p className="truncate text-sm font-medium text-start">
                   Archive &quot;{product.name}&quot;?
                 </p>
                 <p className="text-sm text-muted-foreground">
@@ -86,7 +86,7 @@ export function ProductTableRow({
             <div className="flex items-center gap-3 min-w-0">
               <ProductImage src={primaryImage?.url} alt={product.name} />
               <div className="min-w-0">
-                <p className="truncate text-sm font-medium">
+                <p className="truncate text-sm text-start font-medium">
                   Delete &quot;{product.name}&quot;?
                 </p>
                 <p className="text-sm text-muted-foreground">
@@ -183,6 +183,7 @@ export function ProductTableRow({
               align="end"
               onPointerDown={(event) => event.stopPropagation()}
               onClick={(event) => event.stopPropagation()}
+              
             >
               {product.status !== "archived" && (
                 <DropdownMenuItem
@@ -192,6 +193,7 @@ export function ProductTableRow({
                     setActionsOpen(false);
                     onArchive();
                   }}
+                  className="cursor-pointer"
                 >
                   Archive
                 </DropdownMenuItem>
@@ -204,12 +206,13 @@ export function ProductTableRow({
                   setActionsOpen(false);
                   onEdit();
                 }}
+                className="cursor-pointer"
               >
                 Edit
               </DropdownMenuItem>
 
               <DropdownMenuItem
-                className="text-destructive"
+                className="text-cancel-button-background hover:text-red-600! hover:bg-primary cursor-pointer"
                 onSelect={(event) => {
                   event.preventDefault();
 

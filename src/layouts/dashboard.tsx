@@ -37,7 +37,7 @@ export default function DashboardLayout() {
 
         <SidebarInset>
           <Header user={user} productCount={productCount} />
-          <main className="flex flex-1 flex-col justify-between p-3 sm:p-4">
+          <main className="flex flex-1 flex-col justify-between p-3 sm:p-4 h-full">
             <Outlet />
           </main>
           <AppFooter />

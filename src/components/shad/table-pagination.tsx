@@ -33,10 +33,9 @@ export function TablePagination({
   const isEmpty = productCount === 0;
 
   return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between lg:px-4">
+    <div className="flex flex-col gap-3 sm:flex-row py-4 sm:items-center sm:justify-between lg:px-2 pb-0">
       <div className="flex items-center gap-2">
         <span className="text-sm text-muted-foreground">Rows per page</span>
-
         <Select
           value={String(pageSize)}
           onValueChange={(value) => {

@@ -33,6 +33,9 @@ export function ProductFilters({
   onPriceChange,
   onReset,
 }: ProductFiltersProps) {
+  const isDefaultFilters =
+    category === "All" && status === "All" && priceRange === "all";
+
   return (
     <div className="flex flex-wrap items-center gap-2">
       <Select
@@ -118,6 +121,7 @@ export function ProductFilters({
               className="h-9 px-3 hover:border-primary hover:bg-primary-hover!"
               onClick={onReset}
               aria-label="Reset filters"
+              disabled={isDefaultFilters}
             >
               <ResetForwardIcon />
             </Button>
