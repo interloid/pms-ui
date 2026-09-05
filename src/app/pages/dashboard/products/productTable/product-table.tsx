@@ -5,11 +5,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
 import { ProductTableRow } from "./product-table-row";
 import { SortableHeader } from "@/components/shad/sortable-header";
 import EmptyProductTableRow from "@/components/shad/empty-products";
-
 import type { ProductTableProps } from "@/types/data-type";
 
 export function ProductTable({
@@ -44,21 +42,18 @@ export function ProductTable({
                 sort={sort}
                 onSort={onSort}
               />
-
               <SortableHeader
                 label="STOCK"
                 field="stock"
                 sort={sort}
                 onSort={onSort}
               />
-
               <SortableHeader
                 label="STATUS"
                 field="status"
                 sort={sort}
                 onSort={onSort}
               />
-
               <SortableHeader
                 label="UPDATED"
                 field="updated"
@@ -66,7 +61,6 @@ export function ProductTable({
                 onSort={onSort}
                 className="hidden md:table-cell"
               />
-
               <TableHead className="text-center">ACTIONS</TableHead>
             </TableRow>
           </TableHeader>

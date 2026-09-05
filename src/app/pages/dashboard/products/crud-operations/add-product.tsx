@@ -546,7 +546,6 @@ export default function AddProducts({ onProductCreated }: AddProductsProps) {
 
             <div className="flex h-16 shrink-0 items-center gap-2 border-t px-5">
               <div className="flex-1" />
-
               <Button
                 type="button"
                 variant="secondary"

@@ -133,10 +133,6 @@ export default function ProductsPage() {
     setCategory("All");
     setStatus("All");
     setPriceRange("all");
-    setSort({
-      field: "updated",
-      order: "desc",
-    });
     setPage(1);
   }, []);
 
@@ -224,26 +220,33 @@ export default function ProductsPage() {
           onPriceChange={updatePrice}
           onReset={resetFilters}
         />
+        <div className="relative">
+          <div
+            className={
+              isLoading
+                ? "pointer-events-none opacity-50 transition-opacity"
+                : "opacity-100 transition-opacity"
+            }
+          >
+            <ProductTable
+              products={products}
+              onEdit={openEdit}
+              onView={openView}
+              archiveId={archiveId}
+              deleteId={deleteId}
+              sort={sort}
+              onSort={handleSort}
+              onArchive={setArchiveId}
+              onCancelArchive={() => setArchiveId(null)}
+              onConfirmArchive={handleArchiveProduct}
+              onDelete={setDeleteId}
+              onCancelDelete={() => setDeleteId(null)}
+              onConfirmDelete={handleDeleteProduct}
+            />
+          </div>
 
-        {isLoading ? (
-          <ProductListSkeleton />
-        ) : (
-          <ProductTable
-            products={products}
-            onEdit={openEdit}
-            onView={openView}
-            archiveId={archiveId}
-            deleteId={deleteId}
-            sort={sort}
-            onSort={handleSort}
-            onArchive={setArchiveId}
-            onCancelArchive={() => setArchiveId(null)}
-            onConfirmArchive={handleArchiveProduct}
-            onDelete={setDeleteId}
-            onCancelDelete={() => setDeleteId(null)}
-            onConfirmDelete={handleDeleteProduct}
-          />
-        )}
+          {isLoading && <ProductListSkeleton />}
+        </div>
         <ProductView
           product={viewProduct}
           open={viewOpen}

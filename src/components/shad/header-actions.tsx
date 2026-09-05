@@ -12,13 +12,13 @@ export function HeaderActions({ user }: HeaderActionsProps) {
   const initials = getInitials(user?.name ?? "");
 
   return (
-    <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
+    <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2 md:w-3/4 lg:w-1/2 2xl:w-1/4 ">
       <Input
         type="search"
-        placeholder="Search..."
+        placeholder="Search name or SKU..."
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
-        className="hidden h-9 w-1/2 cursor-pointer focus-visible:border-primary focus-visible:ring-primary/20 sm:flex "
+        className="hidden h-9 w-1/2 md:w-full cursor-pointer focus-visible:border-primary focus-visible:ring-primary/20 sm:flex "
       />
       <AddProducts onProductCreated={refresh} />
 

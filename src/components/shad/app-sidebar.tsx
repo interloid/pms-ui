@@ -64,10 +64,10 @@ type AppSidebarProps = React.ComponentProps<typeof Sidebar> & {
 
 export function AppSidebar({ user, ...props }: AppSidebarProps) {
   return (
-    <Sidebar collapsible="icon" {...props} className="shrink-0">
+    <Sidebar collapsible="icon" {...props} className="shrink-0 h-full flex gap-5!">
       <SidebarTitle />
 
-      <SidebarContent className="gap-0 group-data-[state=collapsed]:ml-4!">
+      <SidebarContent className="gap-0 mt-2">
         <NavMain items={data.navMain} />
 
         <SidebarGroupLabel className="group-data-[state=expanded]:ml-4!">
@@ -77,7 +77,7 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
         <NavMain items={data.workspace} />
       </SidebarContent>
 
-      <SidebarFooter className="relative h-16 shrink-0 before:absolute before:top-0 before:left-4 before:right-4 before:h-px before:bg-border">
+      <SidebarFooter className="relative h-16 shrink-0 justify-center before:absolute before:top-0 before:left-4 before:right-4 before:h-px before:bg-border group-data-[collapsible=icon]:before:hidden">
         <NavUser user={user} />
       </SidebarFooter>
 

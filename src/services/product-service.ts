@@ -13,14 +13,10 @@ export async function getProducts({
   category = "All",
   search = "",
   priceRange = "all",
-  sort = "updated",
-  order = "desc",
 }: GetProductsParams): Promise<ProductsResult> {
   const params = new URLSearchParams();
   params.set("page", String(page));
   params.set("page_size", String(pageSize));
-  params.set("sort", sort);
-  params.set("order", order);
 
   if (status !== "All") {
     params.set("status", status);

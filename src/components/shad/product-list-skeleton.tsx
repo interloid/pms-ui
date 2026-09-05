@@ -1,61 +1,7 @@
-import { Skeleton } from "@/components/ui/skeleton";
-
-const SKELETON_ROWS = 10;
-
 export function ProductListSkeleton() {
   return (
-    <div className="w-full space-y-4">
-      <div className="overflow-hidden rounded-lg border">
-        <div className="grid grid-cols-6 items-center gap-2 border-b px-4 py-3">
-          <Skeleton className="h-4 w-24" />
-          <Skeleton className="h-4 w-20" />
-          <Skeleton className="h-4 w-24" />
-          <Skeleton className="h-4 w-20" />
-          <Skeleton className="h-4 w-20" />
-          <Skeleton className="ml-auto h-4 w-16" />
-        </div>
-        <div className="divide-y">
-          {Array.from({ length: SKELETON_ROWS }).map((_, index) => (
-            <div
-              key={index}
-              className="grid h-14 grid-cols-6 items-center gap-4 px-4"
-            >
-              <div className="flex min-w-0 items-center gap-3">
-                <Skeleton className="size-10 shrink-0 rounded-md" />
-                <div className="min-w-0 space-y-2">
-                  <Skeleton className="h-4 w-32" />
-                </div>
-              </div>
-              <Skeleton className="h-4 w-24" />
-              <Skeleton className="h-4 w-20" />
-              <Skeleton className="h-4 w-16" />
-              <Skeleton className="h-6 w-20 rounded-full" />
-              <div className="ml-auto flex items-center gap-2">
-                <Skeleton className="size-8 rounded-md" />
-                <Skeleton className="size-8 rounded-md" />
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="flex items-center justify-between px-4 pb-4 lg:px-6">
-        <div className="flex items-center gap-2">
-          <Skeleton className="h-4 w-24" />
-          <Skeleton className="h-8 w-16 rounded-md" />
-        </div>
-
-        <div className="flex items-center gap-4">
-          <Skeleton className="h-4 w-24" />
-
-          <div className="flex items-center gap-1">
-            <Skeleton className="size-8 rounded-md" />
-            <Skeleton className="size-8 rounded-md" />
-            <Skeleton className="size-8 rounded-md" />
-            <Skeleton className="size-8 rounded-md" />
-          </div>
-        </div>
-      </div>
+    <div className="pointer-events-none absolute inset-0 z-10 overflow-hidden">
+      <div className="absolute inset-y-0 left-0 w-24 animate-shimmer bg-white/40" />
     </div>
   );
 }

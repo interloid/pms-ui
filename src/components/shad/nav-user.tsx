@@ -10,38 +10,47 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import type { AuthUser } from "@/types/auth";
 import { LogoutDialog } from "@/components/shad/logout-dialog";
 import { getInitials } from "@/lib/utils";
 
 export function NavUser({ user }: { user: AuthUser | null }) {
+  const { state } = useSidebar();
   const initials = getInitials(user?.name ?? "");
+
   return (
-    <SidebarMenu className="h-full ml-4">
-      <SidebarMenuItem className="h-full">
+    <SidebarMenu className="group-data-[collapsible=icon]:ml-2 ml-0">
+      <SidebarMenuItem>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
               size="lg"
-              className="h-full data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
-              <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage src={user?.avatar} alt={user?.name} />
+              <Avatar className="h-8 w-8 shrink-0 rounded-lg">
+                <AvatarImage src={user?.avatar} alt={user?.name ?? ""} />
                 <AvatarFallback className="rounded-lg">
                   {initials}
                 </AvatarFallback>
               </Avatar>
 
-              <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{user?.name}</span>
+              {state === "expanded" && (
+                <div className="grid min-w-0 flex-1 text-left text-sm leading-tight">
+                  <span className="truncate font-medium">{user?.name}</span>
 
-                <span className="truncate text-xs">{user?.email}</span>
-              </div>
+                  <span className="truncate text-xs">{user?.email}</span>
+                </div>
+              )}
             </SidebarMenuButton>
           </DropdownMenuTrigger>
 
-          <DropdownMenuContent side="top" align="start" className="w-56">
+          <DropdownMenuContent
+            side="top"
+            align={state === "collapsed" ? "center" : "start"}
+            className="w-56"
+          >
             <LogoutDialog
               trigger={
                 <DropdownMenuItem
