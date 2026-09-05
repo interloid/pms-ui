@@ -25,7 +25,8 @@ import { FcGoogle } from "react-icons/fc";
 import { FaGithub } from "react-icons/fa";
 import MicrosoftLogo from "@/components/icons/microsoft-logo";
 import { Eye, EyeOff } from "lucide-react";
-import { isAuthError } from "@/types/auth";
+import { isAuthError, type OAuthProvider } from "@/types/auth";
+import interloidLogo from "@/assets/interloid-logo.png";
 
 export default function LoginPage({
   className,
@@ -106,26 +107,34 @@ export default function LoginPage({
     }
   };
 
-  const handleProviderLogin = async (
-    provider: "google" | "github" | "microsoft",
-  ) => {
+  const handleProviderLogin = async (provider: OAuthProvider) => {
+    setProviderLoading(provider);
+
+    await new Promise<void>((resolve) => {
+      requestAnimationFrame(() => resolve());
+    });
+
     try {
-      setProviderLoading(provider);
-      loginWithProvider(provider);
+      await loginWithProvider(provider);
     } catch (error) {
-      setError(
-        error instanceof Error ? error.message : "Authentication failed",
-      );
-    } finally {
+      console.error("OAuth login failed:", error);
       setProviderLoading(null);
     }
   };
-
   return (
     <div className="flex min-h-full w-full items-center justify-center p-6 md:p-10">
+      <div className="absolute left-8 top-8 flex items-center gap-2">
+        <img
+          src={interloidLogo}
+          alt="Interloid"
+          className="h-5 w-5 object-contain"
+        />
+        <span className="text-sm font-semibold">Interloid</span>
+        <span className="text-sm text-muted-foreground">Workforce Suite</span>
+      </div>
       <div className="w-full max-w-lg">
         <div className={cn("flex flex-col gap-6", className)} {...props}>
-          <Card className="gap-4 px-2 py-8">
+          <Card className="gap-4 px-2 py-8 rounded-[10px] shadow-[rgba(0, 0, 0, 0.04) 0px 1px 2px]">
             <CardHeader>
               <CardTitle className="text-xl font-semibold">Sign in</CardTitle>
               <CardDescription className="text-muted-text">
@@ -139,7 +148,7 @@ export default function LoginPage({
                     <Button
                       type="button"
                       variant="outline"
-                      className="h-10 text-xs"
+                      className="h-10 text-xs hover:bg-primary-hover"
                       disabled={providerLoading !== null}
                       onClick={() => handleProviderLogin("google")}
                     >
@@ -159,7 +168,7 @@ export default function LoginPage({
                       <Button
                         type="button"
                         variant="outline"
-                        className="h-10 flex-1 text-xs"
+                        className="h-10 flex-1 text-xs hover:bg-primary-hover"
                         disabled={providerLoading !== null}
                         onClick={() => handleProviderLogin("github")}
                       >
@@ -178,7 +187,7 @@ export default function LoginPage({
                       <Button
                         type="button"
                         variant="outline"
-                        className="h-10 flex-1 text-xs"
+                        className="h-10 flex-1 text-xs hover:bg-primary-hover"
                         disabled={providerLoading !== null}
                         onClick={() => handleProviderLogin("microsoft")}
                       >
@@ -196,11 +205,14 @@ export default function LoginPage({
                       </Button>
                     </div>
                   </Field>
-                  <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card text-xs py-1">
-                    OR
+                  <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card text-[11px] py-1">
+                    <span className="px-1"> OR </span>
                   </FieldSeparator>
-                  <Field className="gap-1">
-                    <FieldLabel htmlFor="email" className="text-xs font-medium">
+                  <Field className="gap-2">
+                    <FieldLabel
+                      htmlFor="email"
+                      className="text-[13px] font-medium"
+                    >
                       Username or email
                     </FieldLabel>
                     <Input
@@ -211,14 +223,14 @@ export default function LoginPage({
                       autoComplete="username"
                       onChange={(event) => setEmail(event.target.value)}
                       required
-                      className="h-10 focus-visible:border-primary focus-visible:primary-3 focus-visible:ring-primary/20"
+                      className="h-10 px-3! text-[13px]! focus-visible:border-primary focus-visible:ring-primary/20"
                     />
                   </Field>
                   <Field className="gap-1">
                     <div className="flex items-center">
                       <FieldLabel
                         htmlFor="password"
-                        className="text-xs font-medium"
+                        className="text-[13px] font-medium"
                       >
                         Password
                       </FieldLabel>
@@ -231,21 +243,23 @@ export default function LoginPage({
                         onChange={(event) => setPassword(event.target.value)}
                         autoComplete="current-password"
                         required
-                        className="h-10 focus-visible:border-primary focus-visible:primary-3 focus-visible:ring-primary/20"
+                        className={`h-10 px-3.5! focus-visible:border-primary focus-visible:ring-primary/20 text-[13px]! ${
+                          showPassword ? "tracking-normal" : "tracking-[10px]  font-bold"
+                        }`}
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword((prev) => !prev)}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1 text-muted-foreground hover:text-foreground"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1 text-muted-text hover:text-foreground"
                         aria-label={
                           showPassword ? "Hide password" : "Show password"
                         }
                       >
                         <span className="text-xs font-medium">
                           {showPassword ? (
-                            <EyeOff className="h-4 w-4 text-muted-foreground" />
+                            <EyeOff className="h-4 w-4 text-muted-text" />
                           ) : (
-                            <Eye className="h-4 w-4 text-muted-foreground" />
+                            <Eye className="h-4 w-4 text-muted-text" />
                           )}
                         </span>
                       </button>

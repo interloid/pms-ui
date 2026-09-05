@@ -111,7 +111,7 @@ export function ProductFilters({
           ))}
         </SelectContent>
       </Select>
-      <div className="flex items-center gap-1 text-xs text-muted-foreground">
+      <div className="flex items-center gap-1 text-xs text-muted-text">
         <Tooltip>
           <TooltipTrigger asChild>
             <Button

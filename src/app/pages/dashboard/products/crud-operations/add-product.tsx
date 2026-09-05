@@ -180,10 +180,16 @@ export default function AddProducts({ onProductCreated }: AddProductsProps) {
         JSON.stringify([]),
       );
 
-      for (const image of newImages) {
+      const orderedImages = primaryNewImage
+        ? [
+            primaryNewImage,
+            ...newImages.filter((image) => image.id !== primaryNewImage.id),
+          ]
+        : newImages;
+
+      for (const image of orderedImages) {
         formData.append(PRODUCT_FORM_FIELDS.IMAGES, image.file);
       }
-
       if (primaryNewImage) {
         formData.append(
           PRODUCT_FORM_FIELDS.PRIMARY_IMAGE_ID,

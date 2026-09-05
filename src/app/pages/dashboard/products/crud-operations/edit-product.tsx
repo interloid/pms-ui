@@ -46,10 +46,7 @@ import { getUserFriendlyErrorMessage } from "@/lib/error-messsege";
 import { ProductImagePreview } from "../preview-image/product-image-preview";
 import { UnsavedChangesDialog } from "@/components/shad/unsaved-changes-dialog";
 import { FieldError } from "@/components/shad/field-error";
-import {
-  MAX_IMAGES,
-  validateImage,
-} from "./components/product-constants";
+import { MAX_IMAGES, validateImage } from "./components/product-constants";
 import { getPrimaryImage } from "@/lib/product-utils";
 import { ImageErrorBanner } from "./components/image-error-banner";
 import { ImageOverlayControls } from "./components/image-overlay-controls";
@@ -58,13 +55,13 @@ import { PRODUCT_FORM_FIELDS } from "./components/product-form-fields";
 
 function getInitialForm(product: ApiProduct): ProductForm {
   return {
-    name: product.name,
-    sku: product.sku,
-    category: product.category_name,
-    price: String(product.price),
-    stock: String(product.stock),
+    name: product.name ?? "",
+    sku: product.sku ?? "",
+    category: product.category_name ?? "",
+    price: String(product.price ?? ""),
+    stock: String(product.stock ?? ""),
     status: product.status,
-    description: product.description,
+    description: product.description ?? "",
   };
 }
 
@@ -85,9 +82,7 @@ export default function ProductEdit({
   onOpenChange,
   onUpdated,
 }: ProductEditProps) {
-  const [form, setForm] = useState<ProductForm | null>(() =>
-    product ? getInitialForm(product) : null,
-  );
+  const [form, setForm] = useState<ProductForm>(() => getInitialForm(product));
   const [errors, setErrors] = useState<FormError>({});
   const [existingImages, setExistingImages] = useState<ApiProductImage[]>(
     () => product?.images ?? [],
@@ -384,7 +379,6 @@ export default function ProductEdit({
         continue;
       }
 
-
       const shouldBecomePrimary =
         activeExistingImages.length === 0 &&
         newImages.length === 0 &&
@@ -548,7 +542,16 @@ export default function ProductEdit({
         JSON.stringify([...removedImageIds]),
       );
 
-      for (const image of newImages) {
+      const primaryNewImage = getPrimaryNewImage(newImages);
+
+      const orderedNewImages = primaryNewImage
+        ? [
+            primaryNewImage,
+            ...newImages.filter((image) => image.id !== primaryNewImage.id),
+          ]
+        : newImages;
+
+      for (const image of orderedNewImages) {
         formData.append(PRODUCT_FORM_FIELDS.IMAGES, image.file);
       }
 
@@ -560,9 +563,7 @@ export default function ProductEdit({
       }
 
       const updated = await updateProduct(product.id, formData);
-
       toast.success("Product updated successfully");
-
       revokeImageUrls(newImages);
       setNewImages([]);
 
@@ -872,14 +873,14 @@ export default function ProductEdit({
                       </button>
 
                       {image.isPrimary ? (
-                        <span className="absolute bottom-1.5 left-1.5 z-20 rounded-full bg-primary px-2 py-0.5 text-[10px] font-medium text-primary-foreground shadow-sm">
+                        <span className="absolute bottom-1.5! left-1.5! z-20 rounded-full bg-primary px-2 py-0.5 text-[10px] font-medium text-primary-foreground shadow-sm">
                           Primary
                         </span>
                       ) : (
                         <button
                           type="button"
                           onClick={() => setNewImagePrimary(image.id)}
-                          className="absolute bottom-1.5 left-1.5 z-20 rounded-full border bg-background/90 px-2 py-0.5 text-[10px] font-medium text-muted-foreground shadow-sm backdrop-blur transition-colors hover:bg-background hover:text-foreground"
+                          className="absolute bottom-1.5! left-1.5! z-20 rounded-full border bg-background/90 px-2 py-0.5 text-[10px] font-medium text-muted-foreground shadow-sm backdrop-blur transition-colors hover:bg-background hover:text-foreground"
                         >
                           Set primary
                         </button>

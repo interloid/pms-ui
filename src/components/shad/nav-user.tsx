@@ -18,13 +18,13 @@ import { getInitials } from "@/lib/utils";
 export function NavUser({ user }: { user: AuthUser | null }) {
   const initials = getInitials(user?.name ?? "");
   return (
-    <SidebarMenu>
-      <SidebarMenuItem>
+    <SidebarMenu className="h-full ml-4">
+      <SidebarMenuItem className="h-full">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
               size="lg"
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+              className="h-full data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <Avatar className="h-8 w-8 rounded-lg">
                 <AvatarImage src={user?.avatar} alt={user?.name} />

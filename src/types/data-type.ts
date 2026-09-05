@@ -266,7 +266,7 @@ export type AddProductsProps = {
 };
 
 export type ProductEditProps = {
-  product: ApiProduct | null;
+  product: ApiProduct;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onUpdated?: (product: ApiProduct) => void;

@@ -193,21 +193,11 @@ export default function ProductsPage() {
     setViewOpen(true);
   }, []);
 
-  const handleProductUpdated = useCallback((updatedProduct: ApiProduct) => {
-    setProducts((current) =>
-      current.map((product) =>
-        product.id === updatedProduct.id ? updatedProduct : product,
-      ),
-    );
-
-    setViewProduct((current) =>
-      current?.id === updatedProduct.id ? updatedProduct : current,
-    );
-
-    setEditProduct((current) =>
-      current?.id === updatedProduct.id ? updatedProduct : current,
-    );
-  }, []);
+  const handleProductUpdated = useCallback(() => {
+    setEditOpen(false);
+    setEditProduct(null);
+    refresh();
+  }, [refresh]);
 
   if (loadError) {
     return (

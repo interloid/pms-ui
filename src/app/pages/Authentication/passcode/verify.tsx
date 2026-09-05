@@ -18,6 +18,8 @@ import { Field } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import type { ApiErrorResponse, PasscodeLocationState } from "@/types/auth";
+import interloidLogo from "@/assets/interloid-logo.png";
+import { cn } from "@/lib/utils";
 
 const OTP_LENGTH = 6;
 
@@ -143,10 +145,25 @@ export default function PasscodeVerifyPage() {
     }
   };
 
+  const handleTryDifferentEmail = () => {
+    navigate("/passcode", {
+      replace: true,
+    });
+  };
+
   return (
     <div className="flex min-h-full w-full items-center justify-center p-6 md:p-10">
+      <div className="absolute left-8 top-8 flex items-center gap-2">
+        <img
+          src={interloidLogo}
+          alt="Interloid"
+          className="h-5 w-5 object-contain"
+        />
+        <span className="text-sm font-semibold">Interloid</span>
+        <span className="text-sm text-muted-foreground">Workforce Suite</span>
+      </div>
       <div className="w-full max-w-lg">
-        <Card className="w-full p-8">
+        <Card className="w-full p-8 rounded-[10px] shadow-[rgba(0, 0, 0, 0.04) 0px 1px 2px]">
           <Tabs defaultValue="Passcode" className="w-full">
             <TabsList className="h-10! w-full">
               <TabsTrigger
@@ -200,11 +217,14 @@ export default function PasscodeVerifyPage() {
                     <InputOTPSlot
                       key={index}
                       index={index}
-                      className={
+                      className={cn(
+                        "relative w-full",
+                        !passcode[index] &&
+                          "after:absolute after:left-1/2 after:top-1/2 after:-translate-x-1/2 after:-translate-y-1/2 after:text-lg after:text-muted-foreground after:content-['•']",
                         passcodeError
-                          ? "w-full border-destructive data-[active=true]:border-destructive data-[active=true]:ring-destructive/20"
-                          : "w-full data-[active=true]:border-primary data-[active=true]:ring-primary/20"
-                      }
+                          ? "border-destructive data-[active=true]:border-destructive data-[active=true]:ring-destructive/20"
+                          : "data-[active=true]:border-primary data-[active=true]:ring-primary/20",
+                      )}
                     />
                   ))}
                 </InputOTPGroup>
@@ -221,7 +241,6 @@ export default function PasscodeVerifyPage() {
                 </p>
               )}
             </Field>
-
             <CardFooter className="flex w-full flex-col gap-2 px-2">
               <Button
                 type="submit"
@@ -237,10 +256,15 @@ export default function PasscodeVerifyPage() {
                   "Log in"
                 )}
               </Button>
-
-              <CardDescription className="px-1 pt-2 text-center text-xs text-muted-foreground">
-                Enter the 6-digit passcode sent to your email.
-              </CardDescription>
+                            <Button
+              type="button"
+              variant="link"
+              className="h-auto w-full text-center px-1 text-xs"
+              onClick={handleTryDifferentEmail}
+              disabled={isLoading}
+            >
+              Try with a different email
+            </Button>
             </CardFooter>
           </form>
         </Card>

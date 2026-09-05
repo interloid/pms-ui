@@ -64,18 +64,20 @@ type AppSidebarProps = React.ComponentProps<typeof Sidebar> & {
 
 export function AppSidebar({ user, ...props }: AppSidebarProps) {
   return (
-    <Sidebar collapsible="icon" {...props}>
+    <Sidebar collapsible="icon" {...props} className="shrink-0">
       <SidebarTitle />
 
-      <SidebarContent className="gap-0">
+      <SidebarContent className="gap-0 group-data-[state=collapsed]:ml-4!">
         <NavMain items={data.navMain} />
 
-        <SidebarGroupLabel>WORKSPACE</SidebarGroupLabel>
+        <SidebarGroupLabel className="group-data-[state=expanded]:ml-4!">
+          WORKSPACE
+        </SidebarGroupLabel>
 
         <NavMain items={data.workspace} />
       </SidebarContent>
 
-      <SidebarFooter className="border border-r-0">
+      <SidebarFooter className="relative h-16 shrink-0 before:absolute before:top-0 before:left-4 before:right-4 before:h-px before:bg-border">
         <NavUser user={user} />
       </SidebarFooter>
 
