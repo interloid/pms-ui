@@ -1,0 +1,44 @@
+export default function MicrosoftLogo() {
+  return (
+    <svg
+      data-dc-tpl="47"
+      width="17"
+      height="17"
+      viewBox="0 0 23 23"
+      aria-hidden="true"
+    >
+      <rect
+        data-dc-tpl="48"
+        x="1"
+        y="1"
+        width="10"
+        height="10"
+        fill="#F25022"
+      ></rect>
+      <rect
+        data-dc-tpl="49"
+        x="12"
+        y="1"
+        width="10"
+        height="10"
+        fill="#7FBA00"
+      ></rect>
+      <rect
+        data-dc-tpl="50"
+        x="1"
+        y="12"
+        width="10"
+        height="10"
+        fill="#00A4EF"
+      ></rect>
+      <rect
+        data-dc-tpl="51"
+        x="12"
+        y="12"
+        width="10"
+        height="10"
+        fill="#FFB900"
+      ></rect>
+    </svg>
+  );
+}

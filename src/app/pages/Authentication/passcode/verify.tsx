@@ -1,0 +1,274 @@
+import { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import {
+  Card,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
+import { Field } from "@/components/ui/field";
+import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
+import type { ApiErrorResponse, PasscodeLocationState } from "@/types/auth";
+import interloidLogo from "@/assets/interloid-logo.png";
+import { cn } from "@/lib/utils";
+
+const OTP_LENGTH = 6;
+
+function formatAttemptMessage(
+  remainingAttempts: number,
+  retryAfterSeconds: number,
+): string {
+  if (remainingAttempts === 0) {
+    const minutes = Math.ceil(retryAfterSeconds / 60);
+
+    return `Invalid passcode. Try again after ${minutes} minute${
+      minutes === 1 ? "" : "s"
+    }.`;
+  }
+
+  if (retryAfterSeconds > 0) {
+    const minutes = Math.ceil(retryAfterSeconds / 60);
+
+    return `Invalid passcode. ${remainingAttempts} attempt${
+      remainingAttempts === 1 ? "" : "s"
+    } left before a ${minutes}-minute cooldown.`;
+  }
+
+  return `Invalid passcode. ${remainingAttempts} attempt${
+    remainingAttempts === 1 ? "" : "s"
+  } remaining.`;
+}
+
+function isApiErrorResponse(error: unknown): error is ApiErrorResponse {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "success" in error &&
+    "message" in error &&
+    typeof error.message === "string"
+  );
+}
+
+function isPasscodeLocationState(
+  state: unknown,
+): state is PasscodeLocationState {
+  return (
+    typeof state === "object" &&
+    state !== null &&
+    (!("email" in state) || typeof state.email === "string")
+  );
+}
+
+export default function PasscodeVerifyPage() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { loginWithPasscode } = useAuth();
+
+  const state = isPasscodeLocationState(location.state) ? location.state : null;
+  const email = state?.email;
+  const [passcode, setPasscode] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [passcodeError, setPasscodeError] = useState<string | null>(null);
+
+  const handlePasscodeChange = (value: string) => {
+    const numericValue = value.replace(/\D/g, "").slice(0, OTP_LENGTH);
+
+    setPasscode(numericValue);
+
+    if (passcodeError) {
+      setPasscodeError(null);
+    }
+  };
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (!email) {
+      navigate("/passcode", {
+        replace: true,
+      });
+      return;
+    }
+
+    if (passcode.length !== OTP_LENGTH) {
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      setPasscodeError(null);
+
+      await loginWithPasscode(email, passcode);
+
+      navigate("/products", {
+        replace: true,
+      });
+    } catch (error) {
+      console.error("Passcode verification failed:", error);
+
+      setPasscode("");
+      setPasscodeError(null);
+
+      if (isApiErrorResponse(error)) {
+        const details = error.error?.details;
+
+        if (details?.remaining_attempts !== undefined) {
+          setPasscodeError(
+            formatAttemptMessage(
+              details.remaining_attempts,
+              details.retry_after_seconds ?? 0,
+            ),
+          );
+        } else {
+          setPasscodeError(
+            error.message || "Invalid passcode. Please try again.",
+          );
+        }
+        return;
+      }
+      setPasscodeError(
+        error instanceof Error
+          ? error.message
+          : "Invalid passcode. Please try again.",
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleTryDifferentEmail = () => {
+    navigate("/passcode", {
+      replace: true,
+    });
+  };
+
+  return (
+    <div className="flex min-h-full w-full items-center justify-center p-6 md:p-10">
+      <div className="absolute left-8 top-8 flex items-center gap-2">
+        <img
+          src={interloidLogo}
+          alt="Interloid"
+          className="h-5 w-5 object-contain"
+        />
+        <span className="text-sm font-semibold">Interloid</span>
+        <span className="text-sm text-muted-foreground">Workforce Suite</span>
+      </div>
+      <div className="w-full max-w-lg">
+        <Card className="w-full p-8 rounded-[10px] shadow-[rgba(0, 0, 0, 0.04) 0px 1px 2px]">
+          <Tabs defaultValue="Passcode" className="w-full">
+            <TabsList className="h-10! w-full">
+              <TabsTrigger
+                value="Username"
+                className="h-8! flex-1 text-xs"
+                onClick={() => navigate("/login")}
+              >
+                Username
+              </TabsTrigger>
+
+              <TabsTrigger value="Passcode" className="h-8! flex-1 text-xs">
+                Passcode
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+
+          <form onSubmit={handleSubmit} className="w-full" noValidate>
+            <CardHeader className="px-1">
+              <CardTitle className="text-lg font-bold">
+                Enter your passcode
+              </CardTitle>
+
+              <CardDescription>
+                Six digits, issued with your workspace invite
+              </CardDescription>
+
+              {email && (
+                <CardDescription>
+                  Enter the passcode sent to{" "}
+                  <span className="font-medium">{email}</span>
+                </CardDescription>
+              )}
+            </CardHeader>
+
+            <Field className="w-full px-1 py-4">
+              <InputOTP
+                id="passcode"
+                maxLength={OTP_LENGTH}
+                value={passcode}
+                onChange={handlePasscodeChange}
+                disabled={isLoading}
+                inputMode="numeric"
+                pattern="[0-9]*"
+                autoFocus
+                aria-invalid={Boolean(passcodeError)}
+                aria-describedby={passcodeError ? "passcode-error" : undefined}
+                className="h-10 focus-visible:border-primary focus-visible:ring-primary/20"
+              >
+                <InputOTPGroup className="flex w-full justify-center text-sm font-bold">
+                  {Array.from({ length: OTP_LENGTH }).map((_, index) => (
+                    <InputOTPSlot
+                      key={index}
+                      index={index}
+                      className={cn(
+                        "relative w-full",
+                        !passcode[index] &&
+                          "after:absolute after:left-1/2 after:top-1/2 after:-translate-x-1/2 after:-translate-y-1/2 after:text-lg after:text-muted-foreground after:content-['•']",
+                        passcodeError
+                          ? "border-destructive data-[active=true]:border-destructive data-[active=true]:ring-destructive/20"
+                          : "data-[active=true]:border-primary data-[active=true]:ring-primary/20",
+                      )}
+                    />
+                  ))}
+                </InputOTPGroup>
+              </InputOTP>
+
+              {passcodeError && (
+                <p
+                  id="passcode-error"
+                  className="mt-2 px-1 text-xs font-medium text-destructive"
+                  role="alert"
+                  aria-live="polite"
+                >
+                  {passcodeError}
+                </p>
+              )}
+            </Field>
+            <CardFooter className="flex w-full flex-col gap-2 px-2">
+              <Button
+                type="submit"
+                disabled={isLoading || passcode.length !== OTP_LENGTH}
+                className="h-10 w-full"
+              >
+                {isLoading ? (
+                  <>
+                    <Spinner className="size-4" />
+                    Checking...
+                  </>
+                ) : (
+                  "Log in"
+                )}
+              </Button>
+                            <Button
+              type="button"
+              variant="link"
+              className="h-auto w-full text-center px-1 text-xs"
+              onClick={handleTryDifferentEmail}
+              disabled={isLoading}
+            >
+              Try with a different email
+            </Button>
+            </CardFooter>
+          </form>
+        </Card>
+      </div>
+    </div>
+  );
+}
